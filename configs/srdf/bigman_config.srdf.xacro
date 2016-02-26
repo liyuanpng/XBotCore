@@ -1,0 +1,78 @@
+<?xml version="1.0" ?>
+<!--This does not replace URDF, and is not an extension of URDF.
+    This is a format for representing semantic information about the robot structure.
+    A URDF file must exist for this robot as well, where the joints and the links that are referenced are defined
+    -->
+                
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="bigman">
+    <!--GROUPS: Representation of a set of joints and links. This can be useful for specifying DOF to plan for, defining arms, end effectors, etc-->
+    <!--LINKS: When a link is specified, the parent joint of that link (if it exists) is automatically included-->
+    <!--JOINTS: When a joint is specified, the child link of that joint (which will always exist) is automatically included-->
+    <!--CHAINS: When a chain is specified, all the links along the chain (including endpoints) are included in the group. Additionally, all the joints that are parents to included links are also included. This means that joints along the chain and the parent joint of the base link are included in the group-->
+    <!--SUBGROUPS: Groups can also be formed by referencing to already defined group names-->
+    
+    <!-- set of BIGMAN xacro properties -->
+    <xacro:property name="BIGMAN_HEAD" value="false" />
+    <xacro:property name="BIGMAN_LEFT_ARM" value="true" />
+    <xacro:property name="BIGMAN_RIGHT_ARM" value="false" /> 
+    <xacro:property name="BIGMAN_TORSO" value="false" />   
+    <xacro:property name="BIGMAN_LEFT_LEG" value="false" />
+    <xacro:property name="BIGMAN_RIGHT_LEG" value="false" /> 
+    
+    <xacro:if value="${BIGMAN_LEFT_ARM}">
+        <group name="left_arm">
+            <chain base_link="DWYTorso" tip_link="l_wrist"/>
+        </group>
+    </xacro:if>
+    
+
+    <!-- F-T sensors -->
+    <group name="force_torque_sensors">
+            <xacro:if value="${BIGMAN_LEFT_ARM}">
+                <joint name="l_arm_ft_joint"/>
+            </xacro:if>
+    </group> 
+    <!-- END F-T sensors -->
+    
+.
+    <!-- CHAINS -->
+    <group name="chains"> <!--THIS HAS TO BE THE LAST GROUP IN THE FILE -->
+        
+        <!-- HEAD -->
+        <xacro:if value="${BIGMAN_HEAD}">
+                <group name="head"/>
+        </xacro:if>
+        
+        <!-- LEFT ARM -->
+        <xacro:if value="${BIGMAN_LEFT_ARM}">
+                <group name="left_arm"/>
+        </xacro:if>
+
+        <!-- RIGHT ARM -->
+        <xacro:if value="${BIGMAN_RIGHT_ARM}">
+                <group name="right_arm"/>
+        </xacro:if>
+
+        <!-- TORSO -->
+        <xacro:if value="${BIGMAN_TORSO}">
+                <group name="torso"/>
+        </xacro:if>
+
+        <!-- LEFT LEG -->
+        <xacro:if value="${BIGMAN_LEFT_LEG}">
+                <group name="left_leg"/>
+        </xacro:if>
+
+        <!-- RIGHT LEG -->
+        <xacro:if value="${BIGMAN_RIGHT_LEG}">
+                <group name="right_leg"/>
+        </xacro:if>
+
+    </group>
+    <!-- END CHAINS -->    
+ 
+    
+
+    
+    
+</robot>
