@@ -20,8 +20,11 @@
 #include <stdexcept>
 #include <boost/lexical_cast.hpp>
 
-class XBotCore_srdfdom : public srdf::Model {
+class XBotCore_model : public srdf::Model {
 private:
+    
+    boost::shared_ptr<urdf::ModelInterface> urdf_model;
+    
     boost::shared_ptr<urdf::ModelInterface> loadURDF(const std::string& filename)
     {
         // get the entire file
@@ -47,17 +50,22 @@ private:
         
 public:
     
-    XBotCore_srdfdom()
+    XBotCore_model()
     {
+    }
+    
+    boost::shared_ptr<urdf::ModelInterface> get_urdf_model() 
+    {
+        return urdf_model;
     }
     
     bool init(const std::string& urdf_filename, const std::string& srdf_filename)
     {
-        boost::shared_ptr<urdf::ModelInterface> u = loadURDF(urdf_filename);
-        return this->initFile(*u, srdf_filename);
+        urdf_model = loadURDF(urdf_filename);
+        return this->initFile(*urdf_model, srdf_filename);
     }
     
-    ~XBotCore_srdfdom() 
+    ~XBotCore_model() 
     {
     }
     

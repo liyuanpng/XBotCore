@@ -17,7 +17,7 @@
 #include <iit/advr/ec_boards_base.h>
 #include <iit/ecat/advr/esc.h>
 
-#include <XBotCore/XBotCore_srdfdom.hpp>
+#include <XBotCore/XBotCore_model.hpp>
 
 /**
  * @brief TBD
@@ -34,12 +34,18 @@ public:
     
     uint16_t get_rtt(int slave_id);
 
+protected:
+    
+    void parseSRDF();
+    
+
 private:
     
     virtual void init_preOP(void);
     virtual void init_OP(void);
     
-    XBotCore_srdfdom srdf_model;
+    XBotCore_model model;
+    std::string thread_name;
     
 };
 

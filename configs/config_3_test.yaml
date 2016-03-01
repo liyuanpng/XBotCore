@@ -1,4 +1,6 @@
 #
+x_bot_core:
+  name: XBotCore_basic
 
 ec_board_ctrl:
   eth_iface: rteth0
