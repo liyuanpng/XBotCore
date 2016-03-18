@@ -4,7 +4,7 @@
 #include <signal.h>
 #include <exception>
 
-#include <XBotCore/XBotCore.h>
+#include <XBotCore/XBotPluginHandler.h>
 
 extern void main_common(__sighandler_t sig_handler);
 
@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) try {
 
     main_common(shutdown);
     
-    threads["boards_ctrl"] = new XBotCore(argv[1]);
+    threads["boards_ctrl"] = new XBotPluginHandler(argv[1]);
     threads["boards_ctrl"]->create(true);
 
     while (main_loop) {

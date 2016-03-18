@@ -1,19 +1,22 @@
 #
 x_bot_core:
+  urdf_path: /home/embedded/src/XBotCore/configs/urdf/bigman.urdf
+  srdf_path: /home/embedded/src/XBotCore/configs/srdf/bigman_config.srdf
+  joint_map_config: /home/embedded/src/XBotCore/configs/joint_map/bigman_ecat_joint_map.yaml 
+  
+x_bot_ecat:
   name: XBotCore_basic
+  # periodic - priority if needed here
 
 ec_board_ctrl:
   eth_iface: rteth0
-  #eth_iface: eth1
-  #sync_cycle_time_ns: 500000
   sync_cycle_time_ns: 1000000
-  #sync_cycle_time_ns: 2000000
-  #sync_cycle_time_ns: 5000000
-  #sync_cycle_time_ns: 10000000
-  #sync_cycle_time_ns: 0
   sync_cycle_offset_ns: 0
   power_off_boards: false
+
+ec_boards_base:
   create_pipes: true
+  
 
 # Test LOW POW ESC 1
 LpESC_1:

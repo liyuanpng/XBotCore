@@ -36,6 +36,7 @@ endif()
 # find packages 
 find_package(srdfdom REQUIRED)
 find_package(urdfdom REQUIRED)
+find_package(kdl_parser REQUIRED)
 
 # Common libs TBD: make it clean!
 set(COMMON_LIBS
@@ -56,8 +57,10 @@ include_directories(include ${srdfdom_INCLUDE_DIRS} ${urdfdom_INCLUDE_DIRS})
 
 # exe
 add_executable(${PROJECT_NAME}
+    src/XBotEcat.cpp
     src/XBotCore.cpp
-    src/XBotCore_main.cpp
+    src/XBotPluginHandler.cpp
+    src/XBotMain.cpp
 )
 
 # set Xenomain flags if Xenomai is founded
@@ -68,7 +71,8 @@ endif()
 # link the common libs
 target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
                                       ${srdfdom_LIBRARIES}
-                                      ${urdfdom_LIBRARIES})
+                                      ${urdfdom_LIBRARIES}
+                                      ${kdl_parser_LIBRARIES})
 
 if(NOT Xenomai_FOUND)
     set_cap_build(${PROJECT_NAME})

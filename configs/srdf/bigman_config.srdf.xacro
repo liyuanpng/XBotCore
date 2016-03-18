@@ -11,13 +11,29 @@
     <!--CHAINS: When a chain is specified, all the links along the chain (including endpoints) are included in the group. Additionally, all the joints that are parents to included links are also included. This means that joints along the chain and the parent joint of the base link are included in the group-->
     <!--SUBGROUPS: Groups can also be formed by referencing to already defined group names-->
     
-    <!-- set of BIGMAN xacro properties -->
     <xacro:property name="BIGMAN_HEAD" value="false" />
     <xacro:property name="BIGMAN_LEFT_ARM" value="true" />
     <xacro:property name="BIGMAN_RIGHT_ARM" value="false" /> 
+    <xacro:property name="BIGMAN_LEFT_HAND" value="false" />
+    <xacro:property name="BIGMAN_RIGHT_HAND" value="false" /> 
     <xacro:property name="BIGMAN_TORSO" value="false" />   
     <xacro:property name="BIGMAN_LEFT_LEG" value="false" />
     <xacro:property name="BIGMAN_RIGHT_LEG" value="false" /> 
+    
+    <xacro:property name="BIGMAN_LEFT_ARM_FT" value="false" />
+    <xacro:property name="BIGMAN_RIGHT_ARM_FT" value="false" />
+    <xacro:property name="BIGMAN_LEFT_LEG_FT" value="false" />
+    <xacro:property name="BIGMAN_RIGHT_LEG_FT" value="false" />
+    
+    
+ 
+    <!-- Robot kinematic chains -->
+    <!-- CONSTRAINT: specify the chain inside a group: only one chain per group -->
+    <xacro:if value="${BIGMAN_HEAD}">
+        <group name="head">
+            <chain base_link="DWYTorso" tip_link="NeckPitch"/>
+        </group>
+    </xacro:if>
     
     <xacro:if value="${BIGMAN_LEFT_ARM}">
         <group name="left_arm">
@@ -25,53 +41,113 @@
         </group>
     </xacro:if>
     
+    <xacro:if value="${BIGMAN_RIGHT_ARM}">
+        <group name="right_arm">
+            <chain base_link="DWYTorso" tip_link="r_wrist"/>
+        </group>
+    </xacro:if>
+    
+    <xacro:if value="${BIGMAN_LEFT_HAND}">
+        <group name="left_hand">
+            <chain base_link="LWrMot3" tip_link="LSoftHandLink"/>
+        </group>
+    </xacro:if>
+    
+    <xacro:if value="${BIGMAN_RIGHT_HAND}">
+        <group name="right_hand">
+            <chain base_link="RWrMot3" tip_link="RSoftHandLink"/>
+        </group>
+    </xacro:if>
+    
+    <xacro:if value="${BIGMAN_TORSO}">
+        <group name="torso">
+            <chain base_link="Waist" tip_link="DWYTorso"/>
+        </group>
+    </xacro:if>
+    
+    <xacro:if value="${BIGMAN_LEFT_LEG}">
+        <group name="left_leg">
+            <chain base_link="Waist" tip_link="l_sole"/>
+        </group>
+    </xacro:if>
+    
+    <xacro:if value="${BIGMAN_RIGHT_LEG}">
+        <group name="right_leg">
+            <chain base_link="Waist" tip_link="r_sole"/>
+        </group>
+    </xacro:if>
+    <!-- Robot kinematic chains END -->
+    
 
     <!-- F-T sensors -->
     <group name="force_torque_sensors">
-            <xacro:if value="${BIGMAN_LEFT_ARM}">
+            <xacro:if value="${BIGMAN_LEFT_ARM and BIGMAN_LEFT_ARM_FT}">
                 <joint name="l_arm_ft_joint"/>
+            </xacro:if>
+            <xacro:if value="${BIGMAN_RIGHT_ARM and BIGMAN_RIGHT_ARM_FT}">
+                <joint name="r_arm_ft_joint"/>
+            </xacro:if>
+            <xacro:if value="${BIGMAN_LEFT_LEG and BIGMAN_LEFT_LEG_FT}">
+                <joint name="l_leg_ft_joint"/>
+            </xacro:if>
+            <xacro:if value="${BIGMAN_RIGHT_LEG and BIGMAN_RIGHT_LEG_FT}">
+                <joint name="r_leg_ft_joint"/>
             </xacro:if>
     </group> 
     <!-- END F-T sensors -->
     
+    
+    
+    <!-- TBD IMU -->
+    <!-- TBD END IMU -->
+    
+    <!-- Disabled Joint -->
+    <disabled_joint name="LShSag"/>
+    <disabled_joint name="LShLat"/>
+    <disabled_joint name="LShYaw"/>
+    <disabled_joint name="LElbj"/>
+    <disabled_joint name="LForearmPlate"/>
+    <disabled_joint name="LWrj1"/>
+    <!-- END Disabled Joint -->
 .
     <!-- CHAINS -->
-    <group name="chains"> <!--THIS HAS TO BE THE LAST GROUP IN THE FILE -->
-        
+    <!-- CONSTRAINT: keep it in the end, it refers to already defined groups --> 
+    <group name="chains"> 
+      
         <!-- HEAD -->
-        <xacro:if value="${BIGMAN_HEAD}">
+       <xacro:if value="${BIGMAN_HEAD}">
                 <group name="head"/>
         </xacro:if>
         
         <!-- LEFT ARM -->
-        <xacro:if value="${BIGMAN_LEFT_ARM}">
+       <xacro:if value="${BIGMAN_LEFT_ARM}">
                 <group name="left_arm"/>
-        </xacro:if>
+        </xacro:if>-->
 
         <!-- RIGHT ARM -->
-        <xacro:if value="${BIGMAN_RIGHT_ARM}">
+       <xacro:if value="${BIGMAN_RIGHT_ARM}">
                 <group name="right_arm"/>
         </xacro:if>
 
         <!-- TORSO -->
-        <xacro:if value="${BIGMAN_TORSO}">
+       <xacro:if value="${BIGMAN_TORSO}">
                 <group name="torso"/>
         </xacro:if>
 
         <!-- LEFT LEG -->
-        <xacro:if value="${BIGMAN_LEFT_LEG}">
+       <xacro:if value="${BIGMAN_LEFT_LEG}">
                 <group name="left_leg"/>
         </xacro:if>
 
         <!-- RIGHT LEG -->
-        <xacro:if value="${BIGMAN_RIGHT_LEG}">
+       <xacro:if value="${BIGMAN_RIGHT_LEG}">
                 <group name="right_leg"/>
         </xacro:if>
 
-    </group>
+   </group>
     <!-- END CHAINS -->    
  
-    
+
 
     
     

@@ -13,25 +13,39 @@
   <!--JOINTS: When a joint is specified, the child link of that joint (which will always exist) is automatically included-->
   <!--CHAINS: When a chain is specified, all the links along the chain (including endpoints) are included in the group. Additionally, all the joints that are parents to included links are also included. This means that joints along the chain and the parent joint of the base link are included in the group-->
   <!--SUBGROUPS: Groups can also be formed by referencing to already defined group names-->
-  <!-- set of BIGMAN xacro properties -->
+  <!-- Robot kinematic chains -->
+  <!-- CONSTRAINT: specify the chain inside a group: only one chain per group -->
   <group name="left_arm">
     <chain base_link="DWYTorso" tip_link="l_wrist"/>
   </group>
+  <!-- Robot kinematic chains END -->
   <!-- F-T sensors -->
   <group name="force_torque_sensors">
     <joint name="l_arm_ft_joint"/>
   </group>
   <!-- END F-T sensors -->
+  <!-- TBD IMU -->
+  <!-- TBD END IMU -->
+  <!-- Disabled Joint -->
+  <disabled_joint name="LShSag"/>
+  <disabled_joint name="LShLat"/>
+  <disabled_joint name="LShYaw"/>
+  <disabled_joint name="LElbj"/>
+  <disabled_joint name="LForearmPlate"/>
+  <disabled_joint name="LWrj1"/>
+  <!-- END Disabled Joint -->
   
-    
 .
     
   <!-- CHAINS -->
+  <!-- CONSTRAINT: keep it in the end, it refers to already defined groups -->
   <group name="chains">
-    <!--THIS HAS TO BE THE LAST GROUP IN THE FILE -->
     <!-- HEAD -->
     <!-- LEFT ARM -->
     <group name="left_arm"/>
+    --&gt;
+
+        
     <!-- RIGHT ARM -->
     <!-- TORSO -->
     <!-- LEFT LEG -->
