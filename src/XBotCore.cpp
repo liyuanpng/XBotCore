@@ -51,7 +51,19 @@ void XBotCore::parseJointMap(void)
 
 void XBotCore::generateRobot(void)
 {
-
+    std::vector<std::string> actual_chain_names = model.get_chain_names();
+    std::vector<std::string> enabled_joints_name_aux;
+    std::vector<int> enabled_joints_id_aux;
+    for( int i = 0; i < actual_chain_names.size(); i++) {
+        if( model.get_enabled_joints_in_chain(actual_chain_names[i], enabled_joints_name_aux) ) {
+            for( int j = 0; j < enabled_joints_name_aux.size(); j++ ) {
+                if( joint2rid.count(enabled_joints_name_aux[j]) ) {
+                    enabled_joints_id_aux.push_back(joint2rid.at(enabled_joints_name_aux[j]));
+                }
+            }
+            robot[actual_chain_names[i]] = enabled_joints_id_aux;
+        }
+    }
 }
 
 void XBotCore::control_init(void) 
@@ -65,7 +77,7 @@ void XBotCore::control_init(void)
     // parse the joint map YAML file and fill the joint_id from/to joint_name maps 
     parseJointMap();
     
-    // TBD generate the chains data structures using the function from XBotCoreModel
+    // generate the chains data structures using the function from XBotCoreModel
     generateRobot();
     
     // call the plugin handler initialization
@@ -151,13 +163,56 @@ int XBotCore::control_loop(void) {
 //     
 //     DPRINTF("\n\n");
 //     
-//     // stop TEST
-    
+//     DPRINTF("chain : left_arm -> %d\n", robot.at("left_arm").at(0));
+//
+//     // stop TEST    
     
     
     // call the plugin handler loop
     return plugin_handler_loop();
 }
+
+bool XBotCore::get_chain_link_pos(std::string chain_name, std::map< std::string, float>& link_pos)
+{
+//     if( robot.count(chain_name) ) {
+//         std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+//         int enabled_joints_num = actual_chain_enabled_joints.size();
+//         for( int i = 0; i < enabled_joints_num; i++) {
+//             if( !get_link_pos(actual_chain_enabled_joints[i], link_pos.at(rid2joint.at(actual_chain_enabled_joints[i]))))  { //TBD no check should be fine
+//                 DPRINTF("ERROR: get_chain_link_pos() on joint %s, that does not exits in the chain", actual_chain_enabled_joints[i]);
+//                 return false;
+//             }
+//         }
+//         return true;
+//     }
+//     
+//     DPRINTF("ERROR: get_chain_link_pos() on chain %s, that does not exits in the robot", chain_name);
+//     return false;
+}
+
+
+bool XBotCore::get_chain_rtt(std::string chain_name, std::map< std::string, uint16_t >& rtt)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        std::string actual_joint_name;
+        for( int i = 0; i < enabled_joints_num; i++) {
+            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            rtt[actual_joint_name] = 0;
+            if( !get_rtt(actual_chain_enabled_joints[i], rtt.at(actual_joint_name)))  {
+                DPRINTF("ERROR: get_chain_rtt() on joint %s, that does not exits in the chain", actual_chain_enabled_joints[i]);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_link_pos() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+
 
 
 bool XBotCore::get_link_pos(int joint_id, float& link_pos)

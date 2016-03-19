@@ -86,7 +86,7 @@ private:
         chain_names.resize(chain_num);
         // fill the chain names vector
         for(int i = 0; i < chain_num; i++) {
-            chain_names.push_back(actual_groups[group_num - 1].subgroups_[i]);
+            chain_names[i] = (actual_groups[group_num - 1].subgroups_[i]);
         }
 
         // put the disabled joint in the disabled_joint_names data structure
@@ -194,6 +194,11 @@ public:
     {
         
         return robot_tree;
+    }
+    
+    std::vector<std::string> get_chain_names(void) 
+    {
+        return chain_names;
     }
     
     bool init(const std::string& urdf_filename, const std::string& srdf_filename)

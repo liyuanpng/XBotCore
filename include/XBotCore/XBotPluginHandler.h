@@ -35,8 +35,7 @@ protected:
 
 
 private: 
-        
-//     bool get_rtt(int joint_id, uint16_t& rtt);
+
 
 };
 

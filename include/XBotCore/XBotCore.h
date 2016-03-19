@@ -108,7 +108,12 @@ protected:
      * 
      */
     Joint2RidMap joint2rid;
+    
+    std::vector<std::string> get_chain_names();
+    
+    bool get_chain_link_pos(std::string chain_name, std::map<std::string, float>& link_pos);
 
+    bool get_chain_rtt(std::string chain_name, std::map<std::string, uint16_t>& rtt);
 
 
 private:
@@ -130,6 +135,12 @@ private:
      * 
      */
     std::string srdf_path;
+
+    /**
+     * @brief map between the chain name and the id of the enabled joints in the chain 
+     * 
+     */
+    std::map<std::string, std::vector<int>> robot;
     
     
     
