@@ -93,27 +93,50 @@ public:
      */
     std::string get_srdf_path(void);
     
+    /**
+     * @brief Getter for the chain names vector
+     * 
+     * @return std::vector< std::string> the chain names vector
+     */
+    std::vector<std::string> get_chain_names();
+    
 
 
 protected:
-        
-    /**
-     * @brief map between joint robot id and joint name
-     * 
-     */
-    Rid2JointMap rid2joint;
-    
-    /**
-     * @brief map between joint name and joint robot id
-     * 
-     */
-    Joint2RidMap joint2rid;
-    
-    std::vector<std::string> get_chain_names();
+   
+    std::string  rid2Joint(int rId);
+    int joint2Rid(std::string joint_name);
+
     
     bool get_chain_link_pos(std::string chain_name, std::map<std::string, float>& link_pos);
+    bool get_chain_link_pos(std::string chain_name, std::map<int, float>& link_pos);
+    
+    bool get_chain_motor_pos(std::string chain_name, std::map<std::string, float>& motor_pos);
+    bool get_chain_motor_pos(std::string chain_name, std::map<int, float>& motor_pos);
+    
+    bool get_chain_link_vel(std::string chain_name, std::map<std::string, float>& link_vel);
+    bool get_chain_link_vel(std::string chain_name, std::map<int, float>& link_vel);
+    
+    bool get_chain_motor_vel(std::string chain_name, std::map<std::string, int16_t>& motor_vel);
+    bool get_chain_motor_vel(std::string chain_name, std::map<int, int16_t>& motor_vel);
+    
+    bool get_chain_torque(std::string chain_name, std::map<std::string, int16_t>& torque);
+    bool get_chain_torque(std::string chain_name, std::map<int, int16_t>& torque);
+    
+    bool get_chain_max_temperature(std::string chain_name, std::map<int, uint16_t>& max_temperature);    
+    bool get_chain_max_temperature(std::string chain_name, std::map<std::string, uint16_t>& max_temperature);
+    
+    bool get_chain_fault(std::string chain_name, std::map<int, uint16_t>& fault);    
+    bool get_chain_fault(std::string chain_name, std::map<std::string, uint16_t>& fault);
 
+    bool get_chain_rtt(std::string chain_name, std::map<int, uint16_t>& rtt);    
     bool get_chain_rtt(std::string chain_name, std::map<std::string, uint16_t>& rtt);
+    
+    bool get_chain_op_idx_ack(std::string chain_name, std::map<int, uint16_t>& op_idx_ack);    
+    bool get_chain_op_idx_ack(std::string chain_name, std::map<std::string, uint16_t>& op_idx_ack);
+    
+    bool get_chain_aux(std::string chain_name, std::map<std::string, float>& aux);
+    bool get_chain_aux(std::string chain_name, std::map<int, float>& aux);
 
 
 private:
@@ -141,6 +164,18 @@ private:
      * 
      */
     std::map<std::string, std::vector<int>> robot;
+    
+    /**
+     * @brief map between joint robot id and joint name
+     * 
+     */
+    Rid2JointMap rid2joint;
+    
+    /**
+     * @brief map between joint name and joint robot id
+     * 
+     */
+    Joint2RidMap joint2rid;
     
     
     

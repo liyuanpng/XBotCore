@@ -30,6 +30,12 @@ std::string XBotCore::get_srdf_path(void)
     return srdf_path;
 }
 
+std::vector< std::string > XBotCore::get_chain_names()
+{
+    return model.get_chain_names();
+}
+
+
 void XBotCore::parseJointMap(void)
 {
     // read the joint map config file -> we choose to separate it from the one used by XBotCore and ec_boards_iface
@@ -168,28 +174,309 @@ int XBotCore::control_loop(void) {
 //     // stop TEST    
     
     
+    
     // call the plugin handler loop
     return plugin_handler_loop();
 }
 
-bool XBotCore::get_chain_link_pos(std::string chain_name, std::map< std::string, float>& link_pos)
+
+std::string XBotCore::rid2Joint(int rId)
 {
-//     if( robot.count(chain_name) ) {
-//         std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-//         int enabled_joints_num = actual_chain_enabled_joints.size();
-//         for( int i = 0; i < enabled_joints_num; i++) {
-//             if( !get_link_pos(actual_chain_enabled_joints[i], link_pos.at(rid2joint.at(actual_chain_enabled_joints[i]))))  { //TBD no check should be fine
-//                 DPRINTF("ERROR: get_chain_link_pos() on joint %s, that does not exits in the chain", actual_chain_enabled_joints[i]);
-//                 return false;
-//             }
-//         }
-//         return true;
-//     }
-//     
-//     DPRINTF("ERROR: get_chain_link_pos() on chain %s, that does not exits in the robot", chain_name);
-//     return false;
+    return rid2joint.find(rId) != rid2joint.end() ? rid2joint[rId] : ""; 
 }
 
+int XBotCore::joint2Rid(std::string joint_name)
+{
+    return joint2rid.find(joint_name) != joint2rid.end() ? joint2rid[joint_name] : 0; 
+}
+
+
+
+///////////////////////////////
+///////////////////////////////
+// CHAIN PROTECTED FUNCTIONS //
+///////////////////////////////
+///////////////////////////////
+
+bool XBotCore::get_chain_link_pos(std::string chain_name, std::map< std::string, float>& link_pos)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        std::string actual_joint_name;
+        for( int i = 0; i < enabled_joints_num; i++) {
+            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            link_pos[actual_joint_name] = 0;
+            if( !get_link_pos(actual_chain_enabled_joints[i], link_pos.at(actual_joint_name)))  {
+                DPRINTF("ERROR: get_chain_link_pos() on joint %s, that does not exits in the chain", actual_joint_name);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_link_pos() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+bool XBotCore::get_chain_link_pos(std::string chain_name, std::map< int, float >& link_pos)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        for( int i = 0; i < enabled_joints_num; i++) {
+            link_pos[actual_chain_enabled_joints[i]] = 0;
+            if( !get_link_pos(actual_chain_enabled_joints[i], link_pos.at(actual_chain_enabled_joints[i])))  {
+                DPRINTF("ERROR: get_chain_link_pos() on joint %d, that does not exits in the chain", actual_chain_enabled_joints[i]);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_link_pos() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+bool XBotCore::get_chain_motor_pos(std::string chain_name, std::map< std::string, float >& motor_pos)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        std::string actual_joint_name;
+        for( int i = 0; i < enabled_joints_num; i++) {
+            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            motor_pos[actual_joint_name] = 0;
+            if( !get_motor_pos(actual_chain_enabled_joints[i], motor_pos.at(actual_joint_name)))  {
+                DPRINTF("ERROR: get_chain_motor_pos() on joint %s, that does not exits in the chain", actual_joint_name);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_motor_pos() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+bool XBotCore::get_chain_motor_pos(std::string chain_name, std::map< int, float >& motor_pos)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        for( int i = 0; i < enabled_joints_num; i++) {
+            motor_pos[actual_chain_enabled_joints[i]] = 0;
+            if( !get_motor_pos(actual_chain_enabled_joints[i], motor_pos.at(actual_chain_enabled_joints[i])))  {
+                DPRINTF("ERROR: get_chain_motor_pos() on joint %d, that does not exits in the chain", actual_chain_enabled_joints[i]);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_motor_pos() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+bool XBotCore::get_chain_link_vel(std::string chain_name, std::map< std::string, float >& link_vel)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        std::string actual_joint_name;
+        for( int i = 0; i < enabled_joints_num; i++) {
+            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            link_vel[actual_joint_name] = 0;
+            if( !get_link_vel(actual_chain_enabled_joints[i], link_vel.at(actual_joint_name)))  {
+                DPRINTF("ERROR: get_chain_link_vel() on joint %s, that does not exits in the chain", actual_joint_name);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_link_vel() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+bool XBotCore::get_chain_link_vel(std::string chain_name, std::map< int, float >& link_vel)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        for( int i = 0; i < enabled_joints_num; i++) {
+            link_vel[actual_chain_enabled_joints[i]] = 0;
+            if( !get_link_vel(actual_chain_enabled_joints[i], link_vel.at(actual_chain_enabled_joints[i])))  {
+                DPRINTF("ERROR: get_chain_link_vel() on joint %d, that does not exits in the chain", actual_chain_enabled_joints[i]);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_link_vel() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+bool XBotCore::get_chain_motor_vel(std::string chain_name, std::map< std::string, int16_t >& motor_vel)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        std::string actual_joint_name;
+        for( int i = 0; i < enabled_joints_num; i++) {
+            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            motor_vel[actual_joint_name] = 0;
+            if( !get_motor_vel(actual_chain_enabled_joints[i], motor_vel.at(actual_joint_name)))  {
+                DPRINTF("ERROR: get_chain_motor_vel() on joint %s, that does not exits in the chain", actual_joint_name);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_motor_vel() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+bool XBotCore::get_chain_motor_vel(std::string chain_name, std::map< int, int16_t >& motor_vel)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        for( int i = 0; i < enabled_joints_num; i++) {
+            motor_vel[actual_chain_enabled_joints[i]] = 0;
+            if( !get_motor_vel(actual_chain_enabled_joints[i], motor_vel.at(actual_chain_enabled_joints[i])))  {
+                DPRINTF("ERROR: get_chain_motor_vel() on joint %d, that does not exits in the chain", actual_chain_enabled_joints[i]);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_motor_vel() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+bool XBotCore::get_chain_torque(std::string chain_name, std::map< std::string, int16_t >& torque)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        std::string actual_joint_name;
+        for( int i = 0; i < enabled_joints_num; i++) {
+            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            torque[actual_joint_name] = 0;
+            if( !get_torque(actual_chain_enabled_joints[i], torque.at(actual_joint_name)))  {
+                DPRINTF("ERROR: get_chain_torque() on joint %s, that does not exits in the chain", actual_joint_name);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_torque() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+bool XBotCore::get_chain_torque(std::string chain_name, std::map< int, int16_t >& torque)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        for( int i = 0; i < enabled_joints_num; i++) {
+            torque[actual_chain_enabled_joints[i]] = 0;
+            if( !get_torque(actual_chain_enabled_joints[i], torque.at(actual_chain_enabled_joints[i])))  {
+                DPRINTF("ERROR: get_chain_torque() on joint %d, that does not exits in the chain", actual_chain_enabled_joints[i]);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_torque() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+bool XBotCore::get_chain_max_temperature(std::string chain_name, std::map< std::string, uint16_t >& max_temperature)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        std::string actual_joint_name;
+        for( int i = 0; i < enabled_joints_num; i++) {
+            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            max_temperature[actual_joint_name] = 0;
+            if( !get_max_temperature(actual_chain_enabled_joints[i], max_temperature.at(actual_joint_name)))  {
+                DPRINTF("ERROR: get_chain_max_temperature() on joint %s, that does not exits in the chain", actual_joint_name);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_max_temperature() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+bool XBotCore::get_chain_max_temperature(std::string chain_name, std::map< int, uint16_t >& max_temperature)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        for( int i = 0; i < enabled_joints_num; i++) {
+            max_temperature[actual_chain_enabled_joints[i]] = 0;
+            if( !get_max_temperature(actual_chain_enabled_joints[i], max_temperature.at(actual_chain_enabled_joints[i])))  {
+                DPRINTF("ERROR: get_chain_max_temperature() on joint %d, that does not exits in the chain", actual_chain_enabled_joints[i]);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_max_temperature() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+bool XBotCore::get_chain_fault(std::string chain_name, std::map< std::string, uint16_t >& fault)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        std::string actual_joint_name;
+        for( int i = 0; i < enabled_joints_num; i++) {
+            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            fault[actual_joint_name] = 0;
+            if( !get_fault(actual_chain_enabled_joints[i], fault.at(actual_joint_name)))  {
+                DPRINTF("ERROR: get_chain_fault() on joint %s, that does not exits in the chain", actual_joint_name);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_fault() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+bool XBotCore::get_chain_fault(std::string chain_name, std::map< int, uint16_t >& fault)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        for( int i = 0; i < enabled_joints_num; i++) {
+            fault[actual_chain_enabled_joints[i]] = 0;
+            if( !get_fault(actual_chain_enabled_joints[i], fault.at(actual_chain_enabled_joints[i])))  {
+                DPRINTF("ERROR: get_chain_fault() on joint %d, that does not exits in the chain", actual_chain_enabled_joints[i]);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_fault() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
 
 bool XBotCore::get_chain_rtt(std::string chain_name, std::map< std::string, uint16_t >& rtt)
 {
@@ -201,19 +488,123 @@ bool XBotCore::get_chain_rtt(std::string chain_name, std::map< std::string, uint
             actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
             rtt[actual_joint_name] = 0;
             if( !get_rtt(actual_chain_enabled_joints[i], rtt.at(actual_joint_name)))  {
-                DPRINTF("ERROR: get_chain_rtt() on joint %s, that does not exits in the chain", actual_chain_enabled_joints[i]);
+                DPRINTF("ERROR: get_chain_rtt() on joint %s, that does not exits in the chain", actual_joint_name);
                 return false;
             }
         }
         return true;
     }
     
-    DPRINTF("ERROR: get_chain_link_pos() on chain %s, that does not exits in the robot", chain_name);
+    DPRINTF("ERROR: get_chain_rtt() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+bool XBotCore::get_chain_rtt(std::string chain_name, std::map< int, uint16_t >& rtt)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        for( int i = 0; i < enabled_joints_num; i++) {
+            rtt[actual_chain_enabled_joints[i]] = 0;
+            if( !get_rtt(actual_chain_enabled_joints[i], rtt.at(actual_chain_enabled_joints[i])))  {
+                DPRINTF("ERROR: get_chain_rtt() on joint %d, that does not exits in the chain", actual_chain_enabled_joints[i]);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_rtt() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+bool XBotCore::get_chain_op_idx_ack(std::string chain_name, std::map< std::string, uint16_t >& op_idx_ack)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        std::string actual_joint_name;
+        for( int i = 0; i < enabled_joints_num; i++) {
+            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            op_idx_ack[actual_joint_name] = 0;
+            if( !get_op_idx_ack(actual_chain_enabled_joints[i], op_idx_ack.at(actual_joint_name)))  {
+                DPRINTF("ERROR: get_chain_op_idx_ack() on joint %s, that does not exits in the chain", actual_joint_name);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_op_idx_ack() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+bool XBotCore::get_chain_op_idx_ack(std::string chain_name, std::map< int, uint16_t >& op_idx_ack)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        for( int i = 0; i < enabled_joints_num; i++) {
+            op_idx_ack[actual_chain_enabled_joints[i]] = 0;
+            if( !get_op_idx_ack(actual_chain_enabled_joints[i], op_idx_ack.at(actual_chain_enabled_joints[i])))  {
+                DPRINTF("ERROR: get_chain_op_idx_ack() on joint %d, that does not exits in the chain", actual_chain_enabled_joints[i]);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_op_idx_ack() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+bool XBotCore::get_chain_aux(std::string chain_name, std::map< std::string, float >& aux)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        std::string actual_joint_name;
+        for( int i = 0; i < enabled_joints_num; i++) {
+            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            aux[actual_joint_name] = 0;
+            if( !get_aux(actual_chain_enabled_joints[i], aux.at(actual_joint_name)))  {
+                DPRINTF("ERROR: get_chain_aux() on joint %s, that does not exits in the chain", actual_joint_name);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_aux() on chain %s, that does not exits in the robot", chain_name);
+    return false;
+}
+
+bool XBotCore::get_chain_aux(std::string chain_name, std::map< int, float >& aux)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        for( int i = 0; i < enabled_joints_num; i++) {
+            aux[actual_chain_enabled_joints[i]] = 0;
+            if( !get_aux(actual_chain_enabled_joints[i], aux.at(actual_chain_enabled_joints[i])))  {
+                DPRINTF("ERROR: get_chain_aux() on joint %d, that does not exits in the chain", actual_chain_enabled_joints[i]);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: get_chain_aux() on chain %s, that does not exits in the robot", chain_name);
     return false;
 }
 
 
 
+////////////////////////////////////
+////////////////////////////////////
+// SINGLE JOINT PRIVATE FUNCTIONS //
+////////////////////////////////////
+////////////////////////////////////
 
 bool XBotCore::get_link_pos(int joint_id, float& link_pos)
 {
