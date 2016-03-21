@@ -18,6 +18,7 @@ joint_map:
   25: LForearmPlate
   26: LWrj1
   27: LWrj2
+  #123: LWrj2
   28: l_arm_ft_joint
   29: l_handj
   31: WaistYaw
