@@ -49,6 +49,12 @@ private:
 
     
     
+    /**
+     * @brief load the URDF filename
+     * 
+     * @param filename the URDF filename
+     * @return boost::shared_ptr< urdf::ModelInterface > the URDF model interface
+     */
     boost::shared_ptr<urdf::ModelInterface> loadURDF(const std::string& filename)
     {
         
@@ -74,6 +80,11 @@ private:
     }
     
     
+    /**
+     * @brief parse the SRDF in order to have the information of the robot chains and enabled/disabled joints.
+     * 
+     * @return bool true on success, false otherwise: one possible cause can be the incorrect SRDF format.
+     */
     bool parseSRDF() {
 
         std::vector<Group> actual_groups = getGroups();
@@ -94,7 +105,6 @@ private:
         disabled_joint_names.resize(disabled_joint_num);
         for( int i = 0; i < disabled_joint_num; i++) {  
            disabled_joint_names.push_back(actual_disabled_joints[i].name_); 
-//             DPRINTF("Disable Joint -> name : %s\n", getDisabledJoints().at(i).name_.c_str());
         }
         
         // iterate over the groups, without the last one -> it is the "chains" group
@@ -118,13 +128,14 @@ private:
                 }
 
             }
-            // not a kinematic chain : check for FT or IMU
+            // TBD not a kinematic chain : check for FT or IMU
             else {
                 
             }
 
         }
         
+        // TBD print #ifdef DEBUG and put the DPRINF instead of the cout
 //         // debug cout of the map
 //         for (auto& kv : enabled_joints_in_chains) {
 //             std::cout << kv.first << " has joints num : " << kv.second.size() << std::endl;
@@ -132,7 +143,6 @@ private:
 //                 std::cout << kv.second.at(i) << std::endl;
 //             }
 //         }
-//         
 //          for (auto& kv : disabled_joints_in_chains) {
 //             std::cout << kv.first << " has disabled joints num : " << kv.second.size() << std::endl;
 //             for(int i = 0; i < kv.second.size(); i++) {
@@ -143,6 +153,15 @@ private:
         return true;
     }
     
+    /**
+     * @brief get the enabled/disabled actuated (RotAxis or TransAxis) in the chain from base_link to tip_link
+     * 
+     * @param base_link base link of the chain
+     * @param tip_link tip link of the chain
+     * @param enabled_joints_in_chain vector that will be filled with the enabled joint names in the chain
+     * @param disabled_joints_in_chain vector that will be filled with the disabled joint names in the chain
+     * @return bool true on success, false if the chain does not exists in the robto tree
+     */
     bool get_joints_in_chain( std::string base_link, 
                               std::string tip_link,
                               std::vector<std::string>& enabled_joints_in_chain,
@@ -184,23 +203,45 @@ public:
     {
     }
     
+    /**
+     * @brief getter for the URDF ModelInterface
+     * 
+     * @return boost::shared_ptr< urdf::ModelInterface > the URDF ModelInterface
+     */
     boost::shared_ptr<urdf::ModelInterface> get_urdf_model(void) 
     {
         
         return urdf_model;
     }
     
+    /**
+     * @brief getter for the KDL robot tree
+     * 
+     * @return KDL::Tree the KDL robot tree
+     */
     KDL::Tree get_robot_tree(void)
     {
         
         return robot_tree;
     }
     
+    /**
+     * @brief getter for the chain names vector
+     * 
+     * @return std::vector< std::::string> the chain names vector
+     */
     std::vector<std::string> get_chain_names(void) 
     {
         return chain_names;
     }
     
+    /**
+     * @brief initialization function for the model: it loads the URDF and parses the SRDF
+     * 
+     * @param urdf_filename URDF path
+     * @param srdf_filename SRDF path 
+     * @return bool true on success, false otherwise
+     */
     bool init(const std::string& urdf_filename, const std::string& srdf_filename)
     {
         // SRDF path
@@ -222,6 +263,13 @@ public:
         return (ret && parseSRDF());
     }
 
+    /**
+     * @brief getter for the enabled joints vector in the chain
+     * 
+     * @param chain_name the requested chain name
+     * @param enabled_joints vector that will be filled with the enabled joint names
+     * @return bool true if the chain exists, false otherwise
+     */
     bool get_enabled_joints_in_chain( std::string chain_name, std::vector<std::string>& enabled_joints) 
     {
         // check if the chain exists
@@ -235,6 +283,13 @@ public:
         return false;
     }
     
+    /**
+     * @brief getter for the disabled joints vector in the chain
+     * 
+     * @param chain_name the requested chain name
+     * @param disabled_joints vector that will be filled with the disabled joint names
+     * @return bool true if the chain exists, false otherwise
+     */
     bool get_disabled_joints_in_chain( std::string chain_name, std::vector<std::string>& disabled_joints) 
     {
         // check if the chain exists
