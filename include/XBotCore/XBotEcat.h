@@ -29,7 +29,7 @@ public:
     virtual ~XBotEcat();
    
     /**
-     * @brief initialization function called before the EtherCAT PRE-OPERATIONAL state : overridden from Ec_Thread_Boards_base
+     * @brief initialization function called before the EtherCAT OPERATIONAL state : overridden from Ec_Thread_Boards_base
      * 
      * @param  void
      * @return void
@@ -37,7 +37,7 @@ public:
     virtual void init_preOP(void) final;
     
     /**
-     * @brief initialization function called before the EtherCAT OPERATIONAL state , it calls the control_init function: overridden from Ec_Thread_Boards_base
+     * @brief initialization function called just after the EtherCAT OPERATIONAL state , it calls the control_init function: overridden from Ec_Thread_Boards_base
      * 
      * @param  void
      * @return void
@@ -64,7 +64,7 @@ public:
 protected:
     
     /**
-     * @brief Robot control initialization function: called by the init_OP
+     * @brief Robot control initialization function: called by the init_OP, before the ECAT thread loop: we are in OPERATIE state
      * 
      * @param  void
      * @return void

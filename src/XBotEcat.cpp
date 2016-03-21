@@ -55,12 +55,14 @@ void XBotEcat::set_thread_priority()
 
 void XBotEcat::init_preOP(void) 
 {
+//     start_motors(CTRL_SET_POS_MODE);
     return;
 }
 
 void XBotEcat::init_OP(void)
 {
     control_init();
+    return;
 }
 
 int XBotEcat::user_loop(void) {
