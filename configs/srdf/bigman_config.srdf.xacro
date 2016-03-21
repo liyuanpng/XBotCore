@@ -14,7 +14,7 @@
     <xacro:property name="BIGMAN_HEAD" value="false" />
     <xacro:property name="BIGMAN_LEFT_ARM" value="true" />
     <xacro:property name="BIGMAN_RIGHT_ARM" value="false" /> 
-    <xacro:property name="BIGMAN_LEFT_HAND" value="false" />
+    <xacro:property name="BIGMAN_LEFT_HAND" value="true" />
     <xacro:property name="BIGMAN_RIGHT_HAND" value="false" /> 
     <xacro:property name="BIGMAN_TORSO" value="false" />   
     <xacro:property name="BIGMAN_LEFT_LEG" value="false" />
@@ -117,8 +117,8 @@
     <disabled_joint name="LShLat"/>
     <disabled_joint name="LShYaw"/>
     <disabled_joint name="LElbj"/>
-    <disabled_joint name="LForearmPlate"/>
-    <disabled_joint name="LWrj1"/>
+<!--    <disabled_joint name="LForearmPlate"/>
+    <disabled_joint name="LWrj1"/>-->
     <!-- END Disabled Joint -->
 .
     <!-- CHAINS -->
@@ -138,6 +138,16 @@
         <!-- RIGHT ARM -->
        <xacro:if value="${BIGMAN_RIGHT_ARM}">
                 <group name="right_arm"/>
+        </xacro:if>
+        
+        <!-- LEFT HAND -->
+       <xacro:if value="${BIGMAN_LEFT_HAND}">
+                <group name="left_hand"/>
+        </xacro:if>-->
+
+        <!-- RIGHT HAND -->
+       <xacro:if value="${BIGMAN_RIGHT_HAND}">
+                <group name="right_hand"/>
         </xacro:if>
 
         <!-- TORSO -->
