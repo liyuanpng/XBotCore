@@ -81,17 +81,28 @@
 
     <!-- F-T sensors -->
     <group name="force_torque_sensors">
-            <xacro:if value="${BIGMAN_LEFT_ARM and BIGMAN_LEFT_ARM_FT}">
-                <joint name="l_arm_ft_joint"/>
+            <xacro:if value="${BIGMAN_LEFT_ARM}">
+                <xacro:if value="${BIGMAN_LEFT_ARM_FT}">
+                    <joint name="l_arm_ft_joint"/>
+                </xacro:if>
             </xacro:if>
-            <xacro:if value="${BIGMAN_RIGHT_ARM and BIGMAN_RIGHT_ARM_FT}">
-                <joint name="r_arm_ft_joint"/>
+            
+            <xacro:if value="${BIGMAN_RIGHT_ARM}">
+                <xacro:if value="${BIGMAN_RIGHT_ARM_FT}">
+                    <joint name="r_arm_ft_joint"/>
+                </xacro:if>
             </xacro:if>
-            <xacro:if value="${BIGMAN_LEFT_LEG and BIGMAN_LEFT_LEG_FT}">
-                <joint name="l_leg_ft_joint"/>
+            
+            <xacro:if value="${BIGMAN_LEFT_LEG}">
+                <xacro:if value="${BIGMAN_LEFT_LEG_FT}">
+                    <joint name="l_leg_ft_joint"/>
+                </xacro:if>
             </xacro:if>
-            <xacro:if value="${BIGMAN_RIGHT_LEG and BIGMAN_RIGHT_LEG_FT}">
-                <joint name="r_leg_ft_joint"/>
+            
+            <xacro:if value="${BIGMAN_RIGHT_LEG}">
+                <xacro:if value="${BIGMAN_RIGHT_LEG_FT}">
+                    <joint name="r_leg_ft_joint"/>
+                </xacro:if>
             </xacro:if>
     </group> 
     <!-- END F-T sensors -->
