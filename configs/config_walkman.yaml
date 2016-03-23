@@ -1,0 +1,303 @@
+#
+x_bot_core:
+  urdf_path: /home/embedded/src/XBotCore/configs/urdf/bigman.urdf
+  srdf_path: /home/embedded/src/XBotCore/configs/srdf/bigman_config.srdf
+  joint_map_config: /home/embedded/src/XBotCore/configs/joint_map/bigman_ecat_joint_map.yaml 
+  
+x_bot_ecat:
+  name: XBotCore_basic
+  # periodic - priority if needed here
+
+ec_board_ctrl:
+  eth_iface: rteth0
+  sync_cycle_time_ns: 1000000
+  sync_cycle_offset_ns: 0
+  power_off_boards: false
+
+ec_boards_base:
+  create_pipes: true
+  
+
+
+#############################
+# HEAD
+#############################
+
+#
+LpESC_1:
+  sign: -1
+  pos_offset: 0
+  pid :
+    position: [20.0 , 0.0 , 1.0]
+
+#
+LpESC_2:
+  sign: -1
+  pos_offset: 0
+  pid :
+    position: [20.0 , 0.0 , 1.0]
+
+#############################
+# RIGHT LEG
+#############################
+
+# RL_H_Y = 41
+HpESC_41:
+  sign: 1
+  pos_offset: 0
+  pid :
+    position: [800.0 , 0.0 , 12.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# RL_H_R = 42
+HpESC_42:
+  sign: 1
+  pos_offset: 0
+  pid :
+    position: [180.0 , 0.0 , 3.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# RL_H_P = 43
+HpESC_43:
+  sign: 1
+  pos_offset: 0
+  pid :
+    position: [700.0 , 0.0 , 10.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# RL_K = 44
+HpESC_44:
+  sign: 1
+  pos_offset: 0
+  pid :
+    position: [500.0 , 0.0 , 1.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# RL_A_P = 45
+HpESC_45:
+  sign: -1
+  pos_offset: 20
+  pid :
+    position: [500.0 , 0.0 , 2.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# RL_A_R = 46
+HpESC_46:
+  sign: -1
+  pos_offset: 0
+  pid :
+    position: [80.0 , 0.0 , 4.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+#############################
+# LEFT LEG
+#############################
+
+# LL_H_Y = 51
+HpESC_51:
+  sign: 1
+  pos_offset: 0
+  pid :
+    position: [800.0 , 0.0 , 12.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# LL_H_R = 52
+HpESC_52:
+  sign: 1
+  pos_offset: 0
+  pid :
+    position: [180.0 , 0.0 , 3.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# LL_H_P = 53
+HpESC_53:
+  sign: -1
+  pos_offset: 0
+  pid :
+    position: [700.0 , 0.0 , 10.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# LL_K = 54
+HpESC_54:
+  sign: -1
+  pos_offset: 0
+  pid :
+    position: [500.0 , 0.0 , 1.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# LL_A_P = 55
+HpESC_55:
+  sign: 1
+  pos_offset: 20
+  pid :
+    position: [500.0 , 0.0 , 2.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# LL_A_R = 56
+HpESC_56:
+  sign: -1
+  pos_offset: 0
+  pid :
+    position: [80.0 , 0.0 , 4.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+
+#############################
+# RIGHT ARM
+#############################
+
+# RA_SH_1 = 11
+HpESC_11:
+  sign: 1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# RA_SH_2 = 12
+HpESC_12:
+  sign: -1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# RA_SH_3 = 13
+HpESC_13:
+  sign: 1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# RA_EL_ = 14
+HpESC_14:
+  sign: 1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# RA_WR_1 = 15
+LpESC_15:
+  sign: 1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+
+# RA_WR_2 = 16
+LpESC_16:
+  sign: 1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# RA_WR_3 = 17
+LpESC_17:
+  sign: 1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# RA_HA = 19
+LpESC_19:
+  sign: 1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+#############################
+# LEFT ARM
+#############################
+
+# LA_SH_1 = 21
+HpESC_21:
+  sign: -1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# LA_SH_2 = 22
+HpESC_22:
+  sign: -1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# LA_SH_3 = 23
+HpESC_23:
+  sign: 1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# LA_EL = 24
+HpESC_24:
+  sign: -1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# LA_WR_1 = 25
+LpESC_25:
+  sign: 1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+
+# LA_WR_2 = 26
+LpESC_26:
+  sign: 1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+
+# LA_WR_3 = 27
+LpESC_27:
+  sign: 1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+
+# LA_HA = 29
+LpESC_29:
+  sign: 1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+
+#############################
+# WAIST
+#############################
+
+# WST_P = 31
+HpESC_31:
+  sign: -1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# WST_R = 32
+HpESC_32:
+  sign: -1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+    mix_position: [800.0, 0.0, 5.0]
+
+# WST_Y = 33
+HpESC_33:
+  sign: -1
+  pos_offset: 0
+  pid :
+    position: [40.0 , 0.0 , 1.0]
+    mix_position: [800.0, 0.0, 5.0]
+
