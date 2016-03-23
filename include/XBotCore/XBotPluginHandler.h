@@ -16,11 +16,17 @@
 
 #include <XBotCore/XBotCore.h>
 
+namespace XBot
+{
+    class XBotPluginHandler;
+}
+
+
 /**
  * @brief TBD
  * 
  */
-class XBotPluginHandler : public XBotCore
+class XBot::XBotPluginHandler : public XBot::XBotCore
 {
 public:
     

@@ -17,10 +17,16 @@
 #include <iit/advr/ec_boards_base.h>
 #include <iit/ecat/advr/esc.h>
 
-#include <XBotCore/XBotEcat.h>
-
+#include <XBotCore/IXBotJoint.h>
+#include <XBotCore/IXBotChain.h>
 #include <XBotCore/XBotCoreModel.hpp>
 
+#include <XBotCore/XBotEcat.h>
+
+namespace XBot
+{
+    class XBotCore;
+}
 
 typedef std::map<int, std::string>  Rid2JointMap;
 typedef std::map<std::string, int>  Joint2RidMap;
@@ -30,7 +36,10 @@ typedef std::map<std::string, int>  Joint2RidMap;
  * @brief TBD
  * 
  */
-class XBotCore : public XBotEcat
+class XBot::XBotCore : public   XBot::XBotEcat,
+                                XBot::IXBotJoint,
+                                XBot::IXBotChain
+                        
 {
 public:
     

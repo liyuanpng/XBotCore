@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-XBotEcat::XBotEcat(const char* config_yaml) : Ec_Thread_Boards_base(config_yaml)
+XBot::XBotEcat::XBotEcat(const char* config_yaml) : Ec_Thread_Boards_base(config_yaml)
 {
     // set thread name
     const YAML::Node& board_ctrl = root_cfg["x_bot_ecat"]; // TBD check that the Node is defined
@@ -18,7 +18,7 @@ XBotEcat::XBotEcat(const char* config_yaml) : Ec_Thread_Boards_base(config_yaml)
     set_thread_priority();
 }
 
-void XBotEcat::set_thread_name(std::string thread_name)
+void XBot::XBotEcat::set_thread_name(std::string thread_name)
 {
     // save the thread name
     this->thread_name = thread_name;
@@ -26,18 +26,18 @@ void XBotEcat::set_thread_name(std::string thread_name)
     name = this->thread_name.c_str();
 }
 
-std::string XBotEcat::get_thread_name(void)
+std::string XBot::XBotEcat::get_thread_name(void)
 {
     return thread_name;
 }
 
-void XBotEcat::set_thread_period(task_period_t t)
+void XBot::XBotEcat::set_thread_period(task_period_t t)
 {
     period.task_time = t.task_time;
     period.period = t.period;
 }
 
-void XBotEcat::set_thread_priority()
+void XBot::XBotEcat::set_thread_priority()
 {
 
     // set scheduler policy
@@ -53,25 +53,25 @@ void XBotEcat::set_thread_priority()
 }
 
 
-void XBotEcat::init_preOP(void) 
+void XBot::XBotEcat::init_preOP(void) 
 {
 //     start_motors(CTRL_SET_POS_MODE);
     return;
 }
 
-void XBotEcat::init_OP(void)
+void XBot::XBotEcat::init_OP(void)
 {
     control_init();
     return;
 }
 
-int XBotEcat::user_loop(void) {
+int XBot::XBotEcat::user_loop(void) {
     
     // call the control loop
     return control_loop();
 }
 
 
-XBotEcat::~XBotEcat() {
+XBot::XBotEcat::~XBotEcat() {
     
 }
