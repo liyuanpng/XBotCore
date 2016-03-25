@@ -12,7 +12,7 @@ XBot::XBotCore::XBotCore(const char* config_yaml) : XBotEcat(config_yaml)
 
 }
 
-XBotCoreModel XBot::XBotCore::get_robot_model(void)
+XBot::XBotCoreModel XBot::XBotCore::get_robot_model(void)
 {
 
     return model;
@@ -35,56 +35,18 @@ std::vector< std::string > XBot::XBotCore::get_chain_names()
     return model.get_chain_names();
 }
 
-
-void XBot::XBotCore::parseJointMap(void)
-{
-    // read the joint map config file -> we choose to separate it from the one used by XBotCore and ec_boards_iface
-    joint_map_cfg = YAML::LoadFile(joint_map_config);
-    const YAML::Node& joint_map = joint_map_cfg["joint_map"];
-
-    // iterate over the node
-    for(YAML::const_iterator it=joint_map.begin();it != joint_map.end();++it) {
-        int tmp_rid = it->first.as<int>();
-        std::string tmp_joint = it->second.as<std::string>();
-        // fill the maps 
-        rid2joint[tmp_rid] = tmp_joint;
-        joint2rid[tmp_joint] = tmp_rid;
-
-//         DPRINTF("rid2joint : rid -> %d ==> joint -> %s\n", tmp_rid, rid2joint[tmp_rid].c_str());
-//         DPRINTF("joint2rid : joint -> %s ==> rid -> %d\n", tmp_joint.c_str(), joint2rid[tmp_joint]);
-    }
-}
-
-void XBot::XBotCore::generateRobot(void)
-{
-    std::vector<std::string> actual_chain_names = model.get_chain_names();
-    for( int i = 0; i < actual_chain_names.size(); i++) {
-        std::vector<std::string> enabled_joints_name_aux;
-        std::vector<int> enabled_joints_id_aux;
-        if( model.get_enabled_joints_in_chain(actual_chain_names[i], enabled_joints_name_aux) ) {
-            for( int j = 0; j < enabled_joints_name_aux.size(); j++ ) {
-                if( joint2rid.count(enabled_joints_name_aux[j]) ) {
-                    enabled_joints_id_aux.push_back(joint2rid.at(enabled_joints_name_aux[j]));
-                }
-            }
-            robot[actual_chain_names[i]] = enabled_joints_id_aux;
-        }
-    }
-}
-
 void XBot::XBotCore::control_init(void) 
 {
     // initialize the model
-    if( !model.init( urdf_path, srdf_path ) ) {
+    if( !model.init( urdf_path, srdf_path, joint_map_config ) ) {
         DPRINTF("ERROR: model initialization failed, please check the urdf_path and srdf_path in your YAML config file.\n");
         return;
     }
     
-    // parse the joint map YAML file and fill the joint_id from/to joint_name maps 
-    parseJointMap();
-    
-    // generate the chains data structures using the function from XBotCoreModel
-    generateRobot();
+    // generate the robot
+    model.generate_robot();
+    //get the robot
+    robot = model.get_robot();
     
     // call the plugin handler initialization
     if( !plugin_handler_init() ) {
@@ -101,18 +63,6 @@ int XBot::XBotCore::control_loop(void) {
 }
 
 
-std::string XBot::XBotCore::rid2Joint(int rId)
-{
-    return rid2joint.find(rId) != rid2joint.end() ? rid2joint[rId] : ""; 
-}
-
-int XBot::XBotCore::joint2Rid(std::string joint_name)
-{
-    return joint2rid.find(joint_name) != joint2rid.end() ? joint2rid[joint_name] : 0; 
-}
-
-
-
 ///////////////////////////////
 ///////////////////////////////
 // CHAIN PROTECTED FUNCTIONS //
@@ -126,7 +76,7 @@ bool XBot::XBotCore::get_chain_link_pos(std::string chain_name, std::map< std::s
         int enabled_joints_num = actual_chain_enabled_joints.size();
         std::string actual_joint_name;
         for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
             link_pos[actual_joint_name] = 0;
             if( !get_link_pos(actual_chain_enabled_joints[i], link_pos.at(actual_joint_name)))  {
                 DPRINTF("ERROR: get_chain_link_pos() on joint %s, that does not exits in the chain %s\n", actual_joint_name, chain_name);
@@ -166,7 +116,7 @@ bool XBot::XBotCore::get_chain_motor_pos(std::string chain_name, std::map< std::
         int enabled_joints_num = actual_chain_enabled_joints.size();
         std::string actual_joint_name;
         for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
             motor_pos[actual_joint_name] = 0;
             if( !get_motor_pos(actual_chain_enabled_joints[i], motor_pos.at(actual_joint_name)))  {
                 DPRINTF("ERROR: get_chain_motor_pos() on joint %s, that does not exits in the chain %s\n", actual_joint_name, chain_name);
@@ -206,7 +156,7 @@ bool XBot::XBotCore::get_chain_link_vel(std::string chain_name, std::map< std::s
         int enabled_joints_num = actual_chain_enabled_joints.size();
         std::string actual_joint_name;
         for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
             link_vel[actual_joint_name] = 0;
             if( !get_link_vel(actual_chain_enabled_joints[i], link_vel.at(actual_joint_name)))  {
                 DPRINTF("ERROR: get_chain_link_vel() on joint %s, that does not exits in the chain %s\n", actual_joint_name, chain_name);
@@ -246,7 +196,7 @@ bool XBot::XBotCore::get_chain_motor_vel(std::string chain_name, std::map< std::
         int enabled_joints_num = actual_chain_enabled_joints.size();
         std::string actual_joint_name;
         for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
             motor_vel[actual_joint_name] = 0;
             if( !get_motor_vel(actual_chain_enabled_joints[i], motor_vel.at(actual_joint_name)))  {
                 DPRINTF("ERROR: get_chain_motor_vel() on joint %s, that does not exits in the chain %s\n", actual_joint_name, chain_name);
@@ -286,7 +236,7 @@ bool XBot::XBotCore::get_chain_torque(std::string chain_name, std::map< std::str
         int enabled_joints_num = actual_chain_enabled_joints.size();
         std::string actual_joint_name;
         for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
             torque[actual_joint_name] = 0;
             if( !get_torque(actual_chain_enabled_joints[i], torque.at(actual_joint_name)))  {
                 DPRINTF("ERROR: get_chain_torque() on joint %s, that does not exits in the chain %s\n", actual_joint_name, chain_name);
@@ -326,7 +276,7 @@ bool XBot::XBotCore::get_chain_max_temperature(std::string chain_name, std::map<
         int enabled_joints_num = actual_chain_enabled_joints.size();
         std::string actual_joint_name;
         for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
             max_temperature[actual_joint_name] = 0;
             if( !get_max_temperature(actual_chain_enabled_joints[i], max_temperature.at(actual_joint_name)))  {
                 DPRINTF("ERROR: get_chain_max_temperature() on joint %s, that does not exits in the chain %s\n", actual_joint_name, chain_name);
@@ -366,7 +316,7 @@ bool XBot::XBotCore::get_chain_fault(std::string chain_name, std::map< std::stri
         int enabled_joints_num = actual_chain_enabled_joints.size();
         std::string actual_joint_name;
         for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
             fault[actual_joint_name] = 0;
             if( !get_fault(actual_chain_enabled_joints[i], fault.at(actual_joint_name)))  {
                 DPRINTF("ERROR: get_chain_fault() on joint %s, that does not exits in the chain %s\n", actual_joint_name, chain_name);
@@ -406,7 +356,7 @@ bool XBot::XBotCore::get_chain_rtt(std::string chain_name, std::map< std::string
         int enabled_joints_num = actual_chain_enabled_joints.size();
         std::string actual_joint_name;
         for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
             rtt[actual_joint_name] = 0;
             if( !get_rtt(actual_chain_enabled_joints[i], rtt.at(actual_joint_name)))  {
                 DPRINTF("ERROR: get_chain_rtt() on joint %s, that does not exits in the chain %s\n", actual_joint_name, chain_name);
@@ -446,7 +396,7 @@ bool XBot::XBotCore::get_chain_op_idx_ack(std::string chain_name, std::map< std:
         int enabled_joints_num = actual_chain_enabled_joints.size();
         std::string actual_joint_name;
         for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
             op_idx_ack[actual_joint_name] = 0;
             if( !get_op_idx_ack(actual_chain_enabled_joints[i], op_idx_ack.at(actual_joint_name)))  {
                 DPRINTF("ERROR: get_chain_op_idx_ack() on joint %s, that does not exits in the chain %s\n", actual_joint_name, chain_name);
@@ -486,7 +436,7 @@ bool XBot::XBotCore::get_chain_aux(std::string chain_name, std::map< std::string
         int enabled_joints_num = actual_chain_enabled_joints.size();
         std::string actual_joint_name;
         for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = rid2joint.at(actual_chain_enabled_joints[i]);
+            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
             aux[actual_joint_name] = 0;
             if( !get_aux(actual_chain_enabled_joints[i], aux.at(actual_joint_name)))  {
                 DPRINTF("ERROR: get_chain_aux() on joint %s, that does not exits in the chain %s\n", actual_joint_name, chain_name);

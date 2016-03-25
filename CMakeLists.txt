@@ -57,10 +57,14 @@ include_directories(include ${srdfdom_INCLUDE_DIRS} ${urdfdom_INCLUDE_DIRS})
 
 # exe
 add_executable(${PROJECT_NAME}
+    src/XBotMain.cpp
+)
+
+# lib
+add_library(XBotPluginHandler SHARED
     src/XBotEcat.cpp
     src/XBotCore.cpp
     src/XBotPluginHandler.cpp
-    src/XBotMain.cpp
 )
 
 # set Xenomain flags if Xenomai is founded
@@ -68,18 +72,23 @@ if ( Xenomai_FOUND )
     set_xeno_flags(${PROJECT_NAME})
 endif()
 
+add_subdirectory(src/XBotPlugin) # leave it here, the main dipends on the compiled plugins
+
 # link the common libs
 target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
                                       ${srdfdom_LIBRARIES}
                                       ${urdfdom_LIBRARIES}
-                                      ${kdl_parser_LIBRARIES})
+                                      ${kdl_parser_LIBRARIES}
+                                      XBotPluginHandler
+                                      XBotTestPlugin)
 
 if(NOT Xenomai_FOUND)
     set_cap_build(${PROJECT_NAME})
 endif()
 
-# install exe and include
+# install exe, lib and include
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+install(TARGETS XBotPluginHandler RUNTIME LIBRARY DESTINATION lib)
 install(DIRECTORY include/ 
         DESTINATION include
         FILES_MATCHING PATTERN "*.h*")

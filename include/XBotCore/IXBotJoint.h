@@ -14,9 +14,6 @@
 #ifndef __I_X_BOT_JOINT_H__
 #define __I_X_BOT_JOINT_H__
 
-#include <iit/advr/ec_boards_base.h>
-#include <iit/ecat/advr/esc.h>
-
 namespace XBot
 {
     class IXBotJoint;
@@ -29,7 +26,7 @@ namespace XBot
 class XBot::IXBotJoint
 {
 
-protected:   
+private:   
 
     // TBD can be auto-generated based on the PDO
     

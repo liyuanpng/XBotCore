@@ -14,8 +14,8 @@
 #ifndef __I_X_BOT_CHAIN_H__
 #define __I_X_BOT_CHAIN_H__
 
-#include <iit/advr/ec_boards_base.h>
-#include <iit/ecat/advr/esc.h>
+#include <map>
+#include <string>
 
 namespace XBot
 {
@@ -29,7 +29,7 @@ namespace XBot
 class XBot::IXBotChain
 {
     
-private:   
+public:   
 
     // TBD can be auto-generated based on the PDO
     

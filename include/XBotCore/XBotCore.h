@@ -28,17 +28,14 @@ namespace XBot
     class XBotCore;
 }
 
-typedef std::map<int, std::string>  Rid2JointMap;
-typedef std::map<std::string, int>  Joint2RidMap;
-
 
 /**
  * @brief TBD
  * 
  */
 class XBot::XBotCore : public   XBot::XBotEcat,
-                                XBot::IXBotJoint,
-                                XBot::IXBotChain
+                       public   XBot::IXBotJoint,
+                       public   XBot::IXBotChain
                         
 {
 public:
@@ -84,7 +81,7 @@ public:
      * @param  void
      * @return XBotCoreModel the model of the robot loaded in XBotCore
      */
-    XBotCoreModel get_robot_model(void);
+    XBot::XBotCoreModel get_robot_model(void);
     
     /**
      * @brief Getter for the URDF path
@@ -108,13 +105,6 @@ public:
      * @return std::vector< std::string> the chain names vector
      */
     std::vector<std::string> get_chain_names();
-    
-
-
-protected:
-   
-    std::string  rid2Joint(int rId);
-    int joint2Rid(std::string joint_name);
 
     
     bool get_chain_link_pos(std::string chain_name, std::map<std::string, float>& link_pos);
@@ -146,6 +136,7 @@ protected:
     
     bool get_chain_aux(std::string chain_name, std::map<std::string, float>& aux);
     bool get_chain_aux(std::string chain_name, std::map<int, float>& aux);
+    std::__cxx11::string rid2joint(std::vector< int >::reference arg1);
 
 
 private:
@@ -167,6 +158,12 @@ private:
      * 
      */
     std::string srdf_path;
+    
+    /**
+     * @brief Joint id to joint name map configuration file
+     * 
+     */
+    std::string joint_map_config;
 
     /**
      * @brief map between the chain name and the id of the enabled joints in the chain 
@@ -174,27 +171,7 @@ private:
      */
     std::map<std::string, std::vector<int>> robot;
     
-    /**
-     * @brief map between joint robot id and joint name
-     * 
-     */
-    Rid2JointMap rid2joint;
-    
-    /**
-     * @brief map between joint name and joint robot id
-     * 
-     */
-    Joint2RidMap joint2rid;
-    
-    
-    
-    std::string joint_map_config;
-    YAML::Node joint_map_cfg;
-    
-    
-    void parseJointMap(void);
-    
-    void generateRobot(void);
+
     
     
     virtual bool get_link_pos(int joint_id, float& link_pos);

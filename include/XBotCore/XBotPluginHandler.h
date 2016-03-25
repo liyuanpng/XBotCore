@@ -15,6 +15,7 @@
 #define __X_BOT_PLUGIN_HANDLER_H__
 
 #include <XBotCore/XBotCore.h>
+#include <XBotCore/XBotPlugin.hpp>
 
 namespace XBot
 {
@@ -41,7 +42,10 @@ protected:
 
 
 private: 
-
+    
+    std::vector< std::shared_ptr<XBot::XBotPlugin> > plugins;
+    
+    int plugins_num;
 
 };
 

@@ -1,48 +1,35 @@
 #include <XBotCore/XBotPluginHandler.h>
 
+#include <XBotPlugin/XBotTestPlugin.h>
+
 XBot::XBotPluginHandler::XBotPluginHandler(const char* config_yaml): XBotCore(config_yaml)
 {
-
+    XBot::XBotCoreModel actual_model = get_robot_model();
+    XBot::IXBotModel *actual_model_interface = dynamic_cast<XBot::IXBotModel *>(&actual_model);
+    
+    XBot::IXBotChain *actual_chain = dynamic_cast<XBot::IXBotChain *>(this);
+    
+    std::shared_ptr<XBot::XBotTestPlugin> test(new XBot::XBotTestPlugin(actual_model_interface, actual_chain));
+    
+    plugins.push_back(test);
 }
 
 
 bool XBot::XBotPluginHandler::plugin_handler_init(void)
 {
-    
+    plugins_num = plugins.size();
+    for(int i = 0; i < plugins_num; i++) {
+        plugins[i]->init();
+    }
     return true;
 }
 
 
 bool XBot::XBotPluginHandler::plugin_handler_loop(void)
 {
-    std::map<std::string, uint16_t> l_arm_rtt;
-    get_chain_rtt("left_arm", l_arm_rtt);
-
-    for( auto& j : l_arm_rtt) {
-        DPRINTF("left_arm Joint : %d - RTT : %d\n", joint2Rid(j.first), j.second); // NOTE avoid printing std::string with XENOMAI printf 
+    for(int i = 0; i < plugins_num; i++) {
+        plugins[i]->run();
     }
-    
-    std::map<int, uint16_t> l_hand_j_rtt;
-    get_chain_rtt("left_hand", l_hand_j_rtt);
-
-    for( auto& j : l_hand_j_rtt) {
-        DPRINTF("left_hand Joint : %d - RTT : %d\n", j.first, j.second); // NOTE avoid printing std::string with XENOMAI printf 
-    }
-    
-    std::map<std::string, uint16_t> l_arm_temperature;
-    get_chain_max_temperature("left_arm", l_arm_temperature);
-
-    for( auto& j : l_arm_temperature) {
-        DPRINTF("Joint : %d - TEMPERATURE : %d\n", joint2Rid(j.first), j.second); // NOTE avoid printing std::string with XENOMAI printf 
-    }
-    
-    std::map<std::string, int16_t> l_arm_torque;
-    get_chain_torque("left_arm", l_arm_torque);
-
-    for( auto& j : l_arm_torque) {
-        DPRINTF("Joint : %d - TORQUE : %d\n", joint2Rid(j.first), j.second); // NOTE avoid printing std::string with XENOMAI printf 
-    }
-    
     return true;
 }
 
