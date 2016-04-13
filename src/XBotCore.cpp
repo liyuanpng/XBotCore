@@ -471,6 +471,119 @@ bool XBot::XBotCore::get_chain_aux(std::string chain_name, std::map< int, float 
 
 
 
+
+bool XBot::XBotCore::set_chain_pos_ref(std::string chain_name, const std::map< std::string, float >& pos_ref)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        std::string actual_joint_name;
+        for( int i = 0; i < enabled_joints_num; i++) {
+            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
+            if( !set_pos_ref(actual_chain_enabled_joints[i], pos_ref.at(actual_joint_name)))  {
+                DPRINTF("ERROR: set_chain_pos_ref() on joint %s, that does not exits in the chain %s\n", actual_joint_name, chain_name);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: set_chain_pos_ref() on chain %s, that does not exits in the robot\n", chain_name);
+    return false;
+}
+
+bool XBot::XBotCore::set_chain_pos_ref(std::string chain_name, const std::map< int, float >& pos_ref)
+{
+    if( robot.count(chain_name) ) {
+        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
+        int enabled_joints_num = actual_chain_enabled_joints.size();
+        for( int i = 0; i < enabled_joints_num; i++) {
+            if( !set_pos_ref(actual_chain_enabled_joints[i], pos_ref.at(actual_chain_enabled_joints[i])))  {
+                DPRINTF("ERROR: set_chain_pos_ref() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    DPRINTF("ERROR: set_chain_pos_ref() on chain %s, that does not exits in the robot\n", chain_name);
+    return false;
+}
+
+bool XBot::XBotCore::set_chain_vel_ref(std::string chain_name, const std::map< std::string, int16_t >& vel_ref)
+{
+
+}
+
+bool XBot::XBotCore::set_chain_vel_ref(std::string chain_name, const std::map< int, int16_t >& vel_ref)
+{
+
+}
+
+bool XBot::XBotCore::set_chain_tor_ref(std::string chain_name, const std::map< std::string, int16_t >& tor_ref)
+{
+
+}
+
+bool XBot::XBotCore::set_chain_tor_ref(std::string chain_name, const std::map< int, int16_t >& tor_ref)
+{
+
+}
+
+bool XBot::XBotCore::set_chain_gains(std::string chain_name, const std::map< std::string, uint16_t* >& gains, const int gains_num)
+{
+
+}
+
+bool XBot::XBotCore::set_chain_gains(std::string chain_name, const std::map< int, uint16_t* >& gains, const int gains_num)
+{
+
+}
+
+bool XBot::XBotCore::set_chain_fault_ack(std::string chain_name, const std::map< std::string, int16_t >& fault_ack)
+{
+
+}
+
+bool XBot::XBotCore::set_chain_fault_ack(std::string chain_name, const std::map< int, int16_t >& fault_ack)
+{
+
+}
+
+bool XBot::XBotCore::set_chain_ts(std::string chain_name, const std::map< std::string, uint16_t >& ts)
+{
+
+}
+
+bool XBot::XBotCore::set_chain_ts(std::string chain_name, const std::map< int, uint16_t >& ts)
+{
+
+}
+
+bool XBot::XBotCore::set_chain_op_idx_aux(std::string chain_name, const std::map< std::string, uint16_t >& op_idx_aux)
+{
+
+}
+
+bool XBot::XBotCore::set_chain_op_idx_aux(std::string chain_name, const std::map< int, uint16_t >& op_idx_aux)
+{
+
+}
+
+bool XBot::XBotCore::set_chain_aux(std::string chain_name, const std::map< std::string, float >& aux)
+{
+
+}
+
+bool XBot::XBotCore::set_chain_aux(std::string chain_name, const std::map< int, float >& aux)
+{
+
+}
+
+
+
+
+
 ////////////////////////////////////
 ////////////////////////////////////
 // SINGLE JOINT PRIVATE FUNCTIONS //
@@ -626,6 +739,147 @@ bool XBot::XBotCore::get_aux(int joint_id, float& aux)
     DPRINTF("Trying to get_aux() on joint with joint_id : %d that does not exists\n", joint_id);
     return false;  
 }
+
+
+
+bool XBot::XBotCore::set_pos_ref(int joint_id, const float& pos_ref)
+{
+    
+    // check if the joint requested exists
+    if( motors.count(rid2Pos(joint_id)) ) {
+        // set the data
+        last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
+        last_pdo_tx.pos_ref = pos_ref;
+        motors[rid2Pos(joint_id)]->setTxPDO(last_pdo_tx);
+        return true;
+    }
+    
+    // we don't touch the value that you passed
+    DPRINTF("Trying to set_pos_ref() on joint with joint_id : %d that does not exists\n", joint_id);
+    return false; 
+}
+
+bool XBot::XBotCore::set_vel_ref(int joint_id, const int16_t& vel_ref)
+{
+    
+    // check if the joint requested exists
+    if( motors.count(rid2Pos(joint_id)) ) {
+        // set the data
+        last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
+        last_pdo_tx.vel_ref = vel_ref;
+        motors[rid2Pos(joint_id)]->setTxPDO(last_pdo_tx);
+        return true;
+    }
+    
+    // we don't touch the value that you passed
+    DPRINTF("Trying to set_vel_ref() on joint with joint_id : %d that does not exists\n", joint_id);
+    return false; 
+}
+
+bool XBot::XBotCore::set_tor_ref(int joint_id, const int16_t& tor_ref)
+{
+    
+    // check if the joint requested exists
+    if( motors.count(rid2Pos(joint_id)) ) {
+        // set the data
+        last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
+        last_pdo_tx.tor_ref = tor_ref;
+        motors[rid2Pos(joint_id)]->setTxPDO(last_pdo_tx);
+        return true;
+    }
+    
+    // we don't touch the value that you passed
+    DPRINTF("Trying to set_tor_ref() on joint with joint_id : %d that does not exists\n", joint_id);
+    return false; 
+}
+
+bool XBot::XBotCore::set_gains(int joint_id, const uint16_t* gains, const int gains_num)
+{
+    
+    // check if the joint requested exists
+    if( motors.count(rid2Pos(joint_id)) ) {
+        // set the data
+        last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
+        memcpy(last_pdo_tx.gains, gains, gains_num);
+        motors[rid2Pos(joint_id)]->setTxPDO(last_pdo_tx);
+        return true;
+    }
+    
+    // we don't touch the value that you passed
+    DPRINTF("Trying to set_gains() on joint with joint_id : %d that does not exists\n", joint_id);
+    return false; 
+}
+ 
+bool XBot::XBotCore::set_fault_ack(int joint_id, const int16_t& fault_ack)
+{
+    
+    // check if the joint requested exists
+    if( motors.count(rid2Pos(joint_id)) ) {
+        // set the data
+        last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
+        last_pdo_tx.fault_ack = fault_ack;
+        motors[rid2Pos(joint_id)]->setTxPDO(last_pdo_tx);
+        return true;
+    }
+    
+    // we don't touch the value that you passed
+    DPRINTF("Trying to set_fault_ack() on joint with joint_id : %d that does not exists\n", joint_id);
+    return false; 
+}
+
+bool XBot::XBotCore::set_ts(int joint_id, const uint16_t& ts)
+{
+    
+    // check if the joint requested exists
+    if( motors.count(rid2Pos(joint_id)) ) {
+        // set the data NOTE disabled: already done in on_writePDO
+//         last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
+//         last_pdo_tx.ts = ts;
+//         motors[rid2Pos(joint_id)]->setTxPDO(last_pdo_tx);
+        return true;
+    }
+    
+    // we don't touch the value that you passed
+    DPRINTF("Trying to set_ts() on joint with joint_id : %d that does not exists\n", joint_id);
+    return false; 
+}
+
+bool XBot::XBotCore::set_op_idx_aux(int joint_id, const uint16_t& op_idx_aux)
+{
+    
+    // check if the joint requested exists
+    if( motors.count(rid2Pos(joint_id)) ) {
+        // set the data
+        last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
+        last_pdo_tx.op_idx_aux = op_idx_aux;
+        motors[rid2Pos(joint_id)]->setTxPDO(last_pdo_tx);
+        return true;
+    }
+    
+    // we don't touch the value that you passed
+    DPRINTF("Trying to set_op_idx_aux() on joint with joint_id : %d that does not exists\n", joint_id);
+    return false; 
+}
+
+bool XBot::XBotCore::set_aux(int joint_id, const float& aux)
+{
+    
+    // check if the joint requested exists
+    if( motors.count(rid2Pos(joint_id)) ) {
+        // set the data
+        last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
+        last_pdo_tx.aux = aux;
+        motors[rid2Pos(joint_id)]->setTxPDO(last_pdo_tx);
+        return true;
+    }
+    
+    // we don't touch the value that you passed
+    DPRINTF("Trying to set_aux() on joint with joint_id : %d that does not exists\n", joint_id);
+    return false; 
+}
+
+
+
 
 
 

@@ -60,7 +60,7 @@ public:
     virtual int control_loop(void) final;
     
     /**
-     * @brief Plugin handler initialization: call the init() function of each plugin loaded
+     * @brief Plugin handler initialization: load the plugins, call the init() function of each plugin loaded
      * 
      * @param  void
      * @return true if all the plugin init() functions were successful, false otherwise
@@ -106,37 +106,61 @@ public:
      */
     std::vector<std::string> get_chain_names();
 
+    // NOTE IXBotChain getters
+    virtual bool get_chain_link_pos(std::string chain_name, std::map<std::string, float>& link_pos) final;
+    virtual bool get_chain_link_pos(std::string chain_name, std::map<int, float>& link_pos) final;
     
-    bool get_chain_link_pos(std::string chain_name, std::map<std::string, float>& link_pos);
-    bool get_chain_link_pos(std::string chain_name, std::map<int, float>& link_pos);
+    virtual bool get_chain_motor_pos(std::string chain_name, std::map<std::string, float>& motor_pos) final;
+    virtual bool get_chain_motor_pos(std::string chain_name, std::map<int, float>& motor_pos) final;
     
-    bool get_chain_motor_pos(std::string chain_name, std::map<std::string, float>& motor_pos);
-    bool get_chain_motor_pos(std::string chain_name, std::map<int, float>& motor_pos);
+    virtual bool get_chain_link_vel(std::string chain_name, std::map<std::string, float>& link_vel) final;
+    virtual bool get_chain_link_vel(std::string chain_name, std::map<int, float>& link_vel) final;
     
-    bool get_chain_link_vel(std::string chain_name, std::map<std::string, float>& link_vel);
-    bool get_chain_link_vel(std::string chain_name, std::map<int, float>& link_vel);
+    virtual bool get_chain_motor_vel(std::string chain_name, std::map<std::string, int16_t>& motor_vel) final;
+    virtual bool get_chain_motor_vel(std::string chain_name, std::map<int, int16_t>& motor_vel) final;
     
-    bool get_chain_motor_vel(std::string chain_name, std::map<std::string, int16_t>& motor_vel);
-    bool get_chain_motor_vel(std::string chain_name, std::map<int, int16_t>& motor_vel);
+    virtual bool get_chain_torque(std::string chain_name, std::map<std::string, int16_t>& torque) final;
+    virtual bool get_chain_torque(std::string chain_name, std::map<int, int16_t>& torque) final;
     
-    bool get_chain_torque(std::string chain_name, std::map<std::string, int16_t>& torque);
-    bool get_chain_torque(std::string chain_name, std::map<int, int16_t>& torque);
+    virtual bool get_chain_max_temperature(std::string chain_name, std::map<int, uint16_t>& max_temperature) final;    
+    virtual bool get_chain_max_temperature(std::string chain_name, std::map<std::string, uint16_t>& max_temperature) final;
     
-    bool get_chain_max_temperature(std::string chain_name, std::map<int, uint16_t>& max_temperature);    
-    bool get_chain_max_temperature(std::string chain_name, std::map<std::string, uint16_t>& max_temperature);
-    
-    bool get_chain_fault(std::string chain_name, std::map<int, uint16_t>& fault);    
-    bool get_chain_fault(std::string chain_name, std::map<std::string, uint16_t>& fault);
+    virtual bool get_chain_fault(std::string chain_name, std::map<int, uint16_t>& fault) final;    
+    virtual bool get_chain_fault(std::string chain_name, std::map<std::string, uint16_t>& fault) final;
 
-    bool get_chain_rtt(std::string chain_name, std::map<int, uint16_t>& rtt);    
-    bool get_chain_rtt(std::string chain_name, std::map<std::string, uint16_t>& rtt);
+    virtual bool get_chain_rtt(std::string chain_name, std::map<int, uint16_t>& rtt) final;    
+    virtual bool get_chain_rtt(std::string chain_name, std::map<std::string, uint16_t>& rtt) final;
     
-    bool get_chain_op_idx_ack(std::string chain_name, std::map<int, uint16_t>& op_idx_ack);    
-    bool get_chain_op_idx_ack(std::string chain_name, std::map<std::string, uint16_t>& op_idx_ack);
+    virtual bool get_chain_op_idx_ack(std::string chain_name, std::map<int, uint16_t>& op_idx_ack) final;    
+    virtual bool get_chain_op_idx_ack(std::string chain_name, std::map<std::string, uint16_t>& op_idx_ack) final;
     
-    bool get_chain_aux(std::string chain_name, std::map<std::string, float>& aux);
-    bool get_chain_aux(std::string chain_name, std::map<int, float>& aux);
-    std::__cxx11::string rid2joint(std::vector< int >::reference arg1);
+    virtual bool get_chain_aux(std::string chain_name, std::map<std::string, float>& aux) final;
+    virtual bool get_chain_aux(std::string chain_name, std::map<int, float>& aux) final;
+    
+    
+    virtual bool set_chain_pos_ref(std::string chain_name, const std::map<std::string, float>& pos_ref) final;
+    virtual bool set_chain_pos_ref(std::string chain_name, const std::map<int, float>& pos_ref) final;
+    
+    virtual bool set_chain_vel_ref(std::string chain_name, const std::map<std::string, int16_t>& vel_ref) final;
+    virtual bool set_chain_vel_ref(std::string chain_name, const std::map<int, int16_t>& vel_ref) final;
+    
+    virtual bool set_chain_tor_ref(std::string chain_name, const std::map<std::string, int16_t>& tor_ref) final;
+    virtual bool set_chain_tor_ref(std::string chain_name, const std::map<int, int16_t>& tor_ref) final;
+    
+    virtual bool set_chain_gains(std::string chain_name, const std::map<std::string, uint16_t*>& gains, const int gains_num = 5) final;
+    virtual bool set_chain_gains(std::string chain_name, const std::map<int, uint16_t*>& gains, const int gains_num = 5) final;
+    
+    virtual bool set_chain_fault_ack(std::string chain_name, const std::map<std::string, int16_t>& fault_ack) final;
+    virtual bool set_chain_fault_ack(std::string chain_name, const std::map<int, int16_t>& fault_ack) final;
+    
+    virtual bool set_chain_ts(std::string chain_name, const std::map<int, uint16_t>& ts) final;    
+    virtual bool set_chain_ts(std::string chain_name, const std::map<std::string, uint16_t>& ts) final;
+    
+    virtual bool set_chain_op_idx_aux(std::string chain_name, const std::map<int, uint16_t>& op_idx_aux) final;    
+    virtual bool set_chain_op_idx_aux(std::string chain_name, const std::map<std::string, uint16_t>& op_idx_aux) final;
+    
+    virtual bool set_chain_aux(std::string chain_name, const std::map<std::string, float>& aux) final;
+    virtual bool set_chain_aux(std::string chain_name, const std::map<int, float>& aux) final;
 
 
 private:
@@ -171,9 +195,15 @@ private:
      */
     std::map<std::string, std::vector<int>> robot;
     
+    /**
+     * @brief aux buffer for the last TX PDO
+     * 
+     */
+    iit::ecat::advr::McEscPdoTypes::pdo_tx last_pdo_tx;
+    
 
     
-    
+    // NOTE IXBotJoint getters
     virtual bool get_link_pos(int joint_id, float& link_pos);
     
     virtual bool get_motor_pos(int joint_id, float& motor_pos);
@@ -193,6 +223,23 @@ private:
     virtual bool get_op_idx_ack(int joint_id, uint16_t& op_idx_ack);
     
     virtual bool get_aux(int joint_id, float& aux);
+    
+    // NOTE IXBotJoint setters
+    virtual bool set_pos_ref(int joint_id, const float& pos_ref);
+    
+    virtual bool set_vel_ref(int joint_id, const int16_t& vel_ref);
+    
+    virtual bool set_tor_ref(int joint_id, const int16_t& tor_ref);
+    
+    virtual bool set_gains(int joint_id, const uint16_t* gains, const int gains_num = 5);
+    
+    virtual bool set_fault_ack(int joint_id, const int16_t& fault_ack);
+    
+    virtual bool set_ts(int joint_id, const uint16_t& ts);
+    
+    virtual bool set_op_idx_aux(int joint_id, const uint16_t& op_idx_aux);
+    
+    virtual bool set_aux(int joint_id, const float& aux);
 
     
 

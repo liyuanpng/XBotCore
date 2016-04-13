@@ -30,6 +30,7 @@ private:
 
     // TBD can be auto-generated based on the PDO
     
+    // NOTE getters
     virtual bool get_link_pos(int joint_id, float& link_pos) = 0;
     
     virtual bool get_motor_pos(int joint_id, float& motor_pos) = 0;
@@ -49,6 +50,23 @@ private:
     virtual bool get_op_idx_ack(int joint_id, uint16_t& op_idx_ack) = 0;
     
     virtual bool get_aux(int joint_id, float& aux) = 0;
+    
+    // NOTE setters
+    virtual bool set_pos_ref(int joint_id, const float& pos_ref) = 0;
+    
+    virtual bool set_vel_ref(int joint_id, const int16_t& vel_ref) = 0;
+    
+    virtual bool set_tor_ref(int joint_id, const int16_t& tor_ref) = 0;
+    
+    virtual bool set_gains(int joint_id, const uint16_t* gains, const int gains_num = 5) = 0;
+    
+    virtual bool set_fault_ack(int joint_id, const int16_t& fault_ack) = 0;
+    
+    virtual bool set_ts(int joint_id, const uint16_t& ts) = 0;
+    
+    virtual bool set_op_idx_aux(int joint_id, const uint16_t& op_idx_aux) = 0;
+    
+    virtual bool set_aux(int joint_id, const float& aux) = 0;
     
 
 };
