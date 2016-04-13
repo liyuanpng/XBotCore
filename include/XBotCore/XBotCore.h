@@ -76,6 +76,14 @@ public:
     virtual bool plugin_handler_loop(void) = 0;
     
     /**
+     * @brief Plugin handler loop: call the close() function of each plugin loaded
+     * 
+     * @param  void
+     * @return true if all the plugin close() functions were successful, false otherwise
+     */
+    virtual bool plugin_handler_close(void) = 0;
+    
+    /**
      * @brief Getter for the robot model
      * 
      * @param  void

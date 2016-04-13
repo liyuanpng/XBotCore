@@ -4,24 +4,45 @@
 
 XBot::XBotPluginHandler::XBotPluginHandler(const char* config_yaml): XBotCore(config_yaml)
 {
-    XBot::XBotCoreModel actual_model = get_robot_model();
-    XBot::IXBotModel *actual_model_interface = dynamic_cast<XBot::IXBotModel *>(&actual_model);
-    
-    XBot::IXBotChain *actual_chain = dynamic_cast<XBot::IXBotChain *>(this);
-    
-    std::shared_ptr<XBot::XBotTestPlugin> test(new XBot::XBotTestPlugin(actual_model_interface, actual_chain));
+    // TBD read the plugins to load from YAML
+}
+
+bool XBot::XBotPluginHandler::load_plugins() {
+
+    XBot::XBotCoreModel model = get_robot_model();
+
+    std::shared_ptr<XBot::IXBotModel> actual_model = std::make_shared<XBot::XBotCoreModel>(model);
+    std::shared_ptr<XBot::IXBotChain> actual_chain(this);
+
+    // TBD load dynamically the plugins
+    std::shared_ptr<XBot::XBotTestPlugin> test(new XBot::XBotTestPlugin("test plugin",
+                                                                        actual_model, 
+                                                                        actual_chain));
     
     plugins.push_back(test);
+    
+    return true;
 }
 
 
 bool XBot::XBotPluginHandler::plugin_handler_init(void)
 {
-    plugins_num = plugins.size();
-    for(int i = 0; i < plugins_num; i++) {
-        plugins[i]->init();
+    // load the plugins
+    if(!load_plugins()) {
+        DPRINTF("ERROR: load_plugins() failed.");
+        return false;
     }
-    return true;
+    
+    // iterate over the plugins and call the init()
+    plugins_num = plugins.size();
+    bool ret = true;
+    for(int i = 0; i < plugins_num; i++) {
+        if(!plugins[i]->init()) {
+            DPRINTF("ERROR: plugin %s - init() failed\n", plugins[i]->name.c_str());
+            ret = false;
+        }
+    }
+    return ret;
 }
 
 
@@ -32,6 +53,15 @@ bool XBot::XBotPluginHandler::plugin_handler_loop(void)
     }
     return true;
 }
+
+bool XBot::XBotPluginHandler::plugin_handler_close(void)
+{
+    for(int i = 0; i < plugins_num; i++) {
+        plugins[i]->run();
+    }
+    return true;
+}
+
 
 XBot::XBotPluginHandler::~XBotPluginHandler()
 {

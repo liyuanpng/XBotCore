@@ -36,15 +36,17 @@ public:
 
     virtual bool plugin_handler_init(void) final;
     virtual bool plugin_handler_loop(void) final;
+    virtual bool plugin_handler_close(void) final;
 
 protected:
             
-
+    
 
 private: 
     
-    std::vector< std::shared_ptr<XBot::XBotPlugin> > plugins;
+    bool load_plugins();
     
+    std::vector< std::shared_ptr<XBot::XBotPlugin> > plugins; 
     int plugins_num;
 
 };
