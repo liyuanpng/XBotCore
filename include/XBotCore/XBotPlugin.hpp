@@ -33,7 +33,12 @@ class XBot::XBotPlugin
     
 public:   
     
-    XBotPlugin(XBot::IXBotModel* model, XBot::IXBotChain* chain) : model(model), chain(chain)
+    XBotPlugin( std::string name,
+                std::shared_ptr<XBot::IXBotModel> model, 
+                std::shared_ptr<XBot::IXBotChain> chain) : 
+                name(name),
+                model(model), 
+                chain(chain)
     {
         
     };
@@ -42,10 +47,10 @@ public:
 
     
     virtual bool init(void) = 0;
-    
     virtual void run(void) = 0;
-    
     virtual bool close(void) = 0;
+    
+    std::string name;
     
 protected:
     

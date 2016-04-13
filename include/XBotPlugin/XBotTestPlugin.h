@@ -30,12 +30,12 @@ class XBot::XBotTestPlugin : public XBot::XBotPlugin
     
 public:   
     
-    XBotTestPlugin(XBot::IXBotModel* model, XBot::IXBotChain* chain);
+    XBotTestPlugin(std::string name,
+                   std::shared_ptr<XBot::IXBotModel> model, 
+                   std::shared_ptr<XBot::IXBotChain> chain);
     
     virtual bool init(void);
-    
     virtual void run(void);
-    
     virtual bool close(void);
 
 };
