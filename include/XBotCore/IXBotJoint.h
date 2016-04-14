@@ -58,7 +58,7 @@ private:
     
     virtual bool set_tor_ref(int joint_id, const int16_t& tor_ref) = 0;
     
-    virtual bool set_gains(int joint_id, const uint16_t* gains, const int gains_num = 5) = 0;
+    virtual bool set_gains(int joint_id, const std::vector<uint16_t>&) = 0;
     
     virtual bool set_fault_ack(int joint_id, const int16_t& fault_ack) = 0;
     

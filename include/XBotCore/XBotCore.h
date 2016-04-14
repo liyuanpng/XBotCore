@@ -155,8 +155,8 @@ public:
     virtual bool set_chain_tor_ref(std::string chain_name, const std::map<std::string, int16_t>& tor_ref) final;
     virtual bool set_chain_tor_ref(std::string chain_name, const std::map<int, int16_t>& tor_ref) final;
     
-    virtual bool set_chain_gains(std::string chain_name, const std::map<std::string, uint16_t*>& gains, const int gains_num = 5) final;
-    virtual bool set_chain_gains(std::string chain_name, const std::map<int, uint16_t*>& gains, const int gains_num = 5) final;
+    virtual bool set_chain_gains(std::string chain_name, const std::map<std::string, std::vector<uint16_t> >& gains) final;
+    virtual bool set_chain_gains(std::string chain_name, const std::map<int, std::vector<uint16_t> >& gains) final;
     
     virtual bool set_chain_fault_ack(std::string chain_name, const std::map<std::string, int16_t>& fault_ack) final;
     virtual bool set_chain_fault_ack(std::string chain_name, const std::map<int, int16_t>& fault_ack) final;
@@ -239,7 +239,7 @@ private:
     
     virtual bool set_tor_ref(int joint_id, const int16_t& tor_ref);
     
-    virtual bool set_gains(int joint_id, const uint16_t* gains, const int gains_num = 5);
+    virtual bool set_gains(int joint_id, const std::vector<uint16_t>& gains);
     
     virtual bool set_fault_ack(int joint_id, const int16_t& fault_ack);
     

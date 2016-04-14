@@ -12,6 +12,8 @@ XBot::XBotTestPlugin::XBotTestPlugin(std::string name,
 bool XBot::XBotTestPlugin::init(void)
 {
     DPRINTF("XBotTestPlugin init()\n");
+    l_arm_pos_ref[123] = 0;
+    
     return true;
 }
 
@@ -26,11 +28,6 @@ void XBot::XBotTestPlugin::run(void)
         int rid = model->joint2Rid(j_name);
         //DPRINTF("left_arm Joint : %d - RTT : %d\n", rid, rtt); // NOTE avoid printing std::string with XENOMAI printf 
     }
-    
-    std::map<int, float> l_arm_pos_ref;
-    l_arm_pos_ref[123] = 1.5;
-    
-    chain->set_chain_pos_ref("left_arm", l_arm_pos_ref);
 
     
 //     std::map<int, uint16_t> l_hand_j_rtt;
@@ -53,6 +50,30 @@ void XBot::XBotTestPlugin::run(void)
 //     for( auto& j : l_arm_torque) {
 //         DPRINTF("Joint : %d - TORQUE : %d\n", model->joint2Rid(j.first), j.second); // NOTE avoid printing std::string with XENOMAI printf 
 //     }
+    
+    
+    
+    l_arm_pos_ref[123] += 0.1;
+    
+    chain->set_chain_pos_ref("left_arm", l_arm_pos_ref);
+    
+    std::map<int, int16_t> l_arm_vel_ref;
+    l_arm_vel_ref[123] = 4;
+    
+    chain->set_chain_vel_ref("left_arm", l_arm_vel_ref);
+    
+    std::map<int, std::vector<uint16_t>> l_arm_gains;
+    std::vector<uint16_t> g(5);
+    g[0] = 210;
+    g[1] = 211;
+    g[2] = 212;
+    g[3] = 213;
+    g[4] = 214;
+    l_arm_gains[123] = g;
+    
+    chain->set_chain_gains("left_arm", l_arm_gains);
+
+    
     
 }
 

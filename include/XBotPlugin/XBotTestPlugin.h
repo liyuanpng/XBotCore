@@ -37,6 +37,9 @@ public:
     virtual bool init(void);
     virtual void run(void);
     virtual bool close(void);
+    
+private:
+    std::map<int, float> l_arm_pos_ref;
 
 };
 
