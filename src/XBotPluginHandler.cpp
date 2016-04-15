@@ -1,6 +1,7 @@
 #include <XBotCore/XBotPluginHandler.h>
 
 #include <XBotPlugin/XBotTestPlugin.h>
+#include <XBotPlugin/XBotCubicTrajectoryGenerator.h>
 
 XBot::XBotPluginHandler::XBotPluginHandler(const char* config_yaml): XBotCore(config_yaml)
 {
@@ -15,11 +16,17 @@ bool XBot::XBotPluginHandler::load_plugins() {
     std::shared_ptr<XBot::IXBotChain> actual_chain(this);
 
     // TBD load dynamically the plugins
-    std::shared_ptr<XBot::XBotTestPlugin> test(new XBot::XBotTestPlugin("test plugin",
-                                                                        actual_model, 
-                                                                        actual_chain));
+//     std::shared_ptr<XBot::XBotTestPlugin> test(new XBot::XBotTestPlugin("test plugin",
+//                                                                         actual_model, 
+//                                                                         actual_chain));
+//     
+//     plugins.push_back(test);
+    // TBD load dynamically the plugins
+    std::shared_ptr<XBot::XBotCubicTrajectoryGenerator> trajectory(new XBot::XBotCubicTrajectoryGenerator("trajectory plugin",
+                                                                                                    actual_model, 
+                                                                                                    actual_chain));
     
-    plugins.push_back(test);
+    plugins.push_back(trajectory);
     
     return true;
 }

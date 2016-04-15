@@ -28,15 +28,20 @@ include_directories(../include)
 add_library(XBotTestPlugin SHARED
     XBotTestPlugin.cpp
 )
+# lib
+add_library(XBotCubicTrajectoryGenerator SHARED
+    XBotCubicTrajectoryGenerator.cpp
+)
 
 # link the common libs
 target_link_libraries(XBotTestPlugin XBotPluginHandler)
-
+target_link_libraries(XBotCubicTrajectoryGenerator XBotPluginHandler)
 
 
 # install lib and include
 install(TARGETS XBotTestPlugin RUNTIME LIBRARY DESTINATION lib)
+install(TARGETS XBotCubicTrajectoryGenerator RUNTIME LIBRARY DESTINATION lib)
+
 install(DIRECTORY include/ 
         DESTINATION include
         FILES_MATCHING PATTERN "*.h*")
-

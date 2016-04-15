@@ -80,7 +80,8 @@ target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
                                       ${urdfdom_LIBRARIES}
                                       ${kdl_parser_LIBRARIES}
                                       XBotPluginHandler
-                                      XBotTestPlugin)
+                                      XBotTestPlugin
+                                      XBotCubicTrajectoryGenerator)
 
 if(NOT Xenomai_FOUND)
     set_cap_build(${PROJECT_NAME})
