@@ -28,8 +28,7 @@ class XBot::IXBotJoint
 
 private:   
 
-    // TBD can be auto-generated based on the PDO
-    
+    // TBD can be auto-generated based on the RX PDO
     // NOTE getters
     virtual bool get_link_pos(int joint_id, float& link_pos) = 0;
     
@@ -51,6 +50,7 @@ private:
     
     virtual bool get_aux(int joint_id, float& aux) = 0;
     
+    // TBD can be auto-generated based on the TX PDO
     // NOTE setters
     virtual bool set_pos_ref(int joint_id, const float& pos_ref) = 0;
     
