@@ -26,7 +26,7 @@ namespace XBot
 class XBot::IXBotJoint
 {
 
-private:   
+public:   
 
     // TBD can be auto-generated based on the RX PDO
     // NOTE getters
@@ -67,7 +67,6 @@ private:
     virtual bool set_op_idx_aux(int joint_id, const uint16_t& op_idx_aux) = 0;
     
     virtual bool set_aux(int joint_id, const float& aux) = 0;
-    
 
 };
 
