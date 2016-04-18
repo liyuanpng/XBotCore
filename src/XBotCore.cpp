@@ -62,6 +62,348 @@ int XBot::XBotCore::control_loop(void) {
     return plugin_handler_loop();
 }
 
+///////////////////////////////
+///////////////////////////////
+// ROBOT PROTECTED FUNCTIONS //
+///////////////////////////////
+///////////////////////////////
+
+bool XBot::XBotCore::get_robot_link_pos(std::map< std::string, float >& link_pos)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_link_pos(c.first, link_pos);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::get_robot_link_pos(std::map< int, float >& link_pos)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_link_pos(c.first, link_pos);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::get_robot_motor_pos(std::map< std::string, float >& motor_pos)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_motor_pos(c.first, motor_pos);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::get_robot_motor_pos(std::map< int, float >& motor_pos)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_motor_pos(c.first, motor_pos);
+    }
+    return ret;
+}
+
+
+bool XBot::XBotCore::get_robot_link_vel(std::map< std::string, float >& link_vel)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_link_vel(c.first, link_vel);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::get_robot_link_vel(std::map< int, float >& link_vel)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_link_vel(c.first, link_vel);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::get_robot_motor_vel(std::map< std::string, int16_t >& motor_vel)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_motor_vel(c.first, motor_vel);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::get_robot_motor_vel(std::map< int, int16_t >& motor_vel)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_motor_vel(c.first, motor_vel);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::get_robot_torque(std::map< std::string, int16_t >& torque)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_torque(c.first, torque);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::get_robot_torque(std::map< int, int16_t >& torque)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_torque(c.first, torque);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::get_robot_max_temperature(std::map< std::string, uint16_t >& max_temperature)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_max_temperature(c.first, max_temperature);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::get_robot_max_temperature(std::map< int, uint16_t >& max_temperature)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_max_temperature(c.first, max_temperature);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::get_robot_fault(std::map< std::string, uint16_t >& fault)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_fault(c.first, fault);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::get_robot_fault(std::map< int, uint16_t >& fault)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_fault(c.first, fault);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::get_robot_rtt(std::map< std::string, uint16_t >& rtt)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_rtt(c.first, rtt);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::get_robot_rtt(std::map< int, uint16_t >& rtt)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_rtt(c.first, rtt);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::get_robot_op_idx_ack(std::map< std::string, uint16_t >& op_idx_ack)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_op_idx_ack(c.first, op_idx_ack);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::get_robot_op_idx_ack(std::map< int, uint16_t >& op_idx_ack)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_op_idx_ack(c.first, op_idx_ack);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::get_robot_aux(std::map< std::string, float >& aux)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_aux(c.first, aux);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::get_robot_aux(std::map< int, float >& aux)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= get_chain_aux(c.first, aux);
+    }
+    return ret;
+}
+
+
+
+
+bool XBot::XBotCore::set_robot_pos_ref(const std::map< std::string, float >& pos_ref)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= set_chain_pos_ref(c.first, pos_ref);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::set_robot_pos_ref(const std::map< int, float >& pos_ref)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= set_chain_pos_ref(c.first, pos_ref);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::set_robot_vel_ref(const std::map< std::string, int16_t >& vel_ref)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= set_chain_vel_ref(c.first, vel_ref);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::set_robot_vel_ref(const std::map< int, int16_t >& vel_ref)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= set_chain_vel_ref(c.first, vel_ref);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::set_robot_tor_ref(const std::map< std::string, int16_t >& tor_ref)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= set_chain_tor_ref(c.first, tor_ref);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::set_robot_tor_ref(const std::map< int, int16_t >& tor_ref)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= set_chain_tor_ref(c.first, tor_ref);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::set_robot_gains(const std::map< std::string, std::vector< uint16_t > >& gains)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= set_chain_gains(c.first, gains);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::set_robot_gains(const std::map< int, std::vector< uint16_t > >& gains)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= set_chain_gains(c.first, gains);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::set_robot_fault_ack(const std::map< std::string, int16_t >& fault_ack)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= set_chain_fault_ack(c.first, fault_ack);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::set_robot_fault_ack(const std::map< int, int16_t >& fault_ack)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= set_chain_fault_ack(c.first, fault_ack);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::set_robot_ts(const std::map< std::string, uint16_t >& ts)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= set_chain_ts(c.first, ts);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::set_robot_ts(const std::map< int, uint16_t >& ts)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= set_chain_ts(c.first, ts);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::set_robot_op_idx_aux(const std::map< std::string, uint16_t >& op_idx_aux)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= set_chain_op_idx_aux(c.first, op_idx_aux);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::set_robot_op_idx_aux(const std::map< int, uint16_t >& op_idx_aux)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= set_chain_op_idx_aux(c.first, op_idx_aux);
+    }
+    return ret;
+}
+
+
+bool XBot::XBotCore::set_robot_aux(const std::map< std::string, float >& aux)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= set_chain_aux(c.first, aux);
+    }
+    return ret;
+}
+
+bool XBot::XBotCore::set_robot_aux(const std::map< int, float >& aux)
+{
+    bool ret = true;
+    for(auto& c : robot) {
+        ret &= set_chain_aux(c.first, aux);
+    }
+    return ret;
+}
+
+
+
+
+
+
+
+
 
 ///////////////////////////////
 ///////////////////////////////
@@ -608,7 +950,7 @@ bool XBot::XBotCore::set_chain_gains(std::string chain_name, const std::map< std
             actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
             if(gains.count(actual_joint_name)) {
                 if( !set_gains(actual_chain_enabled_joints[i], gains.at(actual_joint_name)))  {
-                    DPRINTF("ERROR: set_gains() on joint %s, that does not exits in the chain %s\n", actual_joint_name, chain_name);
+                    DPRINTF("ERROR: set_chain_gains() on joint %s, that does not exits in the chain %s\n", actual_joint_name, chain_name);
                     return false;
                 }
             }
