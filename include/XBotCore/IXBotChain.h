@@ -31,8 +31,7 @@ class XBot::IXBotChain
     
 public:   
 
-    // TBD can be auto-generated based on the PDO
-    
+    // TBD can be auto-generated based on the RX PDO
     // NOTE getters
     virtual bool get_chain_link_pos(std::string chain_name, std::map<std::string, float>& link_pos) = 0;
     virtual bool get_chain_link_pos(std::string chain_name, std::map<int, float>& link_pos) = 0;
@@ -65,24 +64,7 @@ public:
     virtual bool get_chain_aux(std::string chain_name, std::map<int, float>& aux) = 0;
     
     
-    
-    virtual bool set_pos_ref(int joint_id, const float& pos_ref) = 0;
-    
-    virtual bool set_vel_ref(int joint_id, const int16_t& vel_ref) = 0;
-    
-    virtual bool set_tor_ref(int joint_id, const int16_t& tor_ref) = 0;
-    
-    virtual bool set_gains(int joint_id, const std::vector<uint16_t>& gains) = 0;
-    
-    virtual bool set_fault_ack(int joint_id, const int16_t& fault_ack) = 0;
-    
-    virtual bool set_ts(int joint_id, const uint16_t& ts) = 0;
-    
-    virtual bool set_op_idx_aux(int joint_id, const uint16_t& op_idx_aux) = 0;
-    
-    virtual bool set_aux(int joint_id, const float& aux) = 0;
-    
-    
+    // TBD can be auto-generated based on the TX PDO
     // NOTE setters
     virtual bool set_chain_pos_ref(std::string chain_name, const std::map<std::string, float>& pos_ref) = 0;
     virtual bool set_chain_pos_ref(std::string chain_name, const std::map<int, float>& pos_ref) = 0;
@@ -107,7 +89,6 @@ public:
     
     virtual bool set_chain_aux(std::string chain_name, const std::map<std::string, float>& aux) = 0;
     virtual bool set_chain_aux(std::string chain_name, const std::map<int, float>& aux) = 0;
-
 
 };
 
