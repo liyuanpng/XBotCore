@@ -7,6 +7,9 @@ x_bot_core:
 x_bot_ecat:
   name: XBotCore_basic
   # periodic - priority if needed here
+  
+x_bot_plugin:
+  name: XBotTestPlugin
 
 ec_board_ctrl:
   eth_iface: rteth0

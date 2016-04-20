@@ -18,10 +18,12 @@
   <group name="left_arm">
     <chain base_link="DWYTorso" tip_link="l_wrist"/>
   </group>
+  <group name="left_hand">
+    <chain base_link="LWrMot3" tip_link="LSoftHandLink"/>
+  </group>
   <!-- Robot kinematic chains END -->
   <!-- F-T sensors -->
   <group name="force_torque_sensors">
-    <joint name="l_arm_ft_joint"/>
   </group>
   <!-- END F-T sensors -->
   <!-- TBD IMU -->
@@ -31,8 +33,8 @@
   <disabled_joint name="LShLat"/>
   <disabled_joint name="LShYaw"/>
   <disabled_joint name="LElbj"/>
-  <disabled_joint name="LForearmPlate"/>
-  <disabled_joint name="LWrj1"/>
+  <!--     <disabled_joint name="LForearmPlate"/> -->
+  <!--     <disabled_joint name="LWrj1"/> -->
   <!-- END Disabled Joint -->
   
 .
@@ -47,6 +49,12 @@
 
         
     <!-- RIGHT ARM -->
+    <!-- LEFT HAND -->
+    <group name="left_hand"/>
+    --&gt;
+
+        
+    <!-- RIGHT HAND -->
     <!-- TORSO -->
     <!-- LEFT LEG -->
     <!-- RIGHT LEG -->

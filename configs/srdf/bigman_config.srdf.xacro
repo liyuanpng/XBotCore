@@ -117,8 +117,8 @@
     <disabled_joint name="LShLat"/>
     <disabled_joint name="LShYaw"/>
     <disabled_joint name="LElbj"/>
-<!--    <disabled_joint name="LForearmPlate"/>
-    <disabled_joint name="LWrj1"/>-->
+<!--     <disabled_joint name="LForearmPlate"/> -->
+<!--     <disabled_joint name="LWrj1"/> -->
     <!-- END Disabled Joint -->
 .
     <!-- CHAINS -->
