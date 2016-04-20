@@ -67,7 +67,9 @@ public:
     virtual bool set_op_idx_aux(int joint_id, const uint16_t& op_idx_aux) = 0;
     
     virtual bool set_aux(int joint_id, const float& aux) = 0;
-
+    
+    
+    virtual ~IXBotJoint() {};
 };
 
 #endif //__I_X_BOT_JOINT_H__

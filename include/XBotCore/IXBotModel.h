@@ -39,7 +39,7 @@ public:
     virtual int joint2Rid(std::string joint_name) = 0;
     
 
-
+    virtual ~IXBotModel() {};
 };
 
 #endif //__I_X_BOT_MODEL_H__

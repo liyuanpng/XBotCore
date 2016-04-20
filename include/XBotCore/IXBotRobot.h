@@ -91,6 +91,7 @@ public:
     virtual bool set_robot_aux(const std::map<int, float>& aux) = 0;
 
 
+    virtual ~IXBotRobot() {};
 };
 
 #endif //__I_X_BOT_ROBOT_H__
