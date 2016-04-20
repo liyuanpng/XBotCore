@@ -14,17 +14,20 @@ bool XBot::XBotPluginHandler::load_plugins() {
 
     std::shared_ptr<XBot::IXBotModel> actual_model = std::make_shared<XBot::XBotCoreModel>(model);
     std::shared_ptr<XBot::IXBotChain> actual_chain(this);
+    std::shared_ptr<XBot::IXBotRobot> actual_robot(this);
 
     // TBD load dynamically the plugins
-//     std::shared_ptr<XBot::XBotTestPlugin> test(new XBot::XBotTestPlugin("test plugin",
-//                                                                         actual_model, 
-//                                                                         actual_chain));
-//     
-//     plugins.push_back(test);
+    std::shared_ptr<XBot::XBotTestPlugin> test(new XBot::XBotTestPlugin("test plugin",
+                                                                        actual_model, 
+                                                                        actual_chain,
+                                                                        actual_robot));
+    
+    plugins.push_back(test);
     // TBD load dynamically the plugins
-    std::shared_ptr<XBot::XBotCubicTrajectoryGenerator> trajectory(new XBot::XBotCubicTrajectoryGenerator("trajectory plugin",
-                                                                                                    actual_model, 
-                                                                                                    actual_chain));
+    std::shared_ptr<XBot::XBotCubicTrajectoryGenerator> trajectory(new XBot::XBotCubicTrajectoryGenerator( "trajectory plugin",
+                                                                                                            actual_model, 
+                                                                                                            actual_chain,
+                                                                                                            actual_robot));
     
     plugins.push_back(trajectory);
     
@@ -55,18 +58,26 @@ bool XBot::XBotPluginHandler::plugin_handler_init(void)
 
 bool XBot::XBotPluginHandler::plugin_handler_loop(void)
 {
+    std::vector<float> plugin_execution_time(plugins_num); // TBD circular array and write to file in the plugin_handler_close
     for(int i = 0; i < plugins_num; i++) {
+        float plugin_start_time = (iit::ecat::get_time_ns() / 10e3); //microsec
         plugins[i]->run();
+        plugin_execution_time[i] = (iit::ecat::get_time_ns() / 10e3) - plugin_start_time; //microsec
+//         DPRINTF("Plugin %d - %s : execution_time = %f microsec\n", i, plugins[i]->name.c_str(), plugin_execution_time[i]);
     }
     return true;
 }
 
 bool XBot::XBotPluginHandler::plugin_handler_close(void)
 {
+    bool ret = true;
     for(int i = 0; i < plugins_num; i++) {
-        plugins[i]->run();
+        if(!plugins[i]->close()) {
+            DPRINTF("ERROR: plugin %s - close() failed\n", plugins[i]->name.c_str());
+            ret = false;
+        }
     }
-    return true;
+    return ret;
 }
 
 

@@ -18,6 +18,8 @@
 
 #include <XBotCore/XBotCore.h>
 #include <XBotCore/IXBotModel.h>
+#include <XBotCore/IXBotRobot.h>
+// #include <XBotCore/IXBotData.h>
 
 namespace XBot
 {
@@ -35,10 +37,12 @@ public:
     
     XBotPlugin( std::string name,
                 std::shared_ptr<XBot::IXBotModel> model, 
-                std::shared_ptr<XBot::IXBotChain> chain) : 
+                std::shared_ptr<XBot::IXBotChain> chain,
+                std::shared_ptr<XBot::IXBotRobot> robot) : 
                 name(name),
                 model(model), 
-                chain(chain)
+                chain(chain),
+                robot(robot)
     {
         
     };
@@ -50,13 +54,14 @@ public:
     virtual void run(void) = 0;
     virtual bool close(void) = 0;
     
+
     std::string name;
     
 protected:
     
     std::shared_ptr<XBot::IXBotModel> model;
     std::shared_ptr<XBot::IXBotChain> chain;
-    
+    std::shared_ptr<XBot::IXBotRobot> robot;
 
 
 };

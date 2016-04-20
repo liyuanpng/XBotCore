@@ -32,14 +32,14 @@ public:
     
     XBotTestPlugin(std::string name,
                    std::shared_ptr<XBot::IXBotModel> model, 
-                   std::shared_ptr<XBot::IXBotChain> chain);
+                   std::shared_ptr<XBot::IXBotChain> chain,
+                   std::shared_ptr<XBot::IXBotRobot> robot);
     
     virtual bool init(void);
     virtual void run(void);
     virtual bool close(void);
     
 private:
-    std::map<int, float> l_arm_pos_ref;
 
 };
 

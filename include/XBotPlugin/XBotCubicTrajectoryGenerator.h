@@ -32,7 +32,8 @@ public:
     
     XBotCubicTrajectoryGenerator(std::string name,
                                  std::shared_ptr<XBot::IXBotModel> model, 
-                                 std::shared_ptr<XBot::IXBotChain> chain);
+                                 std::shared_ptr<XBot::IXBotChain> chain,
+                                 std::shared_ptr<XBot::IXBotRobot> robot);
     
     virtual bool init(void);
     virtual void run(void);
@@ -48,7 +49,7 @@ private:
     
     bool init_param = true;
         
-    std::map<int, float> l_arm_pos_ref;
+    std::map<int, float> robot_pos_ref;
     std::map<int, float> current_ref;
     
 
