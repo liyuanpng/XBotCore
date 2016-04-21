@@ -47,7 +47,7 @@ private:
     bool load_plugins();
     
     std::vector< std::shared_ptr<XBot::XBotPlugin> > plugins; 
-    int plugins_num;
+    int plugins_num; 
 
 };
 

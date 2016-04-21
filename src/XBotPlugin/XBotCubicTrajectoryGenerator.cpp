@@ -1,10 +1,13 @@
 #include <XBotPlugin/XBotCubicTrajectoryGenerator.h>
 
+#include <XBotMemory/XBotData.hpp>
+
 XBot::XBotCubicTrajectoryGenerator::XBotCubicTrajectoryGenerator(std::string name,
                                                                  std::shared_ptr<XBot::IXBotModel> model, 
                                                                  std::shared_ptr<XBot::IXBotChain> chain,
-                                                                 std::shared_ptr<XBot::IXBotRobot> robot) : 
-                                                                 XBotPlugin(name, model, chain, robot)
+                                                                 std::shared_ptr<XBot::IXBotRobot> robot,
+                                                                 std::shared_ptr<XBot::XBotSharedMemory> memory) : 
+                                                                 XBotPlugin(name, model, chain, robot, memory)
 {
 
 }
@@ -25,10 +28,26 @@ bool XBot::XBotCubicTrajectoryGenerator::init(void)
     start_time = iit::ecat::get_time_ns();
     
     // NOTE test
-    robot_pos_ref[25] = -0.3;
-    robot_pos_ref[26] = -0.2;
-    robot_pos_ref[27] = -0.4;
-    robot_pos_ref[29] = 1.0;
+    robot_pos_ref[25] = 0.3;
+    robot_pos_ref[26] = 0.2;
+    robot_pos_ref[27] = 0.4;
+    robot_pos_ref[29] = 0.0;
+    
+    // declare the XBotData shared pointer
+    auto p = std::make_shared<XBot::XBotData<boost::any>>();
+    // store the data
+    float to_store = 0.5;
+    auto data = std::make_shared<boost::any>(to_store);
+    if(p->set(data)) {
+        float d = boost::any_cast<float>(*data);
+        DPRINTF("---------------- %f\n", d);
+    }
+    // store the plugin memory
+    memory->set_plugin_memory("test plugin", p);
+
+
+    
+    
     
     return true;
 }
@@ -75,6 +94,16 @@ void XBot::XBotCubicTrajectoryGenerator::run(void)
 {  
     // communication between plugin in order to have a new reference
 
+    // declare the XBotData shared pointer
+    auto p = std::make_shared<XBot::XBotData<boost::any>>();
+    // retrieve the plugin memory
+    memory->get_plugin_memory("test plugin", p);
+    // retrieve the data stored if any new
+    auto data = std::make_shared<boost::any>();
+    if(p->get(data)) {          
+        float d = boost::any_cast<float>(*data);
+        DPRINTF("**************** %f\n", d);
+    }
 
     
     compute_new_ref(robot_pos_ref, 0.2);
