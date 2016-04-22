@@ -28,19 +28,22 @@ bool XBot::XBotCubicTrajectoryGenerator::init(void)
     start_time = iit::ecat::get_time_ns();
     
     // NOTE test
-    robot_pos_ref[25] = 0.3;
-    robot_pos_ref[26] = 0.2;
-    robot_pos_ref[27] = 0.4;
-    robot_pos_ref[29] = 0.0;
+    robot_pos_ref[25] = -0.3;
+    robot_pos_ref[26] = -0.2;
+    robot_pos_ref[27] = -0.4;
+    robot_pos_ref[29] = 3.0;
     
     // declare the XBotData shared pointer
     auto p = std::make_shared<XBot::XBotData<boost::any>>();
     // store the data
-    float to_store = 0.5;
+//     float to_store = 0.5;
+    std::map<int,float> to_store;
+    to_store[29] = 2.0;
+    
     auto data = std::make_shared<boost::any>(to_store);
     if(p->set(data)) {
-        float d = boost::any_cast<float>(*data);
-        DPRINTF("---------------- %f\n", d);
+         std::map<int,float> d = boost::any_cast<std::map<int,float>>(*data);
+        DPRINTF("---------------- %f\n", d.at(29));
     }
     // store the plugin memory
     memory->set_plugin_memory("test plugin", p);
@@ -100,9 +103,9 @@ void XBot::XBotCubicTrajectoryGenerator::run(void)
     memory->get_plugin_memory("test plugin", p);
     // retrieve the data stored if any new
     auto data = std::make_shared<boost::any>();
-    if(p->get(data)) {          
-        float d = boost::any_cast<float>(*data);
-        DPRINTF("**************** %f\n", d);
+    if(p->get(data)) {    
+        std::map<int,float> d = boost::any_cast<std::map<int,float>>(*data);
+        DPRINTF("**************** %f\n", d.at(29));
     }
 
     

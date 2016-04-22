@@ -60,6 +60,11 @@ add_executable(${PROJECT_NAME}
     src/XBotMain.cpp
 )
 
+# exe
+add_executable(XBotYARP
+    src/XBotYARPMain.cpp
+)
+
 # lib
 add_library(XBotPluginHandler SHARED
     src/XBotEcat.cpp
@@ -67,9 +72,15 @@ add_library(XBotPluginHandler SHARED
     src/XBotPluginHandler.cpp
 )
 
+# lib
+add_library(XBotCommunicationHandler SHARED
+    src/XBotCommunicationHandler.cpp
+)
+
 # set Xenomain flags if Xenomai is founded
 if ( Xenomai_FOUND )
     set_xeno_flags(${PROJECT_NAME})
+    set_xeno_flags(XBotPluginHandler)
 endif()
 
 add_subdirectory(src/XBotPlugin) # leave it here, the main dipends on the compiled plugins
@@ -82,6 +93,13 @@ target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
                                       XBotPluginHandler
                                       XBotTestPlugin
                                       XBotCubicTrajectoryGenerator)
+                                      
+# link the common libs
+target_link_libraries(XBotYARP ${COMMON_LIBS}
+                               ${srdfdom_LIBRARIES}
+                               ${urdfdom_LIBRARIES}
+                               ${kdl_parser_LIBRARIES}
+                               XBotCommunicationHandler)
 
 if(NOT Xenomai_FOUND)
     set_cap_build(${PROJECT_NAME})
@@ -89,7 +107,10 @@ endif()
 
 # install exe, lib and include
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+install(TARGETS XBotYARP RUNTIME DESTINATION bin)
 install(TARGETS XBotPluginHandler RUNTIME LIBRARY DESTINATION lib)
+install(TARGETS XBotCommunicationHandler RUNTIME LIBRARY DESTINATION lib)
+
 install(DIRECTORY include/ 
         DESTINATION include
         FILES_MATCHING PATTERN "*.h*")

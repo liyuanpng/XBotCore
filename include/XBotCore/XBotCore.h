@@ -15,6 +15,7 @@
 #define __X_BOT_CORE_H__
 
 #include <iit/advr/ec_boards_base.h>
+#include <iit/advr/pipes.h>
 #include <iit/ecat/advr/esc.h>
 
 #include <XBotCore/XBotEcat.h>
@@ -22,6 +23,7 @@
 #include <XBotCore/IXBotChain.h>
 #include <XBotCore/IXBotRobot.h>
 #include <XBotCore/XBotCoreModel.hpp>
+
 
 #include <XBotMemory/XBotSharedMemory.hpp>
 
@@ -272,42 +274,42 @@ private:
 
     
     // NOTE IXBotJoint getters
-    virtual bool get_link_pos(int joint_id, float& link_pos);
+    virtual bool get_link_pos(int joint_id, float& link_pos) final;
     
-    virtual bool get_motor_pos(int joint_id, float& motor_pos);
+    virtual bool get_motor_pos(int joint_id, float& motor_pos) final;
     
-    virtual bool get_link_vel(int joint_id, float& link_vel);
+    virtual bool get_link_vel(int joint_id, float& link_vel) final;
     
-    virtual bool get_motor_vel(int joint_id, int16_t& motor_vel);
+    virtual bool get_motor_vel(int joint_id, int16_t& motor_vel) final;
     
-    virtual bool get_torque(int joint_id, int16_t& torque);
+    virtual bool get_torque(int joint_id, int16_t& torque) final;
     
-    virtual bool get_max_temperature(int joint_id, uint16_t& max_temperature);
+    virtual bool get_max_temperature(int joint_id, uint16_t& max_temperature) final;
     
-    virtual bool get_fault(int joint_id, uint16_t& fault);
+    virtual bool get_fault(int joint_id, uint16_t& fault) final;
     
-    virtual bool get_rtt(int joint_id, uint16_t& rtt);
+    virtual bool get_rtt(int joint_id, uint16_t& rtt) final;
     
-    virtual bool get_op_idx_ack(int joint_id, uint16_t& op_idx_ack);
+    virtual bool get_op_idx_ack(int joint_id, uint16_t& op_idx_ack) final;
     
-    virtual bool get_aux(int joint_id, float& aux);
+    virtual bool get_aux(int joint_id, float& aux) final;
     
     // NOTE IXBotJoint setters
-    virtual bool set_pos_ref(int joint_id, const float& pos_ref);
+    virtual bool set_pos_ref(int joint_id, const float& pos_ref) final;
     
-    virtual bool set_vel_ref(int joint_id, const int16_t& vel_ref);
+    virtual bool set_vel_ref(int joint_id, const int16_t& vel_ref) final;
     
-    virtual bool set_tor_ref(int joint_id, const int16_t& tor_ref);
+    virtual bool set_tor_ref(int joint_id, const int16_t& tor_ref) final;
     
-    virtual bool set_gains(int joint_id, const std::vector<uint16_t>& gains);
+    virtual bool set_gains(int joint_id, const std::vector<uint16_t>& gains) final;
     
-    virtual bool set_fault_ack(int joint_id, const int16_t& fault_ack);
+    virtual bool set_fault_ack(int joint_id, const int16_t& fault_ack) final;
     
-    virtual bool set_ts(int joint_id, const uint16_t& ts);
+    virtual bool set_ts(int joint_id, const uint16_t& ts) final;
     
-    virtual bool set_op_idx_aux(int joint_id, const uint16_t& op_idx_aux);
+    virtual bool set_op_idx_aux(int joint_id, const uint16_t& op_idx_aux) final;
     
-    virtual bool set_aux(int joint_id, const float& aux);
+    virtual bool set_aux(int joint_id, const float& aux) final;
 
     
 
