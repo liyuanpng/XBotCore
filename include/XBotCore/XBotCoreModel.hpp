@@ -8,7 +8,7 @@
 
 /**
  *
- * @author Luca Murator (2016-, luca.muratore@iit.it)
+ * @author Luca Muratore (2016-, luca.muratore@iit.it)
 */
 
 #ifndef __X_BOT_CORE_MODEL_HPP__

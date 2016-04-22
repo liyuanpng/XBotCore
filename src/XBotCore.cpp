@@ -45,7 +45,7 @@ void XBot::XBotCore::control_init(void)
     
     // generate the robot
     model.generate_robot();
-    //get the robot
+    // get the robot
     robot = model.get_robot();
     
     // call the plugin handler initialization
