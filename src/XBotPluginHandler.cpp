@@ -2,6 +2,7 @@
 
 #include <XBotPlugin/XBotTestPlugin.h>
 #include <XBotPlugin/XBotCubicTrajectoryGenerator.h>
+#include <XBotPlugin/XBotCommunicationPlugin.h>
 
 XBot::XBotPluginHandler::XBotPluginHandler(const char* config_yaml): XBotCore(config_yaml)
 {
@@ -19,22 +20,30 @@ bool XBot::XBotPluginHandler::load_plugins() {
     
     // PLUGIN MEMORY INIT
 
-    // TBD load dynamically the plugins
-    std::shared_ptr<XBot::XBotTestPlugin> test(new XBot::XBotTestPlugin("test plugin",
-                                                                        actual_model, 
-                                                                        actual_chain,
-                                                                        actual_robot,
-                                                                        actual_memory));
+//     // TBD load dynamically the plugins
+//     std::shared_ptr<XBot::XBotTestPlugin> test(new XBot::XBotTestPlugin("test plugin",
+//                                                                         actual_model, 
+//                                                                         actual_chain,
+//                                                                         actual_robot,
+//                                                                         actual_memory));
+//     
+//     
+//     plugins.push_back(test);
+//     // TBD load dynamically the plugins
+//     std::shared_ptr<XBot::XBotCubicTrajectoryGenerator> trajectory(new XBot::XBotCubicTrajectoryGenerator( "trajectory plugin",
+//                                                                                                             actual_model, 
+//                                                                                                             actual_chain,
+//                                                                                                             actual_robot,
+//                                                                                                             actual_memory));
+//     plugins.push_back(trajectory);
     
-    
-    plugins.push_back(test);
     // TBD load dynamically the plugins
-    std::shared_ptr<XBot::XBotCubicTrajectoryGenerator> trajectory(new XBot::XBotCubicTrajectoryGenerator( "trajectory plugin",
+    std::shared_ptr<XBot::XBotCommunicationPlugin> communication_plugin(new XBot::XBotCommunicationPlugin( "communication plugin",
                                                                                                             actual_model, 
                                                                                                             actual_chain,
                                                                                                             actual_robot,
                                                                                                             actual_memory));
-    plugins.push_back(trajectory);
+    plugins.push_back(communication_plugin);
     
     return true;
 }

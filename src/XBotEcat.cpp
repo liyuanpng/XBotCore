@@ -55,7 +55,7 @@ void XBot::XBotEcat::set_thread_priority()
 
 void XBot::XBotEcat::init_preOP(void) 
 {
-    start_motors(CTRL_SET_POS_MODE);
+//     start_motors(CTRL_SET_POS_MODE);
     return;
 }
 

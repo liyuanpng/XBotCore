@@ -37,6 +37,8 @@ endif()
 find_package(srdfdom REQUIRED)
 find_package(urdfdom REQUIRED)
 find_package(kdl_parser REQUIRED)
+# communication packages
+find_package(YARP REQUIRED)
 
 # Common libs TBD: make it clean!
 set(COMMON_LIBS
@@ -53,7 +55,7 @@ set(COMMON_LIBS
 
 
 # include 
-include_directories(include ${srdfdom_INCLUDE_DIRS} ${urdfdom_INCLUDE_DIRS})
+include_directories(include ${srdfdom_INCLUDE_DIRS} ${urdfdom_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
 
 # exe
 add_executable(${PROJECT_NAME}
@@ -91,14 +93,17 @@ target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
                                       ${urdfdom_LIBRARIES}
                                       ${kdl_parser_LIBRARIES}
                                       XBotPluginHandler
+                                      XBotCommunicationHandler
                                       XBotTestPlugin
-                                      XBotCubicTrajectoryGenerator)
+                                      XBotCubicTrajectoryGenerator
+                                      XBotCommunicationPlugin)
                                       
 # link the common libs
 target_link_libraries(XBotYARP ${COMMON_LIBS}
                                ${srdfdom_LIBRARIES}
                                ${urdfdom_LIBRARIES}
                                ${kdl_parser_LIBRARIES}
+                               ${YARP_LIBRARIES}
                                XBotCommunicationHandler)
 
 if(NOT Xenomai_FOUND)

@@ -15,6 +15,9 @@
 #define __X_BOT_CORE_H__
 
 #include <iit/ecat/advr/esc.h>
+#include <iit/advr/thread_util.h>
+
+#include <mutex>
 
 #include <XBotCore/IXBotJoint.h>
 #include <XBotCore/IXBotChain.h>
@@ -32,17 +35,22 @@ namespace XBot
  * @brief TBD
  * 
  */
-class XBot::XBotCommunicationHandler /*: public   XBot::IXBotJoint,
+class XBot::XBotCommunicationHandler : public Thread_hook,
+                                       public XBot::IXBotJoint/*,
                                        public   XBot::IXBotChain,
                                        public   XBot::IXBotRobot*/
                         
 {
 public:
     
-    XBotCommunicationHandler();
+    XBotCommunicationHandler(std::string config_file);
     virtual ~XBotCommunicationHandler();
     
-    bool init(std::string config_file);
+    std::map<std::string,std::vector<int> > get_robot_map();
+    
+    virtual void th_init(void* );
+    
+    virtual void th_loop(void* );
     
 //     // NOTE IXBotRobot getters
 //     virtual bool get_robot_link_pos(std::map<std::string, float>& link_pos) final;
@@ -155,6 +163,44 @@ public:
 //     
 //     virtual bool set_chain_aux(std::string chain_name, const std::map<std::string, float>& aux) final;
 //     virtual bool set_chain_aux(std::string chain_name, const std::map<int, float>& aux) final;
+    
+    // NOTE IXBotJoint getters
+    virtual bool get_link_pos(int joint_id, float& link_pos) final;
+    
+    virtual bool get_motor_pos(int joint_id, float& motor_pos) final;
+    
+    virtual bool get_link_vel(int joint_id, float& link_vel) final;
+    
+    virtual bool get_motor_vel(int joint_id, int16_t& motor_vel) final;
+    
+    virtual bool get_torque(int joint_id, int16_t& torque) final;
+    
+    virtual bool get_max_temperature(int joint_id, uint16_t& max_temperature) final;
+    
+    virtual bool get_fault(int joint_id, uint16_t& fault) final;
+    
+    virtual bool get_rtt(int joint_id, uint16_t& rtt) final;
+    
+    virtual bool get_op_idx_ack(int joint_id, uint16_t& op_idx_ack) final;
+    
+    virtual bool get_aux(int joint_id, float& aux) final;
+    
+    // NOTE IXBotJoint setters
+    virtual bool set_pos_ref(int joint_id, const float& pos_ref) final;
+    
+    virtual bool set_vel_ref(int joint_id, const int16_t& vel_ref) final;
+    
+    virtual bool set_tor_ref(int joint_id, const int16_t& tor_ref) final;
+    
+    virtual bool set_gains(int joint_id, const std::vector<uint16_t>& gains) final;
+    
+    virtual bool set_fault_ack(int joint_id, const int16_t& fault_ack) final;
+    
+    virtual bool set_ts(int joint_id, const uint16_t& ts) final;
+    
+    virtual bool set_op_idx_aux(int joint_id, const uint16_t& op_idx_aux) final;
+    
+    virtual bool set_aux(int joint_id, const float& aux) final;
 
 
 private:
@@ -193,45 +239,26 @@ private:
      * @brief fd reading from pipes: we read the robot from XBotCore XDDP pipe
      * 
      */
-    std::map<int,int> fd;
+    std::map<int,int> fd_read;
     
-//     // NOTE IXBotJoint getters
-//     virtual bool get_link_pos(int joint_id, float& link_pos) final;
-//     
-//     virtual bool get_motor_pos(int joint_id, float& motor_pos) final;
-//     
-//     virtual bool get_link_vel(int joint_id, float& link_vel) final;
-//     
-//     virtual bool get_motor_vel(int joint_id, int16_t& motor_vel) final;
-//     
-//     virtual bool get_torque(int joint_id, int16_t& torque) final;
-//     
-//     virtual bool get_max_temperature(int joint_id, uint16_t& max_temperature) final;
-//     
-//     virtual bool get_fault(int joint_id, uint16_t& fault) final;
-//     
-//     virtual bool get_rtt(int joint_id, uint16_t& rtt) final;
-//     
-//     virtual bool get_op_idx_ack(int joint_id, uint16_t& op_idx_ack) final;
-//     
-//     virtual bool get_aux(int joint_id, float& aux) final;
-//     
-//     // NOTE IXBotJoint setters
-//     virtual bool set_pos_ref(int joint_id, const float& pos_ref) final;
-//     
-//     virtual bool set_vel_ref(int joint_id, const int16_t& vel_ref) final;
-//     
-//     virtual bool set_tor_ref(int joint_id, const int16_t& tor_ref) final;
-//     
-//     virtual bool set_gains(int joint_id, const std::vector<uint16_t>& gains) final;
-//     
-//     virtual bool set_fault_ack(int joint_id, const int16_t& fault_ack) final;
-//     
-//     virtual bool set_ts(int joint_id, const uint16_t& ts) final;
-//     
-//     virtual bool set_op_idx_aux(int joint_id, const uint16_t& op_idx_aux) final;
-//     
-//     virtual bool set_aux(int joint_id, const float& aux) final;
+    /**
+     * @brief fd writing to pipes: we writhe to the robot with XBotCore XDDP pipe
+     * 
+     */
+    std::map<int,int> fd_write;
+    
+    int n_bytes;
+    
+    /**
+     * @brief mutex
+     * 
+     */
+    std::map<int,std::shared_ptr<std::mutex>> mutex;
+    
+    
+    std::map<int, std::shared_ptr<iit::ecat::advr::McEscPdoTypes>> pdo;
+    
+
 
     
 
