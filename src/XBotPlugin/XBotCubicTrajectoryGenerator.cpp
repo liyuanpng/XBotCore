@@ -31,7 +31,7 @@ bool XBot::XBotCubicTrajectoryGenerator::init(void)
     robot_pos_ref[25] = -0.3;
     robot_pos_ref[26] = -0.2;
     robot_pos_ref[27] = -0.4;
-    robot_pos_ref[29] = 3.0;
+    robot_pos_ref[29] = 0.0;
     
     // declare the XBotData shared pointer
     auto p = std::make_shared<XBot::XBotData<boost::any>>();

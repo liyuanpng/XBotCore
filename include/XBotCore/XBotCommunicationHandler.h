@@ -48,8 +48,9 @@ public:
     
     std::map<std::string,std::vector<int> > get_robot_map();
     
-    virtual void th_init(void* );
+    XBot::XBotCoreModel get_robot_model();
     
+    virtual void th_init(void* );
     virtual void th_loop(void* );
     
 //     // NOTE IXBotRobot getters
@@ -247,6 +248,10 @@ private:
      */
     std::map<int,int> fd_write;
     
+    /**
+     * @brief number of bytes read from pipes
+     * 
+     */
     int n_bytes;
     
     /**
@@ -256,6 +261,10 @@ private:
     std::map<int,std::shared_ptr<std::mutex>> mutex;
     
     
+    /**
+     * @brief PDO map
+     * 
+     */
     std::map<int, std::shared_ptr<iit::ecat::advr::McEscPdoTypes>> pdo;
     
 
