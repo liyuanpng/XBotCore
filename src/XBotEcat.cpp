@@ -16,6 +16,7 @@ XBot::XBotEcat::XBotEcat(const char* config_yaml) : Ec_Thread_Boards_base(config
     
     // set thread priority
     set_thread_priority();
+    
 }
 
 void XBot::XBotEcat::set_thread_name(std::string thread_name)
@@ -52,6 +53,31 @@ void XBot::XBotEcat::set_thread_priority()
     stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
 }
 
+void XBot::XBotEcat::init_sdo_xddp()
+{
+    std::shared_ptr<XDDP_pipe> xddp;
+    iit::ecat::advr::Motor * moto;
+    
+    for ( auto const& item : motors ) {
+        moto = item.second;
+        xddp = std::make_shared<XDDP_pipe>();
+        xddp->init ( "sdo_Motor_id_"+std::to_string ( moto->get_robot_id() ) );
+        sdo_xddps[item.first] = xddp;
+    }
+}
+
+void XBot::XBotEcat::write_sdo_info()
+{
+    XBot::sdo_info sdo;
+    for ( auto const& p : sdo_xddps ) {
+        motors.at(p.first)->readSDO<float>("Min_pos", sdo.min_pos);
+        motors.at(p.first)->readSDO<float>("Max_pos", sdo.max_pos);
+        p.second->xddp_write<XBot::sdo_info>(sdo);
+    }
+}
+
+
+
 
 void XBot::XBotEcat::init_preOP(void) 
 {
@@ -61,6 +87,11 @@ void XBot::XBotEcat::init_preOP(void)
 
 void XBot::XBotEcat::init_OP(void)
 {
+    // open SDO XDDP
+    init_sdo_xddp();
+    // write SDO info
+    write_sdo_info(); 
+    // control init implmented by the derived classes
     control_init();
     return;
 }

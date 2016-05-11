@@ -20,8 +20,13 @@
 namespace XBot
 {
     class XBotEcat;
+    struct sdo_info;
 }
 
+struct XBot::sdo_info {
+    float min_pos;
+    float max_pos;
+};
 
 /**
  * @brief TBD
@@ -94,6 +99,26 @@ private:
      * 
      */
     std::string thread_name;
+    
+    /**
+     * @brief SDO info XDDP Pipes
+     * 
+     */
+    std::map<int, std::shared_ptr<XDDP_pipe> > sdo_xddps;
+    
+    /**
+     * @brief initialize the SDO XDDP pipes
+     * 
+     * @return void
+     */
+    void init_sdo_xddp();
+    
+    /**
+     * @brief write the sdo_info of the motor boards to the SDP XDDP pipes
+     * 
+     * @return void
+     */
+    void write_sdo_info();
         
     /**
      * @brief Setter for the thread name

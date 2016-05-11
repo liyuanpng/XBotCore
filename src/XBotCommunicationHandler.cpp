@@ -41,13 +41,28 @@ XBot::XBotCommunicationHandler::XBotCommunicationHandler(std::string config_file
                 fd_write[c.second[i]] = actual_fd;
             }
             
+            // initialize all the fd SDO reading for the motors
+            actual_fd = open((std::string("/proc/xenomai/registry/rtipc/xddp/") + std::string("sdo_Motor_id_") + std::to_string(c.second[i])).c_str(), O_RDONLY);
+            if(actual_fd > 0) {
+                fd_sdo_read[c.second[i]] = actual_fd;
+            }
+            
             // initialize the mutex
             mutex[c.second[i]] = std::make_shared<std::mutex>();
             
             // initialize the pdo
             iit::ecat::advr::McEscPdoTypes actual_pdo;
             int n_bytes = read(fd_read[c.second[i]], (void*)&actual_pdo, sizeof(actual_pdo));
-            pdo[c.second[i]] = std::make_shared<iit::ecat::advr::McEscPdoTypes>(actual_pdo);
+            if(n_bytes > 0) {
+                pdo[c.second[i]] = std::make_shared<iit::ecat::advr::McEscPdoTypes>(actual_pdo);
+            }
+            
+            // initialize the sdo info
+            XBot::sdo_info actual_sdo;
+            n_bytes = read(fd_sdo_read.at(c.second[i]), (void*)&actual_sdo, sizeof(actual_sdo));
+            if(n_bytes > 0) {
+                sdo_info[c.second[i]] = std::make_shared<XBot::sdo_info>(actual_sdo);
+            }
         }
     }
     
@@ -91,6 +106,8 @@ void XBot::XBotCommunicationHandler::th_init(void *)
    DPRINTF("XBotCommunicationHandler INIT\n");
    std::fflush(stdout);
    
+   // TBD use it instead of the constructor
+   
    
 }
 
@@ -110,6 +127,27 @@ void XBot::XBotCommunicationHandler::th_loop(void *)
     }
 
 }
+
+bool XBot::XBotCommunicationHandler::get_min_pos(int joint_id, float& min_pos)
+{
+    if( sdo_info.count(joint_id) ){
+        min_pos = sdo_info.at(joint_id)->min_pos;
+        return true;
+    }
+    min_pos = 0.0; // NOTE avoid to break the robot
+    return false;
+}
+
+bool XBot::XBotCommunicationHandler::get_max_pos(int joint_id, float& max_pos)
+{
+    if( sdo_info.count(joint_id) ){
+        max_pos = sdo_info.at(joint_id)->max_pos;
+        return true;
+    }
+    max_pos = 0.0; // NOTE avoid to break the robot
+    return false;
+}
+
 
 bool XBot::XBotCommunicationHandler::get_link_pos(int joint_id, float& link_pos)
 {

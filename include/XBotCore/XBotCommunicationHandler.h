@@ -16,12 +16,13 @@
 
 #include <iit/ecat/advr/esc.h>
 #include <iit/advr/thread_util.h>
+#include <XBotCore/XBotEcat.h>
 
 #include <mutex>
 
 #include <XBotCore/IXBotJoint.h>
-#include <XBotCore/IXBotChain.h>
-#include <XBotCore/IXBotRobot.h>
+// #include <XBotCore/IXBotChain.h>
+// #include <XBotCore/IXBotRobot.h>
 
 #include <XBotCore/XBotCoreModel.hpp>
 
@@ -202,6 +203,12 @@ public:
     virtual bool set_op_idx_aux(int joint_id, const uint16_t& op_idx_aux) final;
     
     virtual bool set_aux(int joint_id, const float& aux) final;
+    
+    
+    
+    // TBD do an interface that does it
+    bool get_min_pos(int joint_id, float& min_pos);
+    bool get_max_pos(int joint_id, float& max_pos);
 
 
 private:
@@ -249,6 +256,12 @@ private:
     std::map<int,int> fd_write;
     
     /**
+     * @brief fd reading from pipes: we read the robot SDO XBotCore XDDP pipe
+     * 
+     */
+    std::map<int,int> fd_sdo_read;
+    
+    /**
      * @brief number of bytes read from pipes
      * 
      */
@@ -267,6 +280,12 @@ private:
      */
     std::map<int, std::shared_ptr<iit::ecat::advr::McEscPdoTypes>> pdo;
     
+    
+    /**
+     * @brief SDO Info map
+     * 
+     */
+    std::map<int, std::shared_ptr<XBot::sdo_info>> sdo_info;
 
 
     
