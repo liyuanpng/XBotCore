@@ -33,7 +33,7 @@ class XBot::XBotData
     
 public:   
     
-    bool get(std::shared_ptr<T>& d) 
+    bool get(std::shared_ptr<T>& d) //TBD RETURN SOMETHING
     { 
         if(is_new && data) {
             d = data; 
@@ -41,7 +41,7 @@ public:
         }
     };
     
-    bool set(const std::shared_ptr<T>& d)
+    bool set(const std::shared_ptr<T>& d) //TBD RETURN SOMETHING
     { 
         if(d) {
             data = d; 
