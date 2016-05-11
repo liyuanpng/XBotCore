@@ -14,7 +14,6 @@ XBot::XBotCore::XBotCore(const char* config_yaml) : XBotEcat(config_yaml)
 
 XBot::XBotCoreModel XBot::XBotCore::get_robot_model(void)
 {
-
     return model;
 }
 
