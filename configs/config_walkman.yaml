@@ -6,6 +6,7 @@ x_bot_core:
   
 x_bot_ecat:
   name: XBotCore_basic
+  sdo_xddp_prefix : 
   # periodic - priority if needed here
 
 ec_board_ctrl:
