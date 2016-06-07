@@ -51,17 +51,21 @@ XBot::XBotCommunicationHandler::XBotCommunicationHandler(std::string config_file
             mutex[c.second[i]] = std::make_shared<std::mutex>();
             
             // initialize the pdo
-            iit::ecat::advr::McEscPdoTypes actual_pdo;
-            int n_bytes = read(fd_read[c.second[i]], (void*)&actual_pdo, sizeof(actual_pdo));
-            if(n_bytes > 0) {
-                pdo[c.second[i]] = std::make_shared<iit::ecat::advr::McEscPdoTypes>(actual_pdo);
+            if(fd_read.count(c.second[i])) {
+                iit::ecat::advr::McEscPdoTypes actual_pdo;
+                int n_bytes = read(fd_read[c.second[i]], (void*)&actual_pdo, sizeof(actual_pdo));
+                if(n_bytes > 0) {
+                    pdo[c.second[i]] = std::make_shared<iit::ecat::advr::McEscPdoTypes>(actual_pdo);
+                }   
             }
-            
+
             // initialize the sdo info
-            XBot::sdo_info actual_sdo;
-            n_bytes = read(fd_sdo_read.at(c.second[i]), (void*)&actual_sdo, sizeof(actual_sdo));
-            if(n_bytes > 0) {
-                sdo_info[c.second[i]] = std::make_shared<XBot::sdo_info>(actual_sdo);
+            if(fd_sdo_read.count(c.second[i])) {
+                XBot::sdo_info actual_sdo;
+                n_bytes = read(fd_sdo_read.at(c.second[i]), (void*)&actual_sdo, sizeof(actual_sdo));
+                if(n_bytes > 0) {
+                    sdo_info[c.second[i]] = std::make_shared<XBot::sdo_info>(actual_sdo);
+                }
             }
         }
     }
