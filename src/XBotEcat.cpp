@@ -76,12 +76,10 @@ void XBot::XBotEcat::write_sdo_info()
     }
 }
 
-
-
-
 void XBot::XBotEcat::init_preOP(void) 
 {
-    start_motors(CTRL_SET_POS_MODE);
+    // TBD read from the config file how to start the motors
+//     start_motors(CTRL_SET_POS_MODE);
     return;
 }
 
@@ -91,7 +89,7 @@ void XBot::XBotEcat::init_OP(void)
     init_sdo_xddp();
     // write SDO info
     write_sdo_info(); 
-    // control init implmented by the derived classes
+    // control init implemented by the derived classes
     control_init();
     return;
 }

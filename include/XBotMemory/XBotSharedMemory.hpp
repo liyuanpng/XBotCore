@@ -27,7 +27,7 @@ namespace XBot
 }
 
 /**
- * @brief TBD
+ * @brief Shared Memory utility data structures and functions
  * 
  */
 class XBot::XBotSharedMemory
@@ -56,7 +56,7 @@ public:
     virtual ~XBotSharedMemory() {};
 private:
         
-    std::map<std::string, std::shared_ptr< XBot::XBotData<boost::any> > > plugins_memory; 
+    std::map<std::string, std::shared_ptr< XBot::XBotData<boost::any> > > plugins_memory; // TBD profile it 
     
 
 };
