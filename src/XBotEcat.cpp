@@ -85,7 +85,17 @@ void XBot::XBotEcat::write_sdo_info()
 void XBot::XBotEcat::init_preOP(void) 
 {
     // TBD read from the config file how to start the motors
-    start_motors(CTRL_SET_POS_MODE);
+    iit::ecat::advr::Motor * moto;
+    for ( auto const& m : motors ) {
+        moto = m.second;
+        if(moto->am_i_LpESC()) {
+            start_motors(CTRL_SET_POS_MODE);
+        }
+        else if(moto->am_i_HpESC()) {
+            start_motors(CTRL_SET_MIX_POS_MODE);
+        }
+    }
+    
     return;
 }
 
