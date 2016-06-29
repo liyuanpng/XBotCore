@@ -11,14 +11,14 @@
     <!--CHAINS: When a chain is specified, all the links along the chain (including endpoints) are included in the group. Additionally, all the joints that are parents to included links are also included. This means that joints along the chain and the parent joint of the base link are included in the group-->
     <!--SUBGROUPS: Groups can also be formed by referencing to already defined group names-->
     
-    <xacro:property name="BIGMAN_HEAD" value="false" />
+    <xacro:property name="BIGMAN_HEAD" value="true" />
     <xacro:property name="BIGMAN_LEFT_ARM" value="true" />
-    <xacro:property name="BIGMAN_RIGHT_ARM" value="false" /> 
+    <xacro:property name="BIGMAN_RIGHT_ARM" value="true" /> 
     <xacro:property name="BIGMAN_LEFT_HAND" value="true" />
-    <xacro:property name="BIGMAN_RIGHT_HAND" value="false" /> 
-    <xacro:property name="BIGMAN_TORSO" value="false" />   
-    <xacro:property name="BIGMAN_LEFT_LEG" value="false" />
-    <xacro:property name="BIGMAN_RIGHT_LEG" value="false" /> 
+    <xacro:property name="BIGMAN_RIGHT_HAND" value="true" /> 
+    <xacro:property name="BIGMAN_TORSO" value="true" />   
+    <xacro:property name="BIGMAN_LEFT_LEG" value="true" />
+    <xacro:property name="BIGMAN_RIGHT_LEG" value="true" /> 
     
     <xacro:property name="BIGMAN_LEFT_ARM_FT" value="false" />
     <xacro:property name="BIGMAN_RIGHT_ARM_FT" value="false" />

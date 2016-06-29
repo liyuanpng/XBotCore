@@ -15,11 +15,29 @@
   <!--SUBGROUPS: Groups can also be formed by referencing to already defined group names-->
   <!-- Robot kinematic chains -->
   <!-- CONSTRAINT: specify the chain inside a group: only one chain per group -->
+  <group name="head">
+    <chain base_link="DWYTorso" tip_link="NeckPitch"/>
+  </group>
   <group name="left_arm">
     <chain base_link="DWYTorso" tip_link="l_wrist"/>
   </group>
+  <group name="right_arm">
+    <chain base_link="DWYTorso" tip_link="r_wrist"/>
+  </group>
   <group name="left_hand">
     <chain base_link="LWrMot3" tip_link="LSoftHandLink"/>
+  </group>
+  <group name="right_hand">
+    <chain base_link="RWrMot3" tip_link="RSoftHandLink"/>
+  </group>
+  <group name="torso">
+    <chain base_link="Waist" tip_link="DWYTorso"/>
+  </group>
+  <group name="left_leg">
+    <chain base_link="Waist" tip_link="l_sole"/>
+  </group>
+  <group name="right_leg">
+    <chain base_link="Waist" tip_link="r_sole"/>
   </group>
   <!-- Robot kinematic chains END -->
   <!-- F-T sensors -->
@@ -43,21 +61,27 @@
   <!-- CONSTRAINT: keep it in the end, it refers to already defined groups -->
   <group name="chains">
     <!-- HEAD -->
+    <group name="head"/>
     <!-- LEFT ARM -->
     <group name="left_arm"/>
     --&gt;
 
         
     <!-- RIGHT ARM -->
+    <group name="right_arm"/>
     <!-- LEFT HAND -->
     <group name="left_hand"/>
     --&gt;
 
         
     <!-- RIGHT HAND -->
+    <group name="right_hand"/>
     <!-- TORSO -->
+    <group name="torso"/>
     <!-- LEFT LEG -->
+    <group name="left_leg"/>
     <!-- RIGHT LEG -->
+    <group name="right_leg"/>
   </group>
   <!-- END CHAINS -->
 </robot>
