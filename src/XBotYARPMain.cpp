@@ -59,7 +59,7 @@ void YARP_configuration(const std::shared_ptr<XBot::XBotCommunicationHandler>& c
         wr_config.put("device","controlboardwrapper2");
         wr_config.put("robot_name", "bigman"); // TBD GET FROM SOMEWHERE 
         wr_config.put("name", "/" + wr_config.find("robot_name").asString() + "/" + c.first);
-        wr_config.put("period", 5);            // TBD do it from config YAML
+        wr_config.put("period", 10);            // TBD do it from config YAML
         
         // NOTE are you crazy, Mr YARP?
         yarp::os::Bottle chains; 
