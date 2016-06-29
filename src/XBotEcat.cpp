@@ -17,6 +17,12 @@ XBot::XBotEcat::XBotEcat(const char* config_yaml) : Ec_Thread_Boards_base(config
     // set thread priority
     set_thread_priority();
     
+    // set the CPU
+    cpu_set_t cpu_set;
+
+    CPU_ZERO( &cpu_set );
+    CPU_SET ( 2, &cpu_set );
+    
 }
 
 void XBot::XBotEcat::set_thread_name(std::string thread_name)
