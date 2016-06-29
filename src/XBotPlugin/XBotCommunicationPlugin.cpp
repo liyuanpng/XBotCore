@@ -13,7 +13,7 @@ XBot::XBotCommunicationPlugin::XBotCommunicationPlugin( std::string name,
 bool XBot::XBotCommunicationPlugin::init(void)
 {
     for(auto& c : model->get_robot()) {
-        for(int i=0; i< c.second.size(); i++) {
+        for(int i=0; i< c.second.size(); i++) { // TBD check if the motor exist
             xddps[c.second[i]] = std::make_shared<XDDP_pipe>();
             xddps[c.second[i]]->init(( std::string("rt_in_Motor_id_") + std::to_string(c.second[i])).c_str() );
         }
