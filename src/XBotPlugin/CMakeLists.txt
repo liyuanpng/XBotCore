@@ -25,14 +25,6 @@ endif()
 include_directories(../include)
 
 # lib
-add_library(XBotTestPlugin SHARED
-    XBotTestPlugin.cpp
-)
-# lib
-add_library(XBotCubicTrajectoryGenerator SHARED
-    XBotCubicTrajectoryGenerator.cpp
-)
-# lib
 add_library(XBotCommunicationPlugin SHARED
     XBotCommunicationPlugin.cpp
 )
@@ -43,14 +35,10 @@ if ( Xenomai_FOUND )
 endif()
 
 # link the common libs
-target_link_libraries(XBotTestPlugin XBotPluginHandler)
-target_link_libraries(XBotCubicTrajectoryGenerator XBotPluginHandler)
 target_link_libraries(XBotCommunicationPlugin XBotPluginHandler)
 
 
 # install lib and include
-install(TARGETS XBotTestPlugin RUNTIME LIBRARY DESTINATION lib)
-install(TARGETS XBotCubicTrajectoryGenerator RUNTIME LIBRARY DESTINATION lib)
 install(TARGETS XBotCommunicationPlugin RUNTIME LIBRARY DESTINATION lib)
 
 install(DIRECTORY include/ 

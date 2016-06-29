@@ -16,33 +16,12 @@ bool XBot::XBotPluginHandler::load_plugins() {
     std::shared_ptr<XBot::IXBotModel> actual_model = std::make_shared<XBot::XBotCoreModel>(model);
     std::shared_ptr<XBot::IXBotChain> actual_chain(this);
     std::shared_ptr<XBot::IXBotRobot> actual_robot(this);
-    std::shared_ptr<XBot::XBotSharedMemory> actual_memory(this);
-    
-    // PLUGIN MEMORY INIT
-
-//     // TBD load dynamically the plugins
-//     std::shared_ptr<XBot::XBotTestPlugin> test(new XBot::XBotTestPlugin("test plugin",
-//                                                                         actual_model, 
-//                                                                         actual_chain,
-//                                                                         actual_robot,
-//                                                                         actual_memory));
-//     
-//     
-//     plugins.push_back(test);
-//     // TBD load dynamically the plugins
-//     std::shared_ptr<XBot::XBotCubicTrajectoryGenerator> trajectory(new XBot::XBotCubicTrajectoryGenerator( "trajectory plugin",
-//                                                                                                             actual_model, 
-//                                                                                                             actual_chain,
-//                                                                                                             actual_robot,
-//                                                                                                             actual_memory));
-//     plugins.push_back(trajectory);
     
     // TBD load dynamically the plugins
     std::shared_ptr<XBot::XBotCommunicationPlugin> communication_plugin(new XBot::XBotCommunicationPlugin( "communication plugin",
                                                                                                             actual_model, 
                                                                                                             actual_chain,
-                                                                                                            actual_robot,
-                                                                                                            actual_memory));
+                                                                                                            actual_robot));
     plugins.push_back(communication_plugin);
     
     return true;
