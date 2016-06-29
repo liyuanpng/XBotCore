@@ -89,10 +89,12 @@ void XBot::XBotEcat::init_preOP(void)
     for ( auto const& m : motors ) {
         moto = m.second;
         if(moto->am_i_LpESC()) {
-            start_motors(CTRL_SET_POS_MODE);
+            moto->start(CTRL_SET_POS_MODE);
         }
         else if(moto->am_i_HpESC()) {
-            start_motors(CTRL_SET_MIX_POS_MODE);
+            //if(moto->get_robot_id() == 46) {
+                moto->start(CTRL_SET_MIX_POS_MODE);
+            //}
         }
     }
     
