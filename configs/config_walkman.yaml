@@ -157,8 +157,8 @@ HpESC_11:
 
 # RA_SH_2 = 12
 HpESC_12:
-  sign: -1
-  pos_offset: 90
+  sign: 1
+  pos_offset: -90
   pid :
     position: [40.0 , 0.0 , 1.0]
     mix_position: [800.0, 0.0, 5.0]
@@ -181,14 +181,14 @@ HpESC_14:
 
 # RA_WR_1 = 15
 LpESC_15:
-  sign: 1
+  sign: -1
   pos_offset: 0
   pid :
     position: [40.0 , 0.0 , 1.0]
 
 # RA_WR_2 = 16
 LpESC_16:
-  sign: 1
+  sign: -1
   pos_offset: 0
   pid :
     position: [40.0 , 0.0 , 1.0]
@@ -224,8 +224,8 @@ HpESC_21:
 
 # LA_SH_2 = 22
 HpESC_22:
-  sign: -1
-  pos_offset: -90
+  sign: 1
+  pos_offset: 90
   pid :
     position: [40.0 , 0.0 , 1.0]
     mix_position: [800.0, 0.0, 5.0]
@@ -248,7 +248,7 @@ HpESC_24:
 
 # LA_WR_1 = 25
 LpESC_25:
-  sign: 1
+  sign: -1
   pos_offset: 0
   pid :
     position: [40.0 , 0.0 , 1.0]
@@ -288,7 +288,7 @@ HpESC_31:
 
 # WST_R = 32
 HpESC_32:
-  sign: -1
+  sign: 1
   pos_offset: 0
   pid :
     position: [40.0 , 0.0 , 1.0]
