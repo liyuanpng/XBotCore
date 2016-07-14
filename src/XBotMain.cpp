@@ -10,10 +10,12 @@ extern void main_common(__sighandler_t sig_handler);
 
 static int main_loop = 1;
 
+
 void shutdown(int sig __attribute__((unused)))
 {
     main_loop = 0;
     printf("got signal .... Shutdown\n");
+
 }
 
 ////////////////////////////////////////////////////
@@ -23,9 +25,8 @@ void shutdown(int sig __attribute__((unused)))
 int main(int argc, char *argv[]) try {
 
     std::map<std::string, Thread_hook*> threads;
-
     if ( argc != 2) {
-	printf("Usage: %s config.yaml\n", argv[0]);
+        printf("Usage: %s config.yaml\n", argv[0]);
         return 0;
     }
 
@@ -35,14 +36,17 @@ int main(int argc, char *argv[]) try {
     threads["boards_ctrl"]->create(true, 2);
 
     while (main_loop) {
-        sleep(1);
+        sleep(1); 
     }
-
+    
+    std::cout << "main_loop " <<  main_loop << std::endl;
+    
     for ( auto const& item : threads ) {
         item.second->stop();
         item.second->join();
         delete item.second;
     }
+
 
     std::cout << "Exit main" << std::endl;
 

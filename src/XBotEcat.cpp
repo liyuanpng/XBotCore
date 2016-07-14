@@ -17,12 +17,6 @@ XBot::XBotEcat::XBotEcat(const char* config_yaml) : Ec_Thread_Boards_base(config
     // set thread priority
     set_thread_priority();
     
-    // set the CPU
-    cpu_set_t cpu_set;
-
-    CPU_ZERO( &cpu_set );
-    CPU_SET ( 2, &cpu_set );
-    
 }
 
 void XBot::XBotEcat::set_thread_name(std::string thread_name)
@@ -98,9 +92,7 @@ void XBot::XBotEcat::init_preOP(void)
             moto->start(CTRL_SET_POS_MODE);
         }
         else if(moto->am_i_HpESC()) {
-            //if(moto->get_robot_id() == 46) {
                 moto->start(CTRL_SET_MIX_POS_MODE);
-            //}
         }
     }
     
@@ -126,5 +118,6 @@ int XBot::XBotEcat::user_loop(void) {
 
 
 XBot::XBotEcat::~XBotEcat() {
+    printf("~XBotEcat()\n");
     
 }

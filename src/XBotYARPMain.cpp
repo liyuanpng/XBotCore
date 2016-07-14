@@ -45,7 +45,7 @@ void YARP_configuration(const std::shared_ptr<XBot::XBotCommunicationHandler>& c
         
         // open motion control device with chain joint map
         yarp::os::Property mc_config;
-        mc_config.put("device","XBotMotionControl");
+        mc_config.put("device","XBotMotionControl");    // TBD XBotMotionControl for F-T Sensor
         mc_config.put("joint_map", joints.toString()); 
         mc_config.put("chain_name", c.first); 
         motion_control_map[c.first].open(mc_config);
@@ -56,7 +56,7 @@ void YARP_configuration(const std::shared_ptr<XBot::XBotCommunicationHandler>& c
         
         // defining control board wrapper
         yarp::os::Property wr_config;    
-        wr_config.put("device","controlboardwrapper2");
+        wr_config.put("device","controlboardwrapper2"); // TBD for F-T analogServer
         wr_config.put("robot_name", "bigman"); // TBD GET FROM SOMEWHERE 
         wr_config.put("name", "/" + wr_config.find("robot_name").asString() + "/" + c.first);
         wr_config.put("period", 10);            // TBD do it from config YAML

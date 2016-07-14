@@ -205,7 +205,6 @@ public:
     virtual bool set_aux(int joint_id, const float& aux) final;
     
     
-    
     // TBD do an interface that does it
     bool get_min_pos(int joint_id, float& min_pos);
     bool get_max_pos(int joint_id, float& max_pos);
