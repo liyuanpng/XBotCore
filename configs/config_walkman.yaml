@@ -13,7 +13,7 @@ ec_board_ctrl:
   eth_iface: rteth0
   sync_cycle_time_ns: 1000000
   sync_cycle_offset_ns: 0
-  power_off_boards: false
+  power_off_boards: true
 
 ec_boards_base:
   create_pipes: true
