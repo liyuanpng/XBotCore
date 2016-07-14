@@ -46,3 +46,9 @@ bool XBot::XBotCommunicationPlugin::close(void)
 {
     return true;
 }
+
+XBot::XBotCommunicationPlugin::~XBotCommunicationPlugin()
+{
+    printf("~XBotCommunicationPlugin()\n");
+}
+

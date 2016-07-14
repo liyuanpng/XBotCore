@@ -401,6 +401,7 @@ public:
     
     ~XBotCoreModel() 
     {
+        printf("~XBotCoreModel()\n");
     }
     
 };

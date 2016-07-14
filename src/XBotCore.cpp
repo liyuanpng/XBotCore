@@ -1452,5 +1452,5 @@ bool XBot::XBotCore::set_aux(int joint_id, const float& aux)
 
 
 XBot::XBotCore::~XBotCore() {
-    
+    printf("~XBotCore()\n");
 }

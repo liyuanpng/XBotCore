@@ -1,7 +1,5 @@
 #include <XBotCore/XBotPluginHandler.h>
 
-#include <XBotPlugin/XBotTestPlugin.h>
-#include <XBotPlugin/XBotCubicTrajectoryGenerator.h>
 #include <XBotPlugin/XBotCommunicationPlugin.h>
 
 XBot::XBotPluginHandler::XBotPluginHandler(const char* config_yaml): XBotCore(config_yaml)
@@ -75,5 +73,5 @@ bool XBot::XBotPluginHandler::plugin_handler_close(void)
 
 XBot::XBotPluginHandler::~XBotPluginHandler()
 {
-
+    printf("~XBotPluginHandler()\n");
 }

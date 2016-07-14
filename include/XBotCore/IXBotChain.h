@@ -90,7 +90,9 @@ public:
     virtual bool set_chain_aux(std::string chain_name, const std::map<std::string, float>& aux) = 0;
     virtual bool set_chain_aux(std::string chain_name, const std::map<int, float>& aux) = 0;
     
-    virtual ~IXBotChain() {};
+    virtual ~IXBotChain() {
+        printf("~IXBotChain()\n");
+    };
 
 };
 

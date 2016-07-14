@@ -31,7 +31,9 @@ class XBot::IXBotCommunication
 public:   
 
     virtual bool init(std::shared_ptr<XBot::XBotCommunicationHandler>) = 0;       
-    virtual ~IXBotCommunication() {};
+    virtual ~IXBotCommunication() {
+        printf("~IXBotCommunication()\n");
+    };
 };
 
 #endif //__I_X_BOT_COMMUNICATION_H__

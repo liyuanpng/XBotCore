@@ -24,9 +24,6 @@
 #include <XBotCore/IXBotRobot.h>
 #include <XBotCore/XBotCoreModel.hpp>
 
-
-#include <XBotMemory/XBotSharedMemory.hpp>
-
 namespace XBot
 {
     class XBotCore;
@@ -40,8 +37,7 @@ namespace XBot
 class XBot::XBotCore : public   XBot::XBotEcat,
                        public   XBot::IXBotJoint,
                        public   XBot::IXBotChain,
-                       public   XBot::IXBotRobot,
-                       public   XBot::XBotSharedMemory
+                       public   XBot::IXBotRobot
                         
 {
 public:

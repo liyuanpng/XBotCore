@@ -49,6 +49,8 @@ public:
     
     virtual bool close(void);
     
+    virtual ~XBotCommunicationPlugin();
+    
 
 };
 

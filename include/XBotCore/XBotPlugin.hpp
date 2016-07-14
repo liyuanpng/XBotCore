@@ -46,7 +46,9 @@ public:
         
     };
     
-    virtual ~XBotPlugin() {};
+    virtual ~XBotPlugin() {
+        printf("~XBotPlugin()");
+    };
 
     
     virtual bool init(void) = 0;

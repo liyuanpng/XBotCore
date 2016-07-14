@@ -304,5 +304,5 @@ bool XBot::XBotCommunicationHandler::set_aux(int joint_id, const float& aux)
 
 XBot::XBotCommunicationHandler::~XBotCommunicationHandler()
 {
-
+    printf("~XBotCommunicationHandler()\n");
 }
