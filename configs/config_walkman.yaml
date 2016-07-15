@@ -157,8 +157,9 @@ HpESC_11:
 
 # RA_SH_2 = 12
 HpESC_12:
-  sign: 1
-  pos_offset: -90
+  sign: -1
+  pos_offset: 0
+  #pos_offset: -90 NOTE it was not working for the left_arm joint
   pid :
     position: [40.0 , 0.0 , 1.0]
     mix_position: [800.0, 0.0, 5.0]
@@ -224,8 +225,9 @@ HpESC_21:
 
 # LA_SH_2 = 22
 HpESC_22:
-  sign: 1
-  pos_offset: 90
+  sign: -1
+  pos_offset : 0
+  #pos_offset: 90 NOTE it was not working for the left_arm joint
   pid :
     position: [40.0 , 0.0 , 1.0]
     mix_position: [800.0, 0.0, 5.0]
