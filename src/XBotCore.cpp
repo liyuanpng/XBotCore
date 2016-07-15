@@ -1313,7 +1313,7 @@ bool XBot::XBotCore::set_pos_ref(int joint_id, const float& pos_ref)
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
-//          DPRINTF("lowest set_pos_ref : joint %d - pos %d - val %f\n", joint_id, rid2Pos(joint_id), pos_ref);
+//          DPRINTF("low level set_pos_ref : joint %d - pos %d - pos_ref %f\n", joint_id, rid2Pos(joint_id), pos_ref);
         // set the data
         last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
         last_pdo_tx.pos_ref = pos_ref;
@@ -1367,8 +1367,6 @@ bool XBot::XBotCore::set_gains(int joint_id, const std::vector<uint16_t>& gains)
     if( motors.count(rid2Pos(joint_id)) ) {
         // set the data
         last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
-        // copy the gains NOTE memcpy gives problems (why?)
-//         memcpy(last_pdo_tx.gains, gains.data(), gains.size());
         for(int i = 0; i < gains.size(); i++) {
             last_pdo_tx.gains[i] = gains[i];
         }

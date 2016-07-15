@@ -92,7 +92,9 @@ void XBot::XBotEcat::init_preOP(void)
             moto->start(CTRL_SET_POS_MODE);
         }
         else if(moto->am_i_HpESC()) {
+//             if(moto->get_robot_id() != 22) { 
                 moto->start(CTRL_SET_MIX_POS_MODE);
+//             }
         }
     }
     

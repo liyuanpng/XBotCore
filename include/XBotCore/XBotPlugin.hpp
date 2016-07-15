@@ -47,7 +47,7 @@ public:
     };
     
     virtual ~XBotPlugin() {
-        printf("~XBotPlugin()");
+        printf("~XBotPlugin\n");
     };
 
     
