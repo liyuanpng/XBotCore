@@ -94,8 +94,6 @@ target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
                                       ${kdl_parser_LIBRARIES}
                                       XBotPluginHandler
                                       XBotCommunicationHandler
-                                      XBotTestPlugin
-                                      XBotCubicTrajectoryGenerator
                                       XBotCommunicationPlugin)
                                       
 # link the common libs
