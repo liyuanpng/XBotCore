@@ -20,10 +20,10 @@
     <xacro:property name="BIGMAN_LEFT_LEG" value="true" />
     <xacro:property name="BIGMAN_RIGHT_LEG" value="true" /> 
     
-    <xacro:property name="BIGMAN_LEFT_ARM_FT" value="false" />
-    <xacro:property name="BIGMAN_RIGHT_ARM_FT" value="false" />
-    <xacro:property name="BIGMAN_LEFT_LEG_FT" value="false" />
-    <xacro:property name="BIGMAN_RIGHT_LEG_FT" value="false" />
+    <xacro:property name="BIGMAN_LEFT_ARM_FT" value="true" />
+    <xacro:property name="BIGMAN_RIGHT_ARM_FT" value="true" />
+    <xacro:property name="BIGMAN_LEFT_LEG_FT" value="true" />
+    <xacro:property name="BIGMAN_RIGHT_LEG_FT" value="true" />
     
     
  

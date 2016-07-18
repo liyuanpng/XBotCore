@@ -42,6 +42,10 @@
   <!-- Robot kinematic chains END -->
   <!-- F-T sensors -->
   <group name="force_torque_sensors">
+    <joint name="l_arm_ft_joint"/>
+    <joint name="r_arm_ft_joint"/>
+    <joint name="l_leg_ft_joint"/>
+    <joint name="r_leg_ft_joint"/>
   </group>
   <!-- END F-T sensors -->
   <!-- TBD IMU -->
