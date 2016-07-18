@@ -41,17 +41,27 @@ find_package(kdl_parser REQUIRED)
 find_package(YARP REQUIRED)
 
 # Common libs TBD: make it clean!
-set(COMMON_LIBS
-    shared_utils
-    walkman_master
-    iitecat_iface
-    soem
+set(COMMON_LIBS_RT
+    ecat_test_utils_rt
+    walkman_master_rt
+    iitecat_iface_rt
+    soem_rt
     pthread
     zmq
     jsoncpp
     yaml-cpp
 )
 
+set(COMMON_LIBS_NRT
+    ecat_test_utils_nrt
+    walkman_master_nrt
+    iitecat_iface_nrt
+    soem_nrt
+    pthread
+    zmq
+    jsoncpp
+    yaml-cpp
+)
 
 
 # include 
@@ -87,8 +97,8 @@ endif()
 
 add_subdirectory(src/XBotPlugin) # leave it here, the main dipends on the compiled plugins
 
-# link the common libs
-target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
+# link the RT common libs
+target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS_RT}
                                       ${srdfdom_LIBRARIES}
                                       ${urdfdom_LIBRARIES}
                                       ${kdl_parser_LIBRARIES}
@@ -96,8 +106,8 @@ target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
                                       XBotCommunicationHandler
                                       XBotCommunicationPlugin)
                                       
-# link the common libs
-target_link_libraries(XBotYARP ${COMMON_LIBS}
+# link the NRT common libs
+target_link_libraries(XBotYARP ${COMMON_LIBS_NRT}
                                ${srdfdom_LIBRARIES}
                                ${urdfdom_LIBRARIES}
                                ${kdl_parser_LIBRARIES}
