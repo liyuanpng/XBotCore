@@ -27,17 +27,21 @@ void XBot::XBotCommunicationPlugin::run(void)
     for( auto& p: xddps) {
         int n_bytes = p.second->xddp_read<iit::ecat::advr::McEscPdoTypes::pdo_tx>(pdo_tx);
         if(n_bytes > 0) {
-//             DPRINTF("board %d : ", p.first);
-//             DPRINTF("reading pos_ref : %f\n", pdo_tx.pos_ref);
-            pos_ref_map[p.first] = pdo_tx.pos_ref;  
+//             if(p.first == 21) {
+//                 DPRINTF("board %d : ", p.first);
+//                 DPRINTF("reading pos_ref : %f\n", pdo_tx.pos_ref);
+//             }
+            pos_ref_map[p.first] = pdo_tx.pos_ref;
         }
     }
     if(!pos_ref_map.empty()) {
 //         for ( auto& b: pos_ref_map) {
-//             DPRINTF("board %d : ", b.first);
-//             DPRINTF("setting pos_ref : %f\n", b.second);
+//             if(b.first == 21) {
+//                 DPRINTF("board %d : ", b.first);
+//                 DPRINTF("setting pos_ref : %f\n", b.second);
+//             }
 //         }
-
+        
         robot->set_robot_pos_ref(pos_ref_map); // TBD do a set for each settable field
     }
 }
