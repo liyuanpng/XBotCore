@@ -25,11 +25,15 @@ void shutdown(int sig __attribute__((unused)))
 
 void YARP_configuration(const std::shared_ptr<XBot::XBotCommunicationHandler>& ch,
                         std::map<std::string, yarp::dev::PolyDriver >& motion_control_map,
-                        std::map<std::string, yarp::dev::PolyDriver >& wrapper_map) 
+                        std::map<std::string, yarp::dev::PolyDriver >& wrapper_map,
+                        std::map<std::string, yarp::dev::PolyDriver >& ft_map,
+                        std::map<std::string, yarp::dev::PolyDriver >& analog_server_map) 
 {
 
     // get the robot chain/joints
     std::map<std::string, std::vector<int> > robot = ch->get_robot_map();
+    // get the robot FT
+    std::map<std::string, int> ft = ch->get_ft_sensors_map();
     // define XBotCommunication interface
     XBot::IXBotCommunication* xbot_communication;
     
@@ -45,7 +49,7 @@ void YARP_configuration(const std::shared_ptr<XBot::XBotCommunicationHandler>& c
         
         // open motion control device with chain joint map
         yarp::os::Property mc_config;
-        mc_config.put("device","XBotMotionControl");    // TBD XBotMotionControl for F-T Sensor
+        mc_config.put("device","XBotMotionControl");    
         mc_config.put("joint_map", joints.toString()); 
         mc_config.put("chain_name", c.first); 
         motion_control_map[c.first].open(mc_config);
@@ -56,10 +60,10 @@ void YARP_configuration(const std::shared_ptr<XBot::XBotCommunicationHandler>& c
         
         // defining control board wrapper
         yarp::os::Property wr_config;    
-        wr_config.put("device","controlboardwrapper2"); // TBD for F-T analogServer
-        wr_config.put("robot_name", "bigman"); // TBD GET FROM SOMEWHERE 
+        wr_config.put("device","controlboardwrapper2"); 
+        wr_config.put("robot_name", "bigman"); 
         wr_config.put("name", "/" + wr_config.find("robot_name").asString() + "/" + c.first);
-        wr_config.put("period", 10);            // TBD do it from config YAML
+        wr_config.put("period", 10);           
         
         // NOTE are you crazy, Mr YARP?
         yarp::os::Bottle chains; 
@@ -91,6 +95,42 @@ void YARP_configuration(const std::shared_ptr<XBot::XBotCommunicationHandler>& c
         
         wrapper_map.at(c.first).view(multi_wrapper);
         multi_wrapper->attachAll(poly_list);
+    }
+    
+    // iterate over the actual robot FT in order to define dynamic wrappers
+    for(auto& ft_j : ft) {
+        
+        // open motion control device with chain joint map
+        yarp::os::Property ft_config;
+        ft_config.put("device","XBotFT");   
+        ft_config.put("channels", 6); //TBD take it from a config file 
+        ft_config.put("ft_name", ft_j.first); 
+        ft_map[ft_j.first].open(ft_config);
+        
+        // init
+        ft_map.at(ft_j.first).view(xbot_communication);
+        xbot_communication->init(ch);
+        
+        // defining control board wrapper
+        yarp::os::Property wr_config;    
+        wr_config.put("device","analogServer"); 
+        wr_config.put("robot_name", "bigman"); // TBD GET FROM SOMEWHERE 
+        wr_config.put("name", "/" + wr_config.find("robot_name").asString() + "/" + ft_j.first + "/" + "analog:o/forceTorque");
+        wr_config.put("period", 10);            // TBD do it from config YAML
+        analog_server_map[ft_j.first].open(wr_config);
+        
+        // view on the wrapper and attach the poly driver
+        yarp::dev::PolyDriverDescriptor poly_descriptor;
+        yarp::dev::PolyDriverList poly_list;
+        yarp::dev::IMultipleWrapper* multi_wrapper;
+        
+        poly_descriptor.key = ft_j.first;
+        poly_descriptor.poly = &ft_map.at(ft_j.first);
+        poly_list.push(poly_descriptor);
+        
+        analog_server_map.at(ft_j.first).view(multi_wrapper);
+        multi_wrapper->attachAll(poly_list);
+        
     }
 }
 
@@ -128,11 +168,16 @@ int main(int argc, char *argv[]) try {
     // create YARP MotionControl and Wrappers (coupled)
     std::map<std::string, yarp::dev::PolyDriver > motion_control_map;
     std::map<std::string, yarp::dev::PolyDriver > wrapper_map;
+    // ft
+    std::map<std::string, yarp::dev::PolyDriver > ft_map;
+    std::map<std::string, yarp::dev::PolyDriver > analog_server_map;
     
     // YARP configuration
     YARP_configuration(commHandler, 
                        motion_control_map, 
-                       wrapper_map);
+                       wrapper_map,
+                       ft_map,
+                       analog_server_map);
 
 
     while (main_loop) {

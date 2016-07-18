@@ -24,8 +24,10 @@ XBot::XBotCommunicationHandler::XBotCommunicationHandler(std::string config_file
     model.generate_robot();
     // get the robot
     robot = model.get_robot();
-    
-    
+    // get the ft
+    ft = model.get_ft_sensors();
+
+    // motors
     for(auto& c : robot) {
         for(int i=0; i< c.second.size(); i++) {
             
@@ -50,12 +52,12 @@ XBot::XBotCommunicationHandler::XBotCommunicationHandler(std::string config_file
             // initialize the mutex
             mutex[c.second[i]] = std::make_shared<std::mutex>();
             
-            // initialize the pdo
+            // initialize the pdo_motor
             if(fd_read.count(c.second[i])) {
-                iit::ecat::advr::McEscPdoTypes actual_pdo;
-                int n_bytes = read(fd_read[c.second[i]], (void*)&actual_pdo, sizeof(actual_pdo));
+                iit::ecat::advr::McEscPdoTypes actual_pdo_motor;
+                int n_bytes = read(fd_read[c.second[i]], (void*)&actual_pdo_motor, sizeof(actual_pdo_motor));
                 if(n_bytes > 0) {
-                    pdo[c.second[i]] = std::make_shared<iit::ecat::advr::McEscPdoTypes>(actual_pdo);
+                    pdo_motor[c.second[i]] = std::make_shared<iit::ecat::advr::McEscPdoTypes>(actual_pdo_motor);
                 }   
             }
 
@@ -70,6 +72,16 @@ XBot::XBotCommunicationHandler::XBotCommunicationHandler(std::string config_file
         }
     }
     
+    //ft
+    for(auto& ft_j : ft) {
+        // initialize all the fd reading for the ft
+        int actual_fd = open((std::string("/proc/xenomai/registry/rtipc/xddp/") + std::string("Ft_id_") + std::to_string(ft_j.second)).c_str(), O_RDONLY);
+        if(actual_fd > 0) {
+            fd_ft_read[ft_j.second] = actual_fd;
+        }
+        // initialize the mutex
+        mutex[ft_j.second] = std::make_shared<std::mutex>();
+    }
     
 
     
@@ -98,6 +110,12 @@ std::map< std::string, std::vector< int > > XBot::XBotCommunicationHandler::get_
     return model.get_robot();
 }
 
+std::map< std::string, int > XBot::XBotCommunicationHandler::get_ft_sensors_map()
+{
+    return model.get_ft_sensors();
+}
+
+
 XBot::XBotCoreModel XBot::XBotCommunicationHandler::get_robot_model()
 {
     return model;
@@ -119,13 +137,13 @@ void XBot::XBotCommunicationHandler::th_loop(void *)
 {  
     for( auto& f: fd_write) {
         mutex.at(f.first)->lock();
-        iit::ecat::advr::McEscPdoTypes::pdo_tx actual_pdo_tx = pdo.at(f.first)->pdo_data_tx;
+        iit::ecat::advr::McEscPdoTypes::pdo_tx actual_pdo_tx = pdo_motor.at(f.first)->pdo_data_tx;
         n_bytes = write(f.second, (void*)&(actual_pdo_tx), sizeof(actual_pdo_tx));
         
         // NOTE the single joint element can oly be controlled by either the RT or the N-RT so it should be commented!
-        iit::ecat::advr::McEscPdoTypes actual_pdo;  
-        n_bytes = read(fd_read.at(f.first), (void*)&actual_pdo, sizeof(actual_pdo));
-        (*pdo.at(f.first)).pdo_data_rx = actual_pdo.pdo_data_rx;
+        iit::ecat::advr::McEscPdoTypes actual_pdo_motor;  
+        n_bytes = read(fd_read.at(f.first), (void*)&actual_pdo_motor, sizeof(actual_pdo_motor));
+        (*pdo_motor.at(f.first)).pdo_data_rx = actual_pdo_motor.pdo_data_rx;
         
         mutex.at(f.first)->unlock();
     }
@@ -156,7 +174,7 @@ bool XBot::XBotCommunicationHandler::get_max_pos(int joint_id, float& max_pos)
 bool XBot::XBotCommunicationHandler::get_link_pos(int joint_id, float& link_pos)
 {
     mutex.at(joint_id)->lock();
-    link_pos = pdo.at(joint_id)->pdo_data_rx.link_pos;
+    link_pos = pdo_motor.at(joint_id)->pdo_data_rx.link_pos;
     mutex.at(joint_id)->unlock();
     return true;
 }
@@ -164,7 +182,7 @@ bool XBot::XBotCommunicationHandler::get_link_pos(int joint_id, float& link_pos)
 bool XBot::XBotCommunicationHandler::get_motor_pos(int joint_id, float& motor_pos)
 {
     mutex.at(joint_id)->lock();
-    motor_pos = pdo.at(joint_id)->pdo_data_rx.motor_pos;
+    motor_pos = pdo_motor.at(joint_id)->pdo_data_rx.motor_pos;
     mutex.at(joint_id)->unlock();
     return true;
 }
@@ -172,7 +190,7 @@ bool XBot::XBotCommunicationHandler::get_motor_pos(int joint_id, float& motor_po
 bool XBot::XBotCommunicationHandler::get_link_vel(int joint_id, float& link_vel)
 {
     mutex.at(joint_id)->lock();
-    link_vel = pdo.at(joint_id)->pdo_data_rx.link_vel;
+    link_vel = pdo_motor.at(joint_id)->pdo_data_rx.link_vel;
     mutex.at(joint_id)->unlock();
     return true;
 }
@@ -180,7 +198,7 @@ bool XBot::XBotCommunicationHandler::get_link_vel(int joint_id, float& link_vel)
 bool XBot::XBotCommunicationHandler::get_motor_vel(int joint_id, int16_t& motor_vel)
 {
     mutex.at(joint_id)->lock();
-    motor_vel = pdo.at(joint_id)->pdo_data_rx.motor_vel;
+    motor_vel = pdo_motor.at(joint_id)->pdo_data_rx.motor_vel;
     mutex.at(joint_id)->unlock();
     return true;
 }
@@ -188,7 +206,7 @@ bool XBot::XBotCommunicationHandler::get_motor_vel(int joint_id, int16_t& motor_
 bool XBot::XBotCommunicationHandler::get_torque(int joint_id, int16_t& torque)
 {
     mutex.at(joint_id)->lock();
-    torque = pdo.at(joint_id)->pdo_data_rx.torque;
+    torque = pdo_motor.at(joint_id)->pdo_data_rx.torque;
     mutex.at(joint_id)->unlock();
     return true;
 }
@@ -196,7 +214,7 @@ bool XBot::XBotCommunicationHandler::get_torque(int joint_id, int16_t& torque)
 bool XBot::XBotCommunicationHandler::get_max_temperature(int joint_id, uint16_t& max_temperature)
 {
     mutex.at(joint_id)->lock();
-    max_temperature = pdo.at(joint_id)->pdo_data_rx.max_temperature;
+    max_temperature = pdo_motor.at(joint_id)->pdo_data_rx.max_temperature;
     mutex.at(joint_id)->unlock();
     return true;
 }
@@ -204,7 +222,7 @@ bool XBot::XBotCommunicationHandler::get_max_temperature(int joint_id, uint16_t&
 bool XBot::XBotCommunicationHandler::get_fault(int joint_id, uint16_t& fault)
 {
     mutex.at(joint_id)->lock();
-    fault = pdo.at(joint_id)->pdo_data_rx.fault;
+    fault = pdo_motor.at(joint_id)->pdo_data_rx.fault;
     mutex.at(joint_id)->unlock();
     return true;
 }
@@ -212,7 +230,7 @@ bool XBot::XBotCommunicationHandler::get_fault(int joint_id, uint16_t& fault)
 bool XBot::XBotCommunicationHandler::get_rtt(int joint_id, uint16_t& rtt)
 {
     mutex.at(joint_id)->lock();
-    rtt = pdo.at(joint_id)->pdo_data_rx.rtt;
+    rtt = pdo_motor.at(joint_id)->pdo_data_rx.rtt;
     mutex.at(joint_id)->unlock();
     return true;
 }
@@ -220,7 +238,7 @@ bool XBot::XBotCommunicationHandler::get_rtt(int joint_id, uint16_t& rtt)
 bool XBot::XBotCommunicationHandler::get_op_idx_ack(int joint_id, uint16_t& op_idx_ack)
 {
     mutex.at(joint_id)->lock();
-    op_idx_ack = pdo.at(joint_id)->pdo_data_rx.op_idx_ack;
+    op_idx_ack = pdo_motor.at(joint_id)->pdo_data_rx.op_idx_ack;
     mutex.at(joint_id)->unlock();
     return true;
 }
@@ -228,7 +246,7 @@ bool XBot::XBotCommunicationHandler::get_op_idx_ack(int joint_id, uint16_t& op_i
 bool XBot::XBotCommunicationHandler::get_aux(int joint_id, float& aux)
 {
     mutex.at(joint_id)->lock();
-    aux = pdo.at(joint_id)->pdo_data_rx.aux;
+    aux = pdo_motor.at(joint_id)->pdo_data_rx.aux;
     mutex.at(joint_id)->unlock();
     return true;
 }
@@ -236,8 +254,8 @@ bool XBot::XBotCommunicationHandler::get_aux(int joint_id, float& aux)
 bool XBot::XBotCommunicationHandler::set_pos_ref(int joint_id, const float& pos_ref)
 {
     mutex.at(joint_id)->lock();
-    pdo.at(joint_id)->pdo_data_tx.pos_ref = pos_ref;
-    DPRINTF("joint : %d - set pos ref : %f\n", joint_id, pdo.at(joint_id)->pdo_data_tx.pos_ref);
+    pdo_motor.at(joint_id)->pdo_data_tx.pos_ref = pos_ref;
+    DPRINTF("joint : %d - set pos ref : %f\n", joint_id, pdo_motor.at(joint_id)->pdo_data_tx.pos_ref);
     mutex.at(joint_id)->unlock();
     return true;
 }
@@ -245,7 +263,7 @@ bool XBot::XBotCommunicationHandler::set_pos_ref(int joint_id, const float& pos_
 bool XBot::XBotCommunicationHandler::set_vel_ref(int joint_id, const int16_t& vel_ref)
 {
     mutex.at(joint_id)->lock();
-    pdo.at(joint_id)->pdo_data_tx.vel_ref = vel_ref;
+    pdo_motor.at(joint_id)->pdo_data_tx.vel_ref = vel_ref;
     mutex.at(joint_id)->unlock();
     return true;
 }
@@ -253,7 +271,7 @@ bool XBot::XBotCommunicationHandler::set_vel_ref(int joint_id, const int16_t& ve
 bool XBot::XBotCommunicationHandler::set_tor_ref(int joint_id, const int16_t& tor_ref)
 {
     mutex.at(joint_id)->lock();
-    pdo.at(joint_id)->pdo_data_tx.tor_ref = tor_ref;
+    pdo_motor.at(joint_id)->pdo_data_tx.tor_ref = tor_ref;
     mutex.at(joint_id)->unlock();
     return true;
 }
@@ -262,7 +280,7 @@ bool XBot::XBotCommunicationHandler::set_gains(int joint_id, const std::vector< 
 {
     mutex.at(joint_id)->lock();
     for(int i = 0; i < gains.size(); i++) {
-        pdo.at(joint_id)->pdo_data_tx.gains[i] = gains[i];
+        pdo_motor.at(joint_id)->pdo_data_tx.gains[i] = gains[i];
     }
     mutex.at(joint_id)->unlock();
     return true;
@@ -271,7 +289,7 @@ bool XBot::XBotCommunicationHandler::set_gains(int joint_id, const std::vector< 
 bool XBot::XBotCommunicationHandler::set_fault_ack(int joint_id, const int16_t& fault_ack)
 {
     mutex.at(joint_id)->lock();
-    pdo.at(joint_id)->pdo_data_tx.fault_ack = fault_ack;
+    pdo_motor.at(joint_id)->pdo_data_tx.fault_ack = fault_ack;
     mutex.at(joint_id)->unlock();
     return true;
 }
@@ -279,7 +297,7 @@ bool XBot::XBotCommunicationHandler::set_fault_ack(int joint_id, const int16_t& 
 bool XBot::XBotCommunicationHandler::set_ts(int joint_id, const uint16_t& ts)
 {
     mutex.at(joint_id)->lock();
-    pdo.at(joint_id)->pdo_data_tx.ts = ts;
+    pdo_motor.at(joint_id)->pdo_data_tx.ts = ts;
     mutex.at(joint_id)->unlock();
     return true;
 }
@@ -287,7 +305,7 @@ bool XBot::XBotCommunicationHandler::set_ts(int joint_id, const uint16_t& ts)
 bool XBot::XBotCommunicationHandler::set_op_idx_aux(int joint_id, const uint16_t& op_idx_aux)
 {
     mutex.at(joint_id)->lock();
-    pdo.at(joint_id)->pdo_data_tx.op_idx_aux = op_idx_aux;
+    pdo_motor.at(joint_id)->pdo_data_tx.op_idx_aux = op_idx_aux;
     mutex.at(joint_id)->unlock();
     return true;
 }
@@ -295,9 +313,43 @@ bool XBot::XBotCommunicationHandler::set_op_idx_aux(int joint_id, const uint16_t
 bool XBot::XBotCommunicationHandler::set_aux(int joint_id, const float& aux)
 {
     mutex.at(joint_id)->lock();
-    pdo.at(joint_id)->pdo_data_tx.aux = aux;
+    pdo_motor.at(joint_id)->pdo_data_tx.aux = aux;
     mutex.at(joint_id)->unlock();
     return true;
+}
+
+bool XBot::XBotCommunicationHandler::get_ft(int ft_id, std::vector< float >& ft, int channels)
+{
+    mutex.at(ft_id)->lock();
+    
+    iit::ecat::advr::Ft6EscPdoTypes::pdo_rx actual_pdo_rx_ft;  
+    n_bytes = read(fd_ft_read.at(ft_id), (void*)&actual_pdo_rx_ft, sizeof(actual_pdo_rx_ft));
+    ft.resize(channels);
+    memcpy(ft.data(), &(actual_pdo_rx_ft.force_X), channels*sizeof(float));
+    
+    mutex.at(ft_id)->unlock();
+    return true;  
+}
+
+bool XBot::XBotCommunicationHandler::get_ft_fault(int ft_id, uint16_t& fault)
+{
+    mutex.at(ft_id)->lock();
+    iit::ecat::advr::Ft6EscPdoTypes::pdo_rx actual_pdo_rx_ft;   
+    n_bytes = read(fd_ft_read.at(ft_id), (void*)&actual_pdo_rx_ft, sizeof(actual_pdo_rx_ft));
+    fault = actual_pdo_rx_ft.fault;
+    
+    mutex.at(ft_id)->unlock();
+    return true;  
+}
+
+bool XBot::XBotCommunicationHandler::get_ft_rtt(int ft_id, uint16_t& rtt)
+{
+    mutex.at(ft_id)->lock();
+    iit::ecat::advr::Ft6EscPdoTypes::pdo_rx actual_pdo_rx_ft;    
+    n_bytes = read(fd_ft_read.at(ft_id), (void*)&actual_pdo_rx_ft, sizeof(actual_pdo_rx_ft));
+    rtt = actual_pdo_rx_ft.rtt;
+    mutex.at(ft_id)->unlock();
+    return true;  
 }
 
 

@@ -55,6 +55,12 @@ private:
     std::map<std::string, std::vector<int>> robot;
     
     /**
+     * @brief map between the chain name and the id of the ft_sensors
+     * 
+     */
+    std::map<std::string, int> ft_sensors;
+    
+    /**
      * @brief map between joint robot id and joint name
      * 
      */
@@ -162,8 +168,13 @@ private:
                 }
 
             }
-            // TBD not a kinematic chain : check for FT or IMU
+            // NOTE not a kinematic chain : check for FT 
             else {
+                if(actual_groups[i].name_ == "force_torque_sensors") {
+                    for(int j = 0; j < actual_groups[i].joints_.size(); j++) {
+                        ft_sensors[actual_groups[i].joints_[j]] = joint2Rid(actual_groups[i].joints_[j]);
+                    }
+                }
                 
             }
 
@@ -383,9 +394,14 @@ public:
         }
     }
     
-    virtual std::map<std::string, std::vector<int>> get_robot(void) final
+    virtual std::map<std::string, std::vector<int> > get_robot(void) final
     {
         return robot;
+    }
+    
+    virtual std::map<std::string,int> get_ft_sensors(void) final
+    {
+        return ft_sensors;
     }
           
     virtual std::string rid2Joint(int rId) final

@@ -32,10 +32,10 @@ class XBot::IXBotModel
     
 public:   
 
-    virtual std::map< std::string, std::vector<int> >  get_robot() = 0;
+    virtual std::map<std::string, std::vector<int> >  get_robot() = 0;
+    virtual std::map<std::string, int>  get_ft_sensors() = 0;
     
     virtual std::string rid2Joint(int rId) = 0;
-    
     virtual int joint2Rid(std::string joint_name) = 0;
     
 
