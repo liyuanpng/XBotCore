@@ -72,12 +72,12 @@ void XBot::XBotEcat::write_sdo_info()
     for ( auto const& p : sdo_xddps ) {
         motors.at(p.first)->readSDO<float>("Min_pos", sdo.min_pos);
         motors.at(p.first)->readSDO<float>("Max_pos", sdo.max_pos);
-        // NOTE in the FIRMWARE the 0 is PI: when you do the conversion (M2J) depending on the sign, min and max have to be swapped
-        if(sdo.min_pos > sdo.max_pos) {
-            float swap = sdo.min_pos;
-            sdo.min_pos = sdo.max_pos;
-            sdo.max_pos = swap;
-        }
+//         // NOTE in the FIRMWARE the 0 is PI: when you do the conversion (M2J) depending on the sign, min and max have to be swapped
+//         if(sdo.min_pos > sdo.max_pos) {
+//             float swap = sdo.min_pos;
+//             sdo.min_pos = sdo.max_pos;
+//             sdo.max_pos = swap;
+//         }
         p.second->xddp_write<XBot::sdo_info>(sdo);
     }
 }
@@ -92,9 +92,7 @@ void XBot::XBotEcat::init_preOP(void)
             moto->start(CTRL_SET_POS_MODE);
         }
         else if(moto->am_i_HpESC()) {
-//             if(moto->get_robot_id() != 22) { 
-                moto->start(CTRL_SET_MIX_POS_MODE);
-//             }
+            moto->start(CTRL_SET_MIX_POS_MODE);
         }
     }
     
