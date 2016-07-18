@@ -1313,11 +1313,8 @@ bool XBot::XBotCore::set_pos_ref(int joint_id, const float& pos_ref)
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
-//          DPRINTF("low level set_pos_ref : joint %d - pos %d - pos_ref %f\n", joint_id, rid2Pos(joint_id), pos_ref);
         // set the data
-        last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
-        last_pdo_tx.pos_ref = pos_ref;
-        motors[rid2Pos(joint_id)]->setTxPDO(last_pdo_tx);
+        motors[rid2Pos(joint_id)]->set_posRef(pos_ref);
         return true;
     }
     
