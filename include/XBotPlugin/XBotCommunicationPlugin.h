@@ -36,6 +36,8 @@ private:
     std::map<int,std::shared_ptr<XDDP_pipe>> xddps;
     iit::ecat::advr::McEscPdoTypes::pdo_tx pdo_tx;
     
+    std::map<int, uint16_t> temperature;
+    
 public:  
     
     XBotCommunicationPlugin(std::string name,
