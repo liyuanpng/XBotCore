@@ -127,10 +127,6 @@ void XBot::XBotCommunicationHandler::th_init(void *)
 {
    DPRINTF("XBotCommunicationHandler INIT\n");
    std::fflush(stdout);
-   
-   // TBD use it instead of the constructor
-   
-   
 }
 
 void XBot::XBotCommunicationHandler::th_loop(void *)
@@ -169,6 +165,16 @@ bool XBot::XBotCommunicationHandler::get_max_pos(int joint_id, float& max_pos)
     max_pos = 0.0; // NOTE avoid to break the robot
     return false;
 }
+
+bool XBot::XBotCommunicationHandler::get_ctrl_status_cmd(int joint_id, uint16_t& ctrl_status_cmd)
+{
+    if( sdo_info.count(joint_id) ){
+        ctrl_status_cmd = sdo_info.at(joint_id)->ctrl_status_cmd;
+        return true;
+    }
+    return false;
+}
+
 
 
 bool XBot::XBotCommunicationHandler::get_link_pos(int joint_id, float& link_pos)
@@ -325,7 +331,7 @@ bool XBot::XBotCommunicationHandler::get_ft(int ft_id, std::vector< float >& ft,
     iit::ecat::advr::Ft6EscPdoTypes::pdo_rx actual_pdo_rx_ft;  
     n_bytes = read(fd_ft_read.at(ft_id), (void*)&actual_pdo_rx_ft, sizeof(actual_pdo_rx_ft));
     ft.resize(channels);
-    memcpy(ft.data(), &(actual_pdo_rx_ft.force_X), channels*sizeof(float));
+    std::memcpy(ft.data(), &(actual_pdo_rx_ft.force_X), channels*sizeof(float));
     
     mutex.at(ft_id)->unlock();
     return true;  

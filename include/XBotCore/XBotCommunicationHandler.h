@@ -11,14 +11,15 @@
  * @author Luca Muratore (2016-, luca.muratore@iit.it)
 */
 
-#ifndef __X_BOT_CORE_H__
-#define __X_BOT_CORE_H__
+#ifndef __X_BOT_COMMUNICATION_HANDLER_H__
+#define __X_BOT_COMMUNICATION_HANDLER_H__
 
 #include <iit/ecat/advr/esc.h>
 #include <iit/advr/thread_util.h>
 #include <XBotCore/XBotEcat.h>
 
 #include <mutex>
+#include <cstring>
 
 #include <XBotCore/IXBotJoint.h>
 #include <XBotCore/IXBotFT.h>
@@ -101,6 +102,7 @@ public:
     // TBD do an interface that does it
     bool get_min_pos(int joint_id, float& min_pos);
     bool get_max_pos(int joint_id, float& max_pos);
+    bool get_ctrl_status_cmd(int joint_id, uint16_t& ctrl_status_cmd);
 
 
 private:
@@ -196,4 +198,4 @@ private:
 
 };
 
-#endif //__X_BOT_CORE_H__
+#endif //__X_BOT_COMMUNICATION_HANDLER_H__

@@ -72,12 +72,7 @@ void XBot::XBotEcat::write_sdo_info()
     for ( auto const& p : sdo_xddps ) {
         motors.at(p.first)->readSDO<float>("Min_pos", sdo.min_pos);
         motors.at(p.first)->readSDO<float>("Max_pos", sdo.max_pos);
-//         // NOTE in the FIRMWARE the 0 is PI: when you do the conversion (M2J) depending on the sign, min and max have to be swapped
-//         if(sdo.min_pos > sdo.max_pos) {
-//             float swap = sdo.min_pos;
-//             sdo.min_pos = sdo.max_pos;
-//             sdo.max_pos = swap;
-//         }
+        motors.at(p.first)->readSDO<uint16_t>("ctrl_status_cmd", sdo.ctrl_status_cmd);
         p.second->xddp_write<XBot::sdo_info>(sdo);
     }
 }
@@ -88,12 +83,24 @@ void XBot::XBotEcat::init_preOP(void)
     iit::ecat::advr::Motor * moto;
     for ( auto const& m : motors ) {
         moto = m.second;
-        if(moto->am_i_LpESC()) {
+        if(moto->get_control_mode() == "pos_3b") {
+            DPRINTF("Starting motor %d in pos_3b\n", moto->get_robot_id());
             moto->start(CTRL_SET_POS_MODE);
         }
-        else if(moto->am_i_HpESC()) {
+        else if(moto->get_control_mode() == "mix_pos_3c") {
+            DPRINTF("Starting motor %d in mix_pos_3c\n", moto->get_robot_id());
             moto->start(CTRL_SET_MIX_POS_MODE);
         }
+        else {
+            DPRINTF("Starting motor %d in idle\n", moto->get_robot_id());
+            // NOTE idle or not reognized TBD check!
+        }
+//         if(moto->am_i_LpESC()) {
+//             moto->start(CTRL_SET_POS_MODE);
+//         }
+//         else if(moto->am_i_HpESC()) {
+//             moto->start(CTRL_SET_MIX_POS_MODE);
+//         }
     }
     
     return;

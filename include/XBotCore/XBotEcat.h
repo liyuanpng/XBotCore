@@ -26,6 +26,7 @@ namespace XBot
 struct XBot::sdo_info {
     float min_pos;
     float max_pos;
+    uint16_t ctrl_status_cmd;
 };
 
 /**
