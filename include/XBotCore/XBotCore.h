@@ -23,6 +23,7 @@
 #include <XBotCore/IXBotChain.h>
 #include <XBotCore/IXBotRobot.h>
 #include <XBotCore/XBotCoreModel.hpp>
+#include <XBotCore/IXBotFT.h>
 
 namespace XBot
 {
@@ -37,7 +38,8 @@ namespace XBot
 class XBot::XBotCore : public   XBot::XBotEcat,
                        public   XBot::IXBotJoint,
                        public   XBot::IXBotChain,
-                       public   XBot::IXBotRobot
+                       public   XBot::IXBotRobot,
+                       public   XBot::IXBotFT
                         
 {
 public:
@@ -227,6 +229,11 @@ public:
     
     virtual bool set_chain_aux(std::string chain_name, const std::map<std::string, float>& aux) final;
     virtual bool set_chain_aux(std::string chain_name, const std::map<int, float>& aux) final;
+    
+    // NOTE IXBotFT getters
+    virtual bool get_ft(int ft_id, std::vector< float >& ft, int channels = 6) final;
+    virtual bool get_ft_fault(int ft_id, uint16_t& fault) final;
+    virtual bool get_ft_rtt(int ft_id, uint16_t& rtt) final;
 
 
 private:

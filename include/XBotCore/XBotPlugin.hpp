@@ -37,11 +37,13 @@ public:
     XBotPlugin( std::string name,
                 std::shared_ptr<XBot::IXBotModel> model, 
                 std::shared_ptr<XBot::IXBotChain> chain,
-                std::shared_ptr<XBot::IXBotRobot> robot) : 
+                std::shared_ptr<XBot::IXBotRobot> robot,
+                std::shared_ptr<XBot::IXBotFT> ft) : 
                 name(name),
                 model(model), 
                 chain(chain),
-                robot(robot)
+                robot(robot),
+                ft(ft)
     {
         
     };
@@ -63,6 +65,7 @@ protected:
     std::shared_ptr<XBot::IXBotModel> model;
     std::shared_ptr<XBot::IXBotChain> chain;
     std::shared_ptr<XBot::IXBotRobot> robot;
+    std::shared_ptr<XBot::IXBotFT> ft;
 
 
 };

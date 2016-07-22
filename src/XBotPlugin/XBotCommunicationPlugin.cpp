@@ -3,8 +3,9 @@
 XBot::XBotCommunicationPlugin::XBotCommunicationPlugin( std::string name,
                                                         std::shared_ptr<XBot::IXBotModel> model, 
                                                         std::shared_ptr<XBot::IXBotChain> chain,
-                                                        std::shared_ptr<XBot::IXBotRobot> robot) :
-                                                        XBotPlugin(name, model, chain, robot)
+                                                        std::shared_ptr<XBot::IXBotRobot> robot,
+                                                        std::shared_ptr<XBot::IXBotFT> ft) :
+                                                        XBotPlugin(name, model, chain, robot, ft)
 {
 
 }

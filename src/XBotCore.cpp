@@ -1445,6 +1445,54 @@ bool XBot::XBotCore::set_aux(int joint_id, const float& aux)
     return false; 
 }
 
+bool XBot::XBotCore::get_ft(int ft_id, std::vector< float >& ft, int channels)
+{
+    // check if the joint requested exists
+    if( fts.count(rid2Pos(ft_id)) ) {
+        // get the data, resize the ft vector and copy only Fx,Fy,Fz and Tx,Ty,Tz
+        iit::ecat::advr::Ft6EscPdoTypes::pdo_rx actual_pdo_rx_ft = fts[rid2Pos(ft_id)]->getRxPDO();
+        ft.resize(channels);
+        std::memcpy(ft.data(), &(actual_pdo_rx_ft.force_X), channels*sizeof(float));
+        
+        return true;
+    }
+    
+    // we don't touch the value that you passed
+    DPRINTF("Trying to get_ft() on ft with ft_id : %d that does not exists\n", ft_id);
+    return false;   
+}
+
+
+bool XBot::XBotCore::get_ft_fault(int ft_id, uint16_t& fault)
+{
+    // check if the joint requested exists
+    if( fts.count(rid2Pos(ft_id)) ) {
+        // get the data
+        fault = fts[rid2Pos(ft_id)]->getRxPDO().fault;
+        return true;
+    }
+    
+    // we don't touch the value that you passed
+    DPRINTF("Trying to get_ft_fault() on ft with ft_id : %d that does not exists\n", ft_id);
+    return false;  
+}
+
+
+bool XBot::XBotCore::get_ft_rtt(int ft_id, uint16_t& rtt)
+{
+    // check if the joint requested exists
+    if( fts.count(rid2Pos(ft_id)) ) {
+        // get the data
+        rtt = fts[rid2Pos(ft_id)]->getRxPDO().rtt;
+        return true;
+    }
+    
+    // we don't touch the value that you passed
+    DPRINTF("Trying to get_ft_rtt() on ft with ft_id : %d that does not exists\n", ft_id);
+    return false;   
+}
+
+
 
 XBot::XBotCore::~XBotCore() {
     printf("~XBotCore()\n");
