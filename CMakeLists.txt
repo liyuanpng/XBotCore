@@ -39,6 +39,8 @@ find_package(urdfdom REQUIRED)
 find_package(kdl_parser REQUIRED)
 # communication packages
 find_package(YARP REQUIRED)
+# utils packages
+find_package(Eigen3 REQUIRED)
 
 # Common libs TBD: make it clean!
 set(COMMON_LIBS_RT
@@ -65,7 +67,7 @@ set(COMMON_LIBS_NRT
 
 
 # include 
-include_directories(include ${srdfdom_INCLUDE_DIRS} ${urdfdom_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
+include_directories(include ${srdfdom_INCLUDE_DIRS} ${urdfdom_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS} /usr/include/coin)
 
 # exe
 add_executable(${PROJECT_NAME}
@@ -104,7 +106,8 @@ target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS_RT}
                                       ${kdl_parser_LIBRARIES}
                                       XBotPluginHandler
                                       XBotCommunicationHandler
-                                      XBotCommunicationPlugin)
+                                      XBotCommunicationPlugin
+                                      XBotWalking)
                                       
 # link the NRT common libs
 target_link_libraries(XBotYARP ${COMMON_LIBS_NRT}

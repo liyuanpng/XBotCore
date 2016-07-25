@@ -261,7 +261,7 @@ bool XBot::XBotCommunicationHandler::set_pos_ref(int joint_id, const float& pos_
 {
     mutex.at(joint_id)->lock();
     pdo_motor.at(joint_id)->pdo_data_tx.pos_ref = pos_ref;
-    DPRINTF("joint : %d - set pos ref : %f\n", joint_id, pdo_motor.at(joint_id)->pdo_data_tx.pos_ref);
+//     DPRINTF("joint : %d - set pos ref : %f\n", joint_id, pdo_motor.at(joint_id)->pdo_data_tx.pos_ref);
     mutex.at(joint_id)->unlock();
     return true;
 }

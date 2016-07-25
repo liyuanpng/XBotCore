@@ -1,6 +1,6 @@
 #include <XBotCore/XBotPluginHandler.h>
 
-#include <XBotPlugin/XBotCommunicationPlugin.h>
+#include <XBotWalking.h>
 
 XBot::XBotPluginHandler::XBotPluginHandler(const char* config_yaml): XBotCore(config_yaml)
 {
@@ -16,12 +16,20 @@ bool XBot::XBotPluginHandler::load_plugins() {
     std::shared_ptr<XBot::IXBotRobot> actual_robot(this);
     std::shared_ptr<XBot::IXBotFT> actual_ft(this);
     
+//     // TBD load dynamically the plugins
+//     std::shared_ptr<XBot::XBotCommunicationPlugin> communication_plugin(new XBot::XBotCommunicationPlugin( "communication plugin",
+//                                                                                                             actual_model, 
+//                                                                                                             actual_chain,
+//                                                                                                             actual_robot,
+//                                                                                                             actual_ft));
+//     plugins.push_back(communication_plugin);
+    
     // TBD load dynamically the plugins
-    std::shared_ptr<XBot::XBotCommunicationPlugin> communication_plugin(new XBot::XBotCommunicationPlugin( "communication plugin",
-                                                                                                            actual_model, 
-                                                                                                            actual_chain,
-                                                                                                            actual_robot,
-                                                                                                            actual_ft));
+    std::shared_ptr<XBot::XBotWalking> communication_plugin(new XBot::XBotWalking( "walking plugin",
+                                                                                    actual_model, 
+                                                                                    actual_chain,
+                                                                                    actual_robot,
+                                                                                    actual_ft));
     plugins.push_back(communication_plugin);
     
     return true;
