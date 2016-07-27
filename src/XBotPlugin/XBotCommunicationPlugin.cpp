@@ -1,5 +1,7 @@
 #include <XBotPlugin/XBotCommunicationPlugin.h>
 
+#define MAX_ALLOWED_TEMPERATURE 70
+
 XBot::XBotCommunicationPlugin::XBotCommunicationPlugin( std::string name,
                                                         std::shared_ptr<XBot::IXBotModel> model, 
                                                         std::shared_ptr<XBot::IXBotChain> chain,
@@ -45,7 +47,7 @@ void XBot::XBotCommunicationPlugin::run(void)
     // check the temperature
     robot->get_robot_max_temperature(temperature);
     for( auto& temp: temperature) {
-        if( temp.second > 60 ) {
+        if( temp.second > MAX_ALLOWED_TEMPERATURE ) {
             DPRINTF("WARN: TEMPERATURE TOO HIGH ON JOINT %d -> %u C\n", temp.first, (unsigned int) temp.second);
         }
     }
