@@ -13,6 +13,9 @@
 #include <map>
 #include <vector>
 
+#define WRAPPER_RATE 5
+#define ANALOG_SERVER_RATE 5
+
 extern void main_common(__sighandler_t sig_handler);
 
 static int main_loop = 1;
@@ -63,7 +66,7 @@ void YARP_configuration(const std::shared_ptr<XBot::XBotCommunicationHandler>& c
         wr_config.put("device","controlboardwrapper2"); 
         wr_config.put("robot_name", "bigman"); 
         wr_config.put("name", "/" + wr_config.find("robot_name").asString() + "/" + c.first);
-        wr_config.put("period", 5);           
+        wr_config.put("period", WRAPPER_RATE);           
         
         // NOTE are you crazy, Mr YARP?
         yarp::os::Bottle chains; 
@@ -120,7 +123,7 @@ void YARP_configuration(const std::shared_ptr<XBot::XBotCommunicationHandler>& c
         wr_config.put("device","analogServer"); 
         wr_config.put("robot_name", "bigman"); // TBD GET FROM SOMEWHERE 
         wr_config.put("name", "/" + wr_config.find("robot_name").asString() + "/" + aux + "/" + "analog:o/forceTorque");
-        wr_config.put("period", 5);            // TBD do it from config YAML
+        wr_config.put("period", ANALOG_SERVER_RATE);            // TBD do it from config YAML
         analog_server_map[ft_j.first].open(wr_config);
         
         // view on the wrapper and attach the poly driver
