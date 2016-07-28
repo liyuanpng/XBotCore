@@ -12,6 +12,10 @@ Moreover it provides XDDP pipes communication with a Not-Real-Time communication
 
 *hostname*:         walkman-exp
 
+*username*:         embedded
+
+*password*:         send an email to luca.muratore@iit.it or alessio.rocchi@iit.it for the password
+
 *operating system*: Debian stretch
 
 *local IP address*: 10.24.3.102
@@ -32,6 +36,9 @@ It has three ethernet connections:
 *how to run them*:
 
 Check the connection between the robot and the WALKMAN RT PC, power on the robot and have always the emergency stop in your hand.  
+Start RTNET:  
+~$ **ec_rtnet_start**  
+
 Open 3 terminal on WALKMAN RT PC:
 
 * On terminal # 1 start XBotCore: it will start the motors using the control mode and the gains specified in the YAML config file passed as an argument.  
@@ -43,14 +50,41 @@ Open 3 terminal on WALKMAN RT PC:
 
 * On terminal # 3 start XBotYARP: it will start the Not-Real-Time YARP communication with XBotCore opening all the YARP ports needed to communicate with the robot using YARP (like in gazebo with the robot model).  
 ~$ **cd $XBOTCORE_ROOT**  
-~$ **XBotYARP configs/config_walkman.YAML**  
+~$ **XBotYARP configs/config_walkman.YAML**
 
+### **WALKMAN external control PC**
 
+*hostname*:         coman-control-pc
 
+*username*:         walkman
 
+*password*:         send an email to luca.muratore@iit.it or alessio.rocchi@iit.it for the password
 
+*operating system*: Ubuntu 14.04
 
+*local IP address*: 10.24.3.78
 
-            
-                    
+*description*:    
+The WALKMAN external control PC is responsible for the YARP control module.  
+It has two ethernet connections:  
+* internet connection
+* connection with the RT PC
 
+*what to run*:      
+
+* your control module
+
+*how to run them*:
+
+Check the connection between the external pc and the WALKMAN RT PC, check that $ROBOTOLOGY_PROFILE is equal to ROBOT, otherwise execute:  
+~$ **cd $XBOTCORE_ROOT/profiles/robot && ./activate.sh**  
+Refresh all the terminal. 
+Configure yarpserver (that is running on RT PC):  
+~$ **yarp conf 10.24.3.102 10000**   
+Check with:  
+~$ **yarp detect** 
+
+You are now ready to run your module.  
+If you want to go back in simulation execute:  
+~$ **cd $XBOTCORE_ROOT/profiles/simulation && ./activate-local.sh**  
+Refresh all the terminal. 
