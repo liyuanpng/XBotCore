@@ -45,7 +45,7 @@ Open 3 terminal on WALKMAN RT PC:
 ~$ **cd $XBOTCORE_ROOT**  
 ~$ **XBotCore configs/config_walkman.YAML**  
 
-* On terminal # 2 start YARP name server: check that it is bind the the local address (10.24.3.102) 
+* On terminal # 2 start YARP name server: check that it is bind the the local address (10.24.3.102)   
 ~$ **yarpserver --write**  
 
 * On terminal # 3 start XBotYARP: it will start the Not-Real-Time YARP communication with XBotCore opening all the YARP ports needed to communicate with the robot using YARP (like in gazebo with the robot model).  
@@ -87,4 +87,4 @@ Check with:
 You are now ready to run your module.  
 If you want to go back in simulation execute:  
 ~$ **cd $XBOTCORE_ROOT/profiles/simulation && ./activate-local.sh**  
-Refresh all the terminal. 
+Refresh all the terminal.
