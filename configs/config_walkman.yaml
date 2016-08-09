@@ -26,7 +26,7 @@ ec_boards_base:
 
 #
 LpESC_1:
-  control_mode: idle
+  control_mode: pos_3b
   sign: -1
   pos_offset: 0
   pid :
@@ -34,7 +34,7 @@ LpESC_1:
 
 #
 LpESC_2:
-  control_mode: idle
+  control_mode: pos_3b
   sign: -1
   pos_offset: 0
   pid :
@@ -44,117 +44,117 @@ LpESC_2:
 # RIGHT LEG
 #############################
 
-# RL_H_Y = 41
+# RL_H_R = 41
 HpESC_41:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: 1
   pos_offset: 0
   pid :
     position: [800.0 , 0.0 , 12.0]
-    mix_position: [800.0, 0.0, 5.0]
+    mix_position: [4200.0, 0.0, 30.0]
 
-# RL_H_R = 42
+# RL_H_Y = 42
 HpESC_42:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: 1
   pos_offset: 0
   pid :
     position: [180.0 , 0.0 , 3.0]
-    mix_position: [800.0, 0.0, 5.0]
+    mix_position: [800.0, 0.0, 10.0]
 
 # RL_H_P = 43
 HpESC_43:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: 1
   pos_offset: 0
   pid :
     position: [700.0 , 0.0 , 10.0]
-    mix_position: [800.0, 0.0, 5.0]
+    mix_position: [4200.0, 0.0, 40.0]
 
 # RL_K = 44
 HpESC_44:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: 1
   pos_offset: 0
   pid :
     position: [500.0 , 0.0 , 1.0]
-    mix_position: [800.0, 0.0, 5.0]
+    mix_position: [3700.0, 0.0, 35.0]
 
 # RL_A_P = 45
 HpESC_45:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: -1
   pos_offset: 0
   pid :
     position: [500.0 , 0.0 , 2.0]
-    mix_position: [800.0, 0.0, 5.0]
+    mix_position: [3700.0, 0.0, 30.0]
 
 # RL_A_R = 46
 HpESC_46:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: -1
   pos_offset: 0
   pid :
     position: [80.0 , 0.0 , 4.0]
-    mix_position: [800.0, 0.0, 5.0]
+    mix_position: [800.0, 0.0, 10.0]
 
 #############################
 # LEFT LEG
 #############################
 
-# LL_H_Y = 51
+# LL_H_R = 51
 HpESC_51:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: 1
   pos_offset: 0
   pid :
     position: [800.0 , 0.0 , 12.0]
-    mix_position: [800.0, 0.0, 5.0]
+    mix_position: [4200.0, 0.0, 30.0]
 
-# LL_H_R = 52
+# LL_H_Y = 52
 HpESC_52:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: 1
   pos_offset: 0
   pid :
     position: [180.0 , 0.0 , 3.0]
-    mix_position: [800.0, 0.0, 5.0]
+    mix_position: [800.0, 0.0, 10.0]
 
 # LL_H_P = 53
 HpESC_53:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: -1
   pos_offset: 0
   pid :
     position: [700.0 , 0.0 , 10.0]
-    mix_position: [800.0, 0.0, 5.0]
+    mix_position: [4200.0, 0.0, 40.0]
 
 # LL_K = 54
 HpESC_54:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: -1
   pos_offset: 0
   pid :
     position: [500.0 , 0.0 , 1.0]
-    mix_position: [800.0, 0.0, 5.0]
+    mix_position: [3700.0, 0.0, 35.0]
 
 # LL_A_P = 55
 HpESC_55:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: 1
   pos_offset: 0
   pid :
     position: [500.0 , 0.0 , 2.0]
-    mix_position: [800.0, 0.0, 5.0]
+    mix_position: [3700.0, 0.0, 30.0]
 
 # LL_A_R = 56
 HpESC_56:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: -1
   pos_offset: 0
   pid :
     position: [80.0 , 0.0 , 4.0]
-    mix_position: [800.0, 0.0, 5.0]
+    mix_position: [800.0, 0.0, 10.0]
 
 
 #############################
@@ -163,7 +163,7 @@ HpESC_56:
 
 # RA_SH_1 = 11
 HpESC_11:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: 1
   pos_offset: 0
   pid :
@@ -172,7 +172,7 @@ HpESC_11:
 
 # RA_SH_2 = 12
 HpESC_12:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: -1
   pos_offset: 0
   #pos_offset: -90 NOTE it was not working for the left_arm joint
@@ -182,7 +182,7 @@ HpESC_12:
 
 # RA_SH_3 = 13
 HpESC_13:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: 1
   pos_offset: 0
   pid :
@@ -191,7 +191,7 @@ HpESC_13:
 
 # RA_EL_ = 14
 HpESC_14:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: 1
   pos_offset: 0
   pid :
@@ -200,7 +200,7 @@ HpESC_14:
 
 # RA_WR_1 = 15
 LpESC_15:
-  control_mode: idle
+  control_mode: pos_3b
   sign: -1
   pos_offset: 0
   pid :
@@ -208,7 +208,7 @@ LpESC_15:
 
 # RA_WR_2 = 16
 LpESC_16:
-  control_mode: idle
+  control_mode: pos_3b
   sign: -1
   pos_offset: 0
   pid :
@@ -217,7 +217,7 @@ LpESC_16:
 
 # RA_WR_3 = 17
 LpESC_17:
-  control_mode: idle
+  control_mode: pos_3b
   sign: 1
   pos_offset: 0
   pid :
@@ -226,7 +226,7 @@ LpESC_17:
 
 # RA_HA = 19
 LpESC_19:
-  control_mode: idle
+  control_mode: pos_3b
   sign: 1
   pos_offset: 0
   pid :
@@ -239,7 +239,7 @@ LpESC_19:
 
 # LA_SH_1 = 21
 HpESC_21:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: -1
   pos_offset: 0
   pid :
@@ -248,7 +248,7 @@ HpESC_21:
 
 # LA_SH_2 = 22
 HpESC_22:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: -1
   pos_offset : 0
   #pos_offset: 90 NOTE it was not working for the left_arm joint
@@ -258,7 +258,7 @@ HpESC_22:
 
 # LA_SH_3 = 23
 HpESC_23:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: 1
   pos_offset: 0
   pid :
@@ -267,7 +267,7 @@ HpESC_23:
 
 # LA_EL = 24
 HpESC_24:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: -1
   pos_offset: 0
   pid :
@@ -276,7 +276,7 @@ HpESC_24:
 
 # LA_WR_1 = 25
 LpESC_25:
-  control_mode: idle
+  control_mode: pos_3b
   sign: -1
   pos_offset: 0
   pid :
@@ -284,7 +284,7 @@ LpESC_25:
 
 # LA_WR_2 = 26
 LpESC_26:
-  control_mode: idle
+  control_mode: pos_3b
   sign: 1
   pos_offset: 0
   pid :
@@ -292,7 +292,7 @@ LpESC_26:
 
 # LA_WR_3 = 27
 LpESC_27:
-  control_mode: idle
+  control_mode: pos_3b
   sign: 1
   pos_offset: 0
   pid :
@@ -300,7 +300,7 @@ LpESC_27:
 
 # LA_HA = 29
 LpESC_29:
-  control_mode: idle
+  control_mode: pos_3b
   sign: 1
   pos_offset: 0
   pid :
@@ -310,30 +310,30 @@ LpESC_29:
 # WAIST
 #############################
 
-# WST_P = 31
+# WST_Y = 31
 HpESC_31:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: -1
   pos_offset: 0
   pid :
     position: [40.0 , 0.0 , 1.0]
-    mix_position: [800.0, 0.0, 5.0]
+    mix_position: [800.0, 0.0, 10.0]
 
-# WST_R = 32
+# WST_P = 32
 HpESC_32:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: 1
   pos_offset: 0
   pid :
     position: [40.0 , 0.0 , 1.0]
-    mix_position: [800.0, 0.0, 5.0]
+    mix_position: [3000.0, 0.0, 30.0]
 
-# WST_Y = 33
+# WST_R = 33
 HpESC_33:
-  control_mode: idle
+  control_mode: mix_pos_3c
   sign: -1
   pos_offset: 0
   pid :
     position: [40.0 , 0.0 , 1.0]
-    mix_position: [800.0, 0.0, 5.0]
+    mix_position: [800.0, 0.0, 10.0]
 
