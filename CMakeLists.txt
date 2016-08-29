@@ -154,3 +154,7 @@ if ( ${ENABLE_SRDF_FROM_XACRO_GENERATION} )
     # add an abstract target to actually trigger the builds
     add_custom_target(media_files ALL DEPENDS ${srdf_files})
 endif()
+
+# documentation
+add_subdirectory(doc)
+
