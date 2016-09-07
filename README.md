@@ -18,7 +18,7 @@ Moreover it provides XDDP pipes communication with a Not-Real-Time communication
 
 *operating system*: Debian stretch
 
-*local IP address*: 10.24.3.102
+*local IP address*: 10.24.3.100
 
 *description*:    
 The WALKMAN RT PC is responsible for the RT communication with the robot (EtherCAT based).  
