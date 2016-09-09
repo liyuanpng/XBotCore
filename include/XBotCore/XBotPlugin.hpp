@@ -40,7 +40,7 @@ namespace XBot
 }
 
 /**
- * @brief TBD
+ * @brief XBotCore Plugin Interface.
  * 
  */
 class XBot::XBotPlugin

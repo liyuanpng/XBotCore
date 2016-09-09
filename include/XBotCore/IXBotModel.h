@@ -38,7 +38,7 @@ namespace XBot
 }
 
 /**
- * @brief TBD
+ * @brief XBotCore Model Interface
  * 
  */
 class XBot::IXBotModel

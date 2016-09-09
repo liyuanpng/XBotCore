@@ -34,7 +34,7 @@ namespace XBot
 }
 
 /**
- * @brief TBD
+ * @brief XBotCore Joint Interface
  * 
  */
 class XBot::IXBotJoint

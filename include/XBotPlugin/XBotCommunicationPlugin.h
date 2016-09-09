@@ -40,7 +40,7 @@ namespace XBot
 }
 
 /**
- * @brief TBD
+ * @brief XBotCore RT plugin that communicates wit the non-RT enviroment using XDDP pipes
  * 
  */
 class XBot::XBotCommunicationPlugin : public XBot::XBotPlugin

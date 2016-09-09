@@ -46,7 +46,7 @@ namespace XBot
 
 
 /**
- * @brief TBD
+ * @brief XBotCore: RT EtherCAT thread and RT (shared-memory) XBotCore interfaces implementation.
  * 
  */
 class XBot::XBotCore : public   XBot::XBotEcat,

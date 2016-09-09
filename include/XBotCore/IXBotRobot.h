@@ -37,7 +37,7 @@ namespace XBot
 }
 
 /**
- * @brief TBD
+ * @brief XBotCore Robot Interface
  * 
  */
 class XBot::IXBotRobot

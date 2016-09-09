@@ -43,7 +43,7 @@ struct XBot::sdo_info {
 };
 
 /**
- * @brief TBD
+ * @brief XBotCore EtherCAT class.
  * 
  */
 class XBot::XBotEcat : public Ec_Thread_Boards_base

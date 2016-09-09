@@ -37,7 +37,7 @@ namespace XBot
 
 
 /**
- * @brief TBD
+ * @brief XBotCore Plugin Handler: it executes sequentially a set of plugins.
  * 
  */
 class XBot::XBotPluginHandler : public XBot::XBotCore

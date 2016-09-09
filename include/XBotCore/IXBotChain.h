@@ -37,7 +37,7 @@ namespace XBot
 }
 
 /**
- * @brief TBD
+ * @brief XBotCore Chain Interface
  * 
  */
 class XBot::IXBotChain

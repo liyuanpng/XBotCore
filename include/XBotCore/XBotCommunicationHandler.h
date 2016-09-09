@@ -49,7 +49,8 @@ namespace XBot
 
 
 /**
- * @brief TBD
+ * @brief XBotCore Communication Handler component: non-RT thread with ready to use
+ *        non-RT XBotCore Interfaces implementation (using XDDP Pipes)
  * 
  */
 class XBot::XBotCommunicationHandler : public Thread_hook,

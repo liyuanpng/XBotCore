@@ -51,6 +51,10 @@ namespace XBot
 typedef std::map<int, std::string>  Rid2JointMap;
 typedef std::map<std::string, int>  Joint2RidMap;
 
+/**
+ * @brief XBotCoreModel extension of SRDF Model: introduced disabled joint concept and dynamic enabled robot joints map generation.
+ * 
+ */
 class XBot::XBotCoreModel : public srdf::Model,
                             public XBot::IXBotModel
 {

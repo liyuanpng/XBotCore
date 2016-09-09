@@ -34,7 +34,7 @@ namespace XBot
 }
 
 /**
- * @brief TBD
+ * @brief XBotCore F-T Force Torque Interface
  * 
  */
 class XBot::IXBotFT
