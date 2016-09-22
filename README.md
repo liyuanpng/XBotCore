@@ -4,6 +4,8 @@ XBotCore is the new software architecture to control ADVR robots: it uses Xenoma
 
 Moreover it provides XDDP pipes communication with a Not-Real-Time communication API. 
 
+Here you can find the [documentation](http://95.110.214.65/XBotCore/index.html).
+
 ## How to use WALKMAN robot with XBotCore and YARP
 
 ## *Current network topology*
