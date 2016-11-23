@@ -43,12 +43,12 @@ bool XBot::XBotPluginHandler::load_plugins() {
     std::shared_ptr<XBot::IXBotFT> actual_ft(this);
     
     // TBD load dynamically the plugins
-    std::shared_ptr<XBot::XBotCommunicationPlugin> communication_plugin(new XBot::XBotCommunicationPlugin( "communication plugin",
-                                                                                                            actual_model, 
-                                                                                                            actual_chain,
-                                                                                                            actual_robot,
-                                                                                                            actual_ft));
-    plugins.push_back(communication_plugin);
+//     std::shared_ptr<XBot::XBotCommunicationPlugin> communication_plugin(new XBot::XBotCommunicationPlugin( "communication plugin",
+//                                                                                                             actual_model, 
+//                                                                                                             actual_chain,
+//                                                                                                             actual_robot,
+//                                                                                                             actual_ft));
+//     plugins.push_back(communication_plugin);
     
     return true;
 }
