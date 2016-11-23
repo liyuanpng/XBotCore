@@ -40,7 +40,7 @@
 // #include <XBotCore/IXBotChain.h>
 // #include <XBotCore/IXBotRobot.h>
 
-#include <XBotCore/XBotCoreModel.hpp>
+#include <XBotCoreModel.h>
 
 namespace XBot
 {
