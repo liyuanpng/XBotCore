@@ -113,6 +113,7 @@ target_link_libraries(XBotPluginHandler ${COMMON_LIBS}
                                         ${iitecat_iface${LIB_TYPE}_LIBRARIES}
                                         ${walkman_master${LIB_TYPE}_LIBRARIES}
                                         ${ecat_test_utils${LIB_TYPE}_LIBRARIES}
+                                        XBotCommunicationPlugin
                                         )                                      
                                       
 # # link the NRT common libs

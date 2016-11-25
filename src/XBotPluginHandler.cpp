@@ -38,17 +38,17 @@ bool XBot::XBotPluginHandler::load_plugins() {
     XBot::XBotCoreModel model = get_robot_model();
 
     std::shared_ptr<XBot::IXBotModel> actual_model = std::make_shared<XBot::XBotCoreModel>(model);
-    std::shared_ptr<XBot::IXBotChain> actual_chain(this);
+    std::shared_ptr<XBot::IXBotChain> actual_chain(this); // TBD ? [](XBot::IXBotChain* ptr){return;}
     std::shared_ptr<XBot::IXBotRobot> actual_robot(this);
     std::shared_ptr<XBot::IXBotFT> actual_ft(this);
     
     // TBD load dynamically the plugins
-//     std::shared_ptr<XBot::XBotCommunicationPlugin> communication_plugin(new XBot::XBotCommunicationPlugin( "communication plugin",
-//                                                                                                             actual_model, 
-//                                                                                                             actual_chain,
-//                                                                                                             actual_robot,
-//                                                                                                             actual_ft));
-//     plugins.push_back(communication_plugin);
+    std::shared_ptr<XBot::XBotCommunicationPlugin> communication_plugin(new XBot::XBotCommunicationPlugin( "communication plugin",
+                                                                                                            actual_model, 
+                                                                                                            actual_chain,
+                                                                                                            actual_robot,
+                                                                                                            actual_ft));
+    plugins.push_back(communication_plugin);
     
     return true;
 }

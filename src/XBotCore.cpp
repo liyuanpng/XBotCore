@@ -1496,7 +1496,7 @@ bool XBot::XBotCore::get_ft_fault(int ft_id, uint16_t& fault)
         // get the data
         fault = fts[rid2Pos(ft_id)]->getRxPDO().fault;
         return true;
-    }
+}
     
     // we don't touch the value that you passed
     DPRINTF("Trying to get_ft_fault() on ft with ft_id : %d that does not exists\n", ft_id);
