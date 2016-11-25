@@ -51,7 +51,6 @@ find_package(ecat_test_utils${LIB_TYPE} REQUIRED)
 
 set(COMMON_LIBS
     pthread
-    zmq
     jsoncpp
     yaml-cpp
 )
@@ -59,6 +58,7 @@ set(COMMON_LIBS
 
 # include 
 include_directories(include ${XBotCoreModel_INCLUDE_DIRS} 
+                            ${kdl_parser_INCLUDE_DIRS}
                             ${soem${LIB_TYPE}_INCLUDE_DIRS}
                             ${iitecat_iface${LIB_TYPE}_INCLUDE_DIRS}
                             ${walkman_master${LIB_TYPE}_INCLUDE_DIRS}
