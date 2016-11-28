@@ -127,18 +127,10 @@ if(NOT Xenomai_FOUND)
 endif()
 
 # install exe, lib and include
-install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+# install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 # # install(TARGETS XBotYARP RUNTIME DESTINATION bin)
 install(TARGETS XBotPluginHandler RUNTIME LIBRARY DESTINATION lib)
 install(TARGETS XBotCommunicationHandler RUNTIME LIBRARY DESTINATION lib)
-
-install(DIRECTORY include/ 
-        DESTINATION include
-        FILES_MATCHING PATTERN "*.h*")
-
-if(NOT Xenomai_FOUND)
-    set_cap_install(${CMAKE_INSTALL_PREFIX}/bin/${PROJECT_NAME})
-endif()
 
 # documentation
 add_subdirectory(doc)
@@ -186,5 +178,9 @@ install_basic_package_files(${PROJECT_NAME} VARS_PREFIX ${VARS_PREFIX}
                                     NO_CHECK_REQUIRED_COMPONENTS_MACRO)                                    
 
 include(AddUninstallTarget)
+
+    set_cap_install(${CMAKE_INSTALL_PREFIX}/bin/${VARS_PREFIX}-${${VARS_PREFIX}_VERSION})
+endif()
+
 
 
