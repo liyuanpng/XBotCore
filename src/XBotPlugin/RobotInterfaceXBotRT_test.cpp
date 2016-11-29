@@ -38,17 +38,17 @@ XBot::RobotInterfaceXBotRT_test::RobotInterfaceXBotRT_test( std::string name, //
 
 bool XBot::RobotInterfaceXBotRT_test::init(void)
 {
-    _robot_interface = XBot::RobotInterface::getRobot(name, 0, nullptr);
+//     _robot_interface = XBot::RobotInterface::getRobot(name, 0, nullptr);
     return true;
 }
 
 void XBot::RobotInterfaceXBotRT_test::run(void)
 {
     // read link pos
-    robot->get_robot_link_pos(_link_pos);
-    for( auto& temp: _link_pos) {
-            DPRINTF("link_pos: JOINT %d -> %f \n", temp.first, temp.second);
-    }
+//     robot->get_robot_link_pos(_link_pos);
+//     for( auto& temp: _link_pos) {
+//             DPRINTF("link_pos: JOINT %d -> %f \n", temp.first, temp.second);
+//     }
 }
 
 bool XBot::RobotInterfaceXBotRT_test::close(void)
