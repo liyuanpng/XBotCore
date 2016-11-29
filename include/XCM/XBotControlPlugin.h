@@ -46,7 +46,7 @@ namespace XBot {
         
     protected:
         
-        virtual bool init_control_plugin(RobotInterface::Ptr robot) = 0;
+        virtual bool init_control_plugin(std::string path_to_config_file, RobotInterface::Ptr robot) = 0;
         virtual void control_loop(double time, double period) = 0;
         
         double get_first_loop_time() const;

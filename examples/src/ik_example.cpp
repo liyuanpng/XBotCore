@@ -21,6 +21,20 @@
 
 SHLIBPP_DEFINE_SHARED_SUBCLASS(IkExample_factory, XBot::IkExample, XBot::XBotControlPlugin);
 
+void computeCartesianError(const Eigen::Affine3d& ref, const Eigen::Affine3d& actual, Eigen::VectorXd& error);
+
+void computeCartesianError(const Eigen::Affine3d& ref, const Eigen::Affine3d& actual, Eigen::VectorXd& error)
+{
+    error.resize(6);
+    
+    Eigen::Quaterniond q(actual.linear()), q_d(ref.linear());
+    Eigen::Vector3d orientation_error = q.w()*q_d.vec() - q_d.w()*q.vec() - q_d.vec().cross(q.vec());
+    Eigen::Vector3d position_error = ref.translation() - actual.translation();
+    
+    error << position_error, orientation_error;
+}
+
+
 namespace XBot {
 
 IkExample::IkExample()
@@ -28,28 +42,81 @@ IkExample::IkExample()
 
 }
 
-bool IkExample::init_control_plugin(RobotInterface::Ptr robot)
+bool IkExample::init_control_plugin(std::string path_to_config_file, RobotInterface::Ptr robot)
 {
     _robot = robot;
+    _model = ModelInterface::getModel(path_to_config_file);
     
     _robot->getRobotState("home", _q_home);
     _robot->sense();
     _robot->getJointPosition(_q0);
     
-    std::cout << "_qo from SRDF : " << _q0 << std::endl;
-    _time = 0;
-
+    _alpha = 0;
+    _homing_time = 4;
+    _ik_started = false;
+    
+    _end_effector = _robot->chain("right_arm").getTipLinkName();
+    _length = 0.4;
+    _period = 4;
     return true;
 }
 
 void IkExample::control_loop(double time, double period)
 {
-    std::cout << "LOOPING..." << std::endl;
 //     _robot->sense();
-    _robot->setPositionReference(_q0 + 0.5*(1-std::cos(0.5*(_time)))*(_q_home-_q0));
+    
+    if( (time - get_first_loop_time()) <= _homing_time ){
+        _robot->setPositionReference(_q0 + 0.5*(1-std::cos(3.1415*(time - get_first_loop_time())/_homing_time))*(_q_home-_q0));
+        _robot->move();
+        return;
+    }
+    
+    if( !_ik_started ){
+        _robot->sense();
+        _model->syncFrom(*_robot);
+        _model->getPose(_end_effector, _initial_pose);
+        _model->getJointPosition(_q);
+        _desired_pose = _initial_pose;
+        _ik_time = 0;
+        _ik_started = true;
+    }
+    
+    double dt = 0.0001;
+
+    // Set the desired end-effector pose at current time
+    _desired_pose.linear() = _initial_pose.linear();
+    _desired_pose.translation() = _initial_pose.translation() + Eigen::Vector3d(0,0,1)*0.5*_length*(1-std::cos(2*3.1415/_period*_ik_time));
+    // Compute the pose corresponding to the model state
+    _model->getPose(_end_effector, _actual_pose);
+    
+    // Compute the cartesian error
+    computeCartesianError(_desired_pose, _actual_pose, _cartesian_error);
+    
+    // Set a cartesian velocity which is proportional to the error
+    double ik_gain = 100;
+    _xdot = ik_gain * _cartesian_error;
+    
+    // Compute the jacobian matrix
+    _model->getJacobian(_end_effector, _J);
+    _model->maskJacobian("torso", _J);
+    
+    // Compute the required joint velocities
+    _qdot = _J.jacobiSvd(Eigen::ComputeThinU|Eigen::ComputeThinV).solve(_xdot);
+    
+    // Integrate the computed velocities
+    _q += _qdot * dt;
+    
+    // Update the model
+    _model->setJointPosition(_q);
+    _model->update();
+    
+    // Use the model state as a reference for controllers
+    _robot->setReferenceFrom(*_model, Sync::Position);
     _robot->move();
     
-    _time += 0.001;
+    _ik_time += dt;
+    
+    
 }
 
 bool IkExample::close()
