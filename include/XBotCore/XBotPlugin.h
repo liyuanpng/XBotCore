@@ -53,12 +53,13 @@ public:
     virtual ~XBotPlugin();
 
     virtual bool init(std::string name,
+                      std::string path_to_config_file,
                       std::shared_ptr<XBot::IXBotModel> model, 
                       std::shared_ptr<XBot::IXBotChain> chain,
                       std::shared_ptr<XBot::IXBotRobot> robot,
                       std::shared_ptr<XBot::IXBotFT> ft) = 0;
                       
-    virtual void run() = 0;
+    virtual void run(double time, double period) = 0;
     
     virtual bool close() = 0;
     

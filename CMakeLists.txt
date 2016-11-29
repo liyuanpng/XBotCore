@@ -85,6 +85,10 @@ add_library(XBotPluginHandler SHARED
     src/XBotPluginHandler.cpp
 )
 
+add_library(XBotPlugin SHARED
+    src/XBotPlugin.cpp
+)
+
 # lib
 add_library(XBotCommunicationHandler SHARED
     src/XBotCommunicationHandler.cpp
@@ -107,6 +111,8 @@ target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
                                       XBotPluginHandler
                                       XBotCommunicationHandler
                                       )
+
+                                      
                                       
 target_link_libraries(XBotPluginHandler ${COMMON_LIBS}
                                         ${XBotCoreModel_LIBRARIES}
@@ -183,6 +189,53 @@ include(AddUninstallTarget)
 if(NOT Xenomai_FOUND)
     set_cap_install(${CMAKE_INSTALL_PREFIX}/bin/${VARS_PREFIX}-${${VARS_PREFIX}_VERSION})
 endif()
+
+
+############################
+#### INSTALL XBOTPLUGIN ####
+############################
+
+set(VARS_PREFIX XBotPlugin)
+
+set(XBotPlugin_MAJOR_VERSION 0)
+set(XBotPlugin_MINOR_VERSION 0)
+set(XBotPlugin_PATCH_VERSION 1)
+set(XBotPlugin_VERSION ${XBotPlugin_MAJOR_VERSION}.${XBotPlugin_MINOR_VERSION}.${XBotPlugin_PATCH_VERSION})
+
+find_package(YCM REQUIRED)
+include(YCMDefaultDirs)
+ycm_default_dirs(${VARS_PREFIX})
+
+target_include_directories(XBotPlugin PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
+                                                "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
+
+set_target_properties(XBotPlugin PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
+                                               SOVERSION ${${VARS_PREFIX}_VERSION})
+
+install(DIRECTORY include/
+        DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"
+        FILES_MATCHING PATTERN "*.h*")
+
+install(TARGETS XBotPlugin
+        EXPORT XBotPlugin
+        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
+        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
+        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
+
+
+
+#enabling it will add all XBotInterface dependencies as dependencies for third party users
+set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS XBotPlugin)
+
+
+include(InstallBasicPackageFiles)
+install_basic_package_files(XBotPlugin VARS_PREFIX ${VARS_PREFIX}
+                                    VERSION ${${VARS_PREFIX}_VERSION}
+                                    COMPATIBILITY SameMajorVersion
+                                    TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
+                                    NO_CHECK_REQUIRED_COMPONENTS_MACRO)                                    
+
+
 
 
 

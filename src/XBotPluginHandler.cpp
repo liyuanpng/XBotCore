@@ -122,11 +122,13 @@ bool XBot::XBotPluginHandler::plugin_handler_init(void)
     int plugins_num = _rtplugin_vector.size();
     bool ret = true;
     for(int i = 0; i < plugins_num; i++) {
-        if(!(*_rtplugin_vector[i])->init( _rtplugin_names[i],
-                                actual_model, 
-                                actual_chain,
-                                actual_robot,
-                                actual_ft)) {
+        if(!(*_rtplugin_vector[i])->init(_path_to_config_file, 
+                                         _rtplugin_names[i],
+                                         actual_model, 
+                                         actual_chain,
+                                         actual_robot,
+                                         actual_ft)) 
+        {
             DPRINTF("ERROR: plugin %s - init() failed\n", (*_rtplugin_vector[i])->name.c_str());
             ret = false;
         }
@@ -140,7 +142,7 @@ bool XBot::XBotPluginHandler::plugin_handler_loop(void)
     std::vector<float> plugin_execution_time(_rtplugin_vector.size()); // TBD circular array and write to file in the plugin_handler_close
     for(int i = 0; i < _rtplugin_vector.size(); i++) {
         float plugin_start_time = (iit::ecat::get_time_ns() / 10e3); //microsec
-        (*_rtplugin_vector[i])->run();
+        (*_rtplugin_vector[i])->run(0, -1); // TBD actual time
         plugin_execution_time[i] = (iit::ecat::get_time_ns() / 10e3) - plugin_start_time; //microsec
 //         DPRINTF("Plugin %d - %s : execution_time = %f microsec\n", i, plugins[i]->name.c_str(), plugin_execution_time[i]);
     }
