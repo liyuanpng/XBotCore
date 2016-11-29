@@ -35,19 +35,16 @@ bool IkExample::init_control_plugin(RobotInterface::Ptr robot)
     _robot->getRobotState("home", _q_home);
     _robot->sense();
     _robot->getJointPosition(_q0);
-    
-    _alpha = 0;
-    
+
     return true;
 }
 
 void IkExample::control_loop(double time, double period)
 {
-    _robot->sense();
-    _robot->setPositionReference(_q0 + 0.5*(1-std::cos(_alpha))*(_q_home-_q0));
+//     _robot->sense();
+    _robot->setPositionReference(_q0 + 0.5*(1-std::cos(time - get_first_loop_time()))*(_q_home-_q0));
     _robot->move();
     
-    _alpha += 0.0001;
 }
 
 bool IkExample::close()

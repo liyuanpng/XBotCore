@@ -45,7 +45,6 @@ namespace XBot {
         RobotInterface::Ptr _robot;
         
         Eigen::VectorXd _q0, _q_home;
-        double _alpha;
         
     };
     
