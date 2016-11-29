@@ -50,7 +50,7 @@ bool XBotControlPlugin::init(std::string path_to_config_file,
     
     RobotInterface::Ptr robotinterface = RobotInterface::getRobot(path_to_config_file, any_map);
     
-    return init_control_plugin(robotinterface);
+    return init_control_plugin(path_to_config_file, robotinterface);
 
 }
 
