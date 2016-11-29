@@ -49,8 +49,13 @@ namespace XBot {
         virtual bool init_control_plugin(RobotInterface::Ptr robot) = 0;
         virtual void control_loop(double time, double period) = 0;
         
+        double get_first_loop_time() const;
         
     private:
+        
+        bool _initial_time_set;
+        double _initial_time;
+        
         
         
     };

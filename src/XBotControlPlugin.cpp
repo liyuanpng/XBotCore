@@ -21,7 +21,9 @@
 
 namespace XBot {
     
-XBotControlPlugin::XBotControlPlugin()
+XBotControlPlugin::XBotControlPlugin() : 
+    _initial_time_set(false),
+    _initial_time(0)
 {
 
 }
@@ -54,9 +56,17 @@ bool XBotControlPlugin::init(std::string path_to_config_file,
 
 void XBotControlPlugin::run(double time, double period)
 {
+    if(!_initial_time_set) {
+        _initial_time = time;
+        _initial_time_set = true;
+    }
     control_loop(time, period);
 }
 
+double XBot::XBotControlPlugin::get_first_loop_time() const
+{
+    return _initial_time;
+}
 
     
 }
