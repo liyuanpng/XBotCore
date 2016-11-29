@@ -49,13 +49,13 @@ include_directories(include)
 ## Build ##
 ###########
 add_library(IkExample src/ik_example.cpp)
-
+add_library(HomingExample src/homing_example.cpp)
 
 ##########
 ## Link ##
 ##########
 target_link_libraries(IkExample XCM)
-
+target_link_libraries(HomingExample XCM)
 
 #############
 ## Install ##
@@ -101,5 +101,47 @@ install_basic_package_files(IkExample VARS_PREFIX ${VARS_PREFIX}
                                     COMPATIBILITY SameMajorVersion
                                     TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
                                     NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+                                    
+                                    
+set(VARS_PREFIX "HomingExample")
+
+set(HomingExample_MAJOR_VERSION 0)
+set(HomingExample_MINOR_VERSION 1)
+set(HomingExample_PATCH_VERSION 0)
+set(HomingExample_VERSION ${HomingExample_MAJOR_VERSION}.${HomingExample_MINOR_VERSION}.${HomingExample_PATCH_VERSION})
+
+find_package(YCM REQUIRED)
+include(YCMDefaultDirs)
+ycm_default_dirs(${VARS_PREFIX})
+
+target_include_directories(HomingExample PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
+                                                "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
+
+set_target_properties(HomingExample PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
+                                               SOVERSION ${${VARS_PREFIX}_VERSION})
+
+install(DIRECTORY include/
+        DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"
+        FILES_MATCHING PATTERN "*.h*")
+
+install(TARGETS HomingExample
+        EXPORT HomingExample
+        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
+        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
+        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
+
+
+
+#enabling it will add all HomingExample dependencies as dependencies for third party users
+set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS HomingExample)
+
+
+include(InstallBasicPackageFiles)
+install_basic_package_files(HomingExample VARS_PREFIX ${VARS_PREFIX}
+                                    VERSION ${${VARS_PREFIX}_VERSION}
+                                    COMPATIBILITY SameMajorVersion
+                                    TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
+                                    NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+                                    
 
 include(AddUninstallTarget)

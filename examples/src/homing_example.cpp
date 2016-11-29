@@ -17,18 +17,18 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#include <ik_example.h>
+#include <homing_example.h>
 
-SHLIBPP_DEFINE_SHARED_SUBCLASS(IkExample_factory, XBot::IkExample, XBot::XBotControlPlugin);
+SHLIBPP_DEFINE_SHARED_SUBCLASS(HomingExample_factory, XBot::HomingExample, XBot::XBotControlPlugin);
 
 namespace XBot {
 
-IkExample::IkExample()
+HomingExample::HomingExample()
 {
 
 }
 
-bool IkExample::init_control_plugin(RobotInterface::Ptr robot)
+bool HomingExample::init_control_plugin(RobotInterface::Ptr robot)
 {
     _robot = robot;
     
@@ -42,9 +42,9 @@ bool IkExample::init_control_plugin(RobotInterface::Ptr robot)
     return true;
 }
 
-void IkExample::control_loop(double time, double period)
+void HomingExample::control_loop(double time, double period)
 {
-    std::cout << "LOOPING..." << std::endl;
+//     std::cout << "LOOPING..." << std::endl;
 //     _robot->sense();
     _robot->setPositionReference(_q0 + 0.5*(1-std::cos(0.5*(_time)))*(_q_home-_q0));
     _robot->move();
@@ -52,7 +52,7 @@ void IkExample::control_loop(double time, double period)
     _time += 0.001;
 }
 
-bool IkExample::close()
+bool HomingExample::close()
 {
     return true;
 }

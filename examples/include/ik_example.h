@@ -46,6 +46,8 @@ namespace XBot {
         
         Eigen::VectorXd _q0, _q_home;
         
+        double _time;
+        
     };
     
 }

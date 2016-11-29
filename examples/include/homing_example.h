@@ -17,49 +17,39 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#include <ik_example.h>
+#ifndef __XCM_EXAMPLES_HOMING_EXAMPLE_H__
+#define __XCM_EXAMPLES_HOMING_EXAMPLE_H__
 
-SHLIBPP_DEFINE_SHARED_SUBCLASS(IkExample_factory, XBot::IkExample, XBot::XBotControlPlugin);
+#include <XCM/XBotControlPlugin.h>
 
 namespace XBot {
+ 
+    class HomingExample : public XBotControlPlugin {
+      
+    public:
+        
+        HomingExample();
+        
+        virtual bool close();
+        
+       
 
-IkExample::IkExample()
-{
-
-}
-
-bool IkExample::init_control_plugin(RobotInterface::Ptr robot)
-{
-    _robot = robot;
-    
-    _robot->getRobotState("home", _q_home);
-    _robot->sense();
-    _robot->getJointPosition(_q0);
-    
-    std::cout << "_qo from SRDF : " << _q0 << std::endl;
-    _time = 0;
-
-    return true;
-}
-
-void IkExample::control_loop(double time, double period)
-{
-    std::cout << "LOOPING..." << std::endl;
-//     _robot->sense();
-    _robot->setPositionReference(_q0 + 0.5*(1-std::cos(0.5*(_time)))*(_q_home-_q0));
-    _robot->move();
-    
-    _time += 0.001;
-}
-
-bool IkExample::close()
-{
-    return true;
-}
-
-
-
-
-    
+    protected:
+        
+        virtual void control_loop(double time, double period);
+        
+        virtual bool init_control_plugin(RobotInterface::Ptr robot);
+        
+    private:
+        
+        RobotInterface::Ptr _robot;
+        
+        Eigen::VectorXd _q0, _q_home;
+        
+        double _time;
+        
+    };
     
 }
+
+#endif // __XCM_EXAMPLES_HOMING_EXAMPLE_H__
