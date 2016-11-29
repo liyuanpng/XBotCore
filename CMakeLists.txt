@@ -45,6 +45,7 @@ find_package(soem${LIB_TYPE} REQUIRED)
 find_package(iitecat_iface${LIB_TYPE} REQUIRED)
 find_package(walkman_master${LIB_TYPE} REQUIRED)
 find_package(ecat_test_utils${LIB_TYPE} REQUIRED)
+find_package(sharedlibpp REQUIRED)
 
 # communication packages
 # # find_package(YARP REQUIRED)
@@ -63,6 +64,7 @@ include_directories(include ${XBotCoreModel_INCLUDE_DIRS}
                             ${iitecat_iface${LIB_TYPE}_INCLUDE_DIRS}
                             ${walkman_master${LIB_TYPE}_INCLUDE_DIRS}
                             ${ecat_test_utils${LIB_TYPE}_INCLUDE_DIRS}
+                            ${sharedlibpp_INCLUDE_DIRS}
                     )
                             #${YARP_INCLUDE_DIRS}
 
@@ -94,7 +96,7 @@ if ( Xenomai_FOUND )
     set_xeno_flags(XBotPluginHandler)
 endif()
 
-add_subdirectory(src/XBotPlugin) # leave it here, the main dipends on the compiled plugins -> TBD use ALI
+# add_subdirectory(src/XBotPlugin) # leave it here, the main dipends on the compiled plugins -> TBD use ALI
 
 target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
                                       ${XBotCoreModel_LIBRARIES}
@@ -104,7 +106,6 @@ target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
                                       ${ecat_test_utils${LIB_TYPE}_LIBRARIES}
                                       XBotPluginHandler
                                       XBotCommunicationHandler
-                                      XBotCommunicationPlugin
                                       )
                                       
 target_link_libraries(XBotPluginHandler ${COMMON_LIBS}
@@ -113,7 +114,7 @@ target_link_libraries(XBotPluginHandler ${COMMON_LIBS}
                                         ${iitecat_iface${LIB_TYPE}_LIBRARIES}
                                         ${walkman_master${LIB_TYPE}_LIBRARIES}
                                         ${ecat_test_utils${LIB_TYPE}_LIBRARIES}
-                                        XBotCommunicationPlugin
+                                        ${sharedlibpp_LIBRARIES}
                                         )                                      
                                       
 # # link the NRT common libs

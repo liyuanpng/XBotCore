@@ -28,29 +28,78 @@
 
 #include <XBotPlugin/XBotCommunicationPlugin.h>
 
-XBot::XBotPluginHandler::XBotPluginHandler(const char* config_yaml): XBotCore(config_yaml)
+XBot::XBotPluginHandler::XBotPluginHandler(const char* config_yaml) : 
+    XBotCore(config_yaml), 
+    _path_to_config_file(config_yaml)
 {
     // TBD read the plugins to load from YAML
 }
 
 bool XBot::XBotPluginHandler::load_plugins() {
-
-    XBot::XBotCoreModel model = get_robot_model();
-
-    std::shared_ptr<XBot::IXBotModel> actual_model = std::make_shared<XBot::XBotCoreModel>(model);
-    std::shared_ptr<XBot::IXBotChain> actual_chain(this); // TBD ? [](XBot::IXBotChain* ptr){return;}
-    std::shared_ptr<XBot::IXBotRobot> actual_robot(this);
-    std::shared_ptr<XBot::IXBotFT> actual_ft(this);
     
-    // TBD load dynamically the plugins
-    std::shared_ptr<XBot::XBotCommunicationPlugin> communication_plugin(new XBot::XBotCommunicationPlugin( "communication plugin",
-                                                                                                            actual_model, 
-                                                                                                            actual_chain,
-                                                                                                            actual_robot,
-                                                                                                            actual_ft));
-    plugins.push_back(communication_plugin);
+    std::ifstream fin(_path_to_config_file);
+    if (fin.fail()) {
+        std::cerr << "ERROR in " << __func__ << "! Can NOT open " << _path_to_config_file << "!" << std::endl;
+        return false;
+    }
     
-    return true;
+
+    YAML::Node root_cfg = YAML::LoadFile(_path_to_config_file);
+    
+    if(!root_cfg["XBotRTPlugins"]){
+        std::cerr << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node XBotRTPlugins!" << std::endl;
+        return false;
+    }
+    else{
+        
+        if(!root_cfg["XBotRTPlugins"]["plugins"]){
+            std::cerr << "ERROR in " << __func__ << "!XBotRTPlugins node does NOT contain mandatory node plugins!" << std::endl;
+        return false;
+        }
+        else{
+            
+            for(const auto& plugin : root_cfg["XBotRTPlugins"]["plugins"]){
+                _rtplugin_names.push_back(plugin.as<std::string>());
+            }
+        }
+        
+    }
+    
+
+    bool success = true;
+    
+    for( const std::string& plugin_name : _rtplugin_names ){
+        
+        std::string path_to_so;
+        computeAbsolutePath(plugin_name, "/build/install/lib/lib", path_to_so);
+        path_to_so += std::string(".so");
+        
+        std::string factory_name = plugin_name + std::string("_factory");
+        
+        auto factory_ptr = std::make_shared<shlibpp::SharedLibraryClassFactory<XBot::XBotPlugin>>(path_to_so.c_str(), factory_name.c_str());
+        
+        if (!factory_ptr->isValid()) {
+            // NOTE print to celebrate the wizard
+            printf("error (%s) : %s\n", shlibpp::Vocab::decode(factory_ptr->getStatus()).c_str(),
+                factory_ptr->getLastNativeError().c_str());
+            std::cerr << "Unable to load plugin " << plugin_name << "!" << std::endl;
+            success = false;
+            continue;
+        }
+        else{
+            std::cout << "Found plugin " << plugin_name << "!" << std::endl;
+        }
+        
+        _rtplugin_factory.push_back(factory_ptr);
+        
+        auto plugin_ptr = std::make_shared<shlibpp::SharedLibraryClass<XBot::XBotPlugin>>(*factory_ptr);
+        
+        _rtplugin_vector.push_back(plugin_ptr);
+
+    }
+
+    return success;
+
 }
 
 
@@ -62,12 +111,23 @@ bool XBot::XBotPluginHandler::plugin_handler_init(void)
         return false;
     }
     
+    XBot::XBotCoreModel model = get_robot_model();
+
+    std::shared_ptr<XBot::IXBotModel> actual_model = std::make_shared<XBot::XBotCoreModel>(model);
+    std::shared_ptr<XBot::IXBotChain> actual_chain(this); // TBD ? [](XBot::IXBotChain* ptr){return;}
+    std::shared_ptr<XBot::IXBotRobot> actual_robot(this);
+    std::shared_ptr<XBot::IXBotFT> actual_ft(this);
+    
     // iterate over the plugins and call the init()
-    plugins_num = plugins.size();
+    int plugins_num = _rtplugin_vector.size();
     bool ret = true;
     for(int i = 0; i < plugins_num; i++) {
-        if(!plugins[i]->init()) {
-            DPRINTF("ERROR: plugin %s - init() failed\n", plugins[i]->name.c_str());
+        if(!(*_rtplugin_vector[i])->init( _rtplugin_names[i],
+                                actual_model, 
+                                actual_chain,
+                                actual_robot,
+                                actual_ft)) {
+            DPRINTF("ERROR: plugin %s - init() failed\n", (*_rtplugin_vector[i])->name.c_str());
             ret = false;
         }
     }
@@ -77,10 +137,10 @@ bool XBot::XBotPluginHandler::plugin_handler_init(void)
 
 bool XBot::XBotPluginHandler::plugin_handler_loop(void)
 {
-    std::vector<float> plugin_execution_time(plugins_num); // TBD circular array and write to file in the plugin_handler_close
-    for(int i = 0; i < plugins_num; i++) {
+    std::vector<float> plugin_execution_time(_rtplugin_vector.size()); // TBD circular array and write to file in the plugin_handler_close
+    for(int i = 0; i < _rtplugin_vector.size(); i++) {
         float plugin_start_time = (iit::ecat::get_time_ns() / 10e3); //microsec
-        plugins[i]->run();
+        (*_rtplugin_vector[i])->run();
         plugin_execution_time[i] = (iit::ecat::get_time_ns() / 10e3) - plugin_start_time; //microsec
 //         DPRINTF("Plugin %d - %s : execution_time = %f microsec\n", i, plugins[i]->name.c_str(), plugin_execution_time[i]);
     }
@@ -90,9 +150,9 @@ bool XBot::XBotPluginHandler::plugin_handler_loop(void)
 bool XBot::XBotPluginHandler::plugin_handler_close(void)
 {
     bool ret = true;
-    for(int i = 0; i < plugins_num; i++) {
-        if(!plugins[i]->close()) {
-            DPRINTF("ERROR: plugin %s - close() failed\n", plugins[i]->name.c_str());
+    for(int i = 0; i < _rtplugin_vector.size(); i++) {
+        if(!(*_rtplugin_vector[i])->close()) {
+            DPRINTF("ERROR: plugin %s - close() failed\n", (*_rtplugin_vector[i])->name.c_str());
             ret = false;
         }
     }
@@ -102,4 +162,31 @@ bool XBot::XBotPluginHandler::plugin_handler_close(void)
 XBot::XBotPluginHandler::~XBotPluginHandler()
 {
     printf("~XBotPluginHandler()\n");
+}
+
+bool XBot::XBotPluginHandler::computeAbsolutePath(const std::string& input_path, 
+                                                  const std::string& middle_path, 
+                                                  std::string& absolute_path)
+{
+    // if not an absolute path
+    if(!(input_path.at(0) == '/')) {
+        // if you are working with the Robotology Superbuild
+        const char* env_p = std::getenv("ROBOTOLOGY_ROOT");
+        // check the env, otherwise error
+        if(env_p) {
+            std::string current_path(env_p);
+            // default relative path when working with the superbuild
+            current_path += middle_path;
+            current_path += input_path;
+            absolute_path = current_path;
+            return true;
+        }
+        else {
+            std::cerr << "ERROR in " << __func__ << " : the input path  " << input_path << " is neither an absolute path nor related with the robotology superbuild. Download it!" << std::endl;
+            return false;
+        }
+    }
+    // already an absolute path
+    absolute_path = input_path;
+    return true;
 }
