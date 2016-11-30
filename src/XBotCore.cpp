@@ -1189,6 +1189,7 @@ bool XBot::XBotCore::get_link_pos(int joint_id, float& link_pos)
     if( motors.count(rid2Pos(joint_id)) ) {
         // get the data
         link_pos = motors[rid2Pos(joint_id)]->getRxPDO().link_pos;
+        arm_roll_temp_fix(link_pos, joint_id, true);
         return true;
     }
     
@@ -1204,6 +1205,7 @@ bool XBot::XBotCore::get_motor_pos(int joint_id, float& motor_pos)
     if( motors.count(rid2Pos(joint_id)) ) {
         // get the data
         motor_pos = motors[rid2Pos(joint_id)]->getRxPDO().motor_pos;
+        arm_roll_temp_fix(motor_pos, joint_id, true);
         return true;
     }
     
@@ -1336,11 +1338,12 @@ bool XBot::XBotCore::get_aux(int joint_id, float& aux)
 
 bool XBot::XBotCore::set_pos_ref(int joint_id, const float& pos_ref)
 {
-    
+    float& non_const_pos_ref = const_cast<float&>(pos_ref);
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
+        arm_roll_temp_fix(non_const_pos_ref, joint_id, true);
         // set the data
-        motors[rid2Pos(joint_id)]->set_posRef(pos_ref);
+        motors[rid2Pos(joint_id)]->set_posRef(non_const_pos_ref);
         return true;
     }
     
@@ -1517,6 +1520,35 @@ bool XBot::XBotCore::get_ft_rtt(int ft_id, uint16_t& rtt)
     DPRINTF("Trying to get_ft_rtt() on ft with ft_id : %d that does not exists\n", ft_id);
     return false;   
 }
+
+
+// HACK ask Margan to solve config file issue
+// HACK ask Margan to solve config file issue
+// HACK ask Margan to solve config file issue
+void XBot::XBotCore::arm_roll_temp_fix(float& v, int joint_id, bool read)
+{
+    // RIGHT ARM SH ROLL
+    if(joint_id == 12) {
+        if(read) {
+            v = (v) * (-1) - 1.57;
+        }
+        else {
+            v = ((v) + 1.57) / -1;
+        }
+    }
+    // LEFT ARM SH ROLL
+    else if(joint_id == 22) {
+        if(read) {
+            v = (v) * (-1) + 1.57;
+        }
+        else {
+            v = ((v) - 1.57) / -1;
+        }
+    }
+}
+// HACK ask Margan to solve config file issue
+// HACK ask Margan to solve config file issue
+// HACK ask Margan to solve config file issue
 
 
 

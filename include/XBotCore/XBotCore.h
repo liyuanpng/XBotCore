@@ -330,6 +330,8 @@ private:
     virtual bool set_aux(int joint_id, const float& aux) final;
 
     
+    // HACK ask Margan to solve config file issue
+    void arm_roll_temp_fix(float& v, int joint_id, bool read);
 
 };
 
