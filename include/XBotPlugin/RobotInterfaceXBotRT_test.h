@@ -24,50 +24,46 @@
  * @author Luca Muratore (2016-, luca.muratore@iit.it)
 */
 
-#ifndef __X_BOT_COMMUNICATION_PLUGIN_H__
-#define __X_BOT_COMMUNICATION_PLUGIN_H__
+#ifndef __ROBOT_INTERFACE_XBOT_RT_TEST_H__
+#define __ROBOT_INTERFACE_XBOT_RT_TEST_H__
 
 #include <XBotCore/XBotPlugin.hpp>
-
-#include <iit/advr/pipes.h>
-#include <iit/ecat/advr/esc.h>
-
 #include <memory>
+
+#include <XBotInterface/RobotInterface.h>
 
 namespace XBot
 {
-    class XBotCommunicationPlugin;
+    class RobotInterfaceXBotRT_test;
 }
 
 /**
  * @brief XBotCore RT plugin that communicates wit the non-RT enviroment using XDDP pipes
  * 
  */
-class XBot::XBotCommunicationPlugin : public XBot::XBotPlugin
+class XBot::RobotInterfaceXBotRT_test : public XBot::XBotPlugin
 {
 private:
-    std::map<int,std::shared_ptr<XDDP_pipe>> xddps;
-    iit::ecat::advr::McEscPdoTypes::pdo_tx pdo_tx;
-    
-    std::map<int, uint16_t> temperature;
+    std::map<int, float> _link_pos;
+    XBot::RobotInterface::Ptr _robot_interface;
     
 public:  
     
-    XBotCommunicationPlugin();
+    RobotInterfaceXBotRT_test();
 
     virtual bool init(std::string name,
-                    std::shared_ptr<XBot::IXBotModel> model, 
-                    std::shared_ptr<XBot::IXBotChain> chain,
-                    std::shared_ptr<XBot::IXBotRobot> robot,
-                    std::shared_ptr<XBot::IXBotFT> ft);
+                      std::shared_ptr<XBot::IXBotModel> model, 
+                      std::shared_ptr<XBot::IXBotChain> chain,
+                      std::shared_ptr<XBot::IXBotRobot> robot,
+                      std::shared_ptr<XBot::IXBotFT> ft);
     
-    virtual void run(void);
+    virtual void run();
     
-    virtual bool close(void);
+    virtual bool close();
     
-    virtual ~XBotCommunicationPlugin();
+    virtual ~RobotInterfaceXBotRT_test();
     
 
 };
 
-#endif //__X_BOT_COMMUNICATION_PLUGIN_H__
+#endif //__ROBOT_INTERFACE_XBOT_RT_TEST_H__

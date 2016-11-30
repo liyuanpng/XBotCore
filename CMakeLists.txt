@@ -33,55 +33,60 @@ if ( ${ENABLE_XENO} )
     find_package(RTnet)
 endif()
 
+if ( Xenomai_FOUND )
+    set(LIB_TYPE _rt)
+else ()
+    set(LIB_TYPE _nrt)
+endif()
+
 # find packages 
-find_package(srdfdom REQUIRED)
-find_package(urdfdom REQUIRED)
-find_package(kdl_parser REQUIRED)
+find_package(XBotCoreModel REQUIRED)
+find_package(soem${LIB_TYPE} REQUIRED)
+find_package(iitecat_iface${LIB_TYPE} REQUIRED)
+find_package(walkman_master${LIB_TYPE} REQUIRED)
+find_package(ecat_test_utils${LIB_TYPE} REQUIRED)
+find_package(sharedlibpp REQUIRED)
+
 # communication packages
-find_package(YARP REQUIRED)
+# # find_package(YARP REQUIRED)
 
-# Common libs TBD: make it clean!
-set(COMMON_LIBS_RT
-    ecat_test_utils_rt
-    walkman_master_rt
-    iitecat_iface_rt
-    soem_rt
+set(COMMON_LIBS
     pthread
-    zmq
-    jsoncpp
-    yaml-cpp
-)
-
-set(COMMON_LIBS_NRT
-    ecat_test_utils_nrt
-    walkman_master_nrt
-    iitecat_iface_nrt
-    soem_nrt
-    pthread
-    zmq
     jsoncpp
     yaml-cpp
 )
 
 
 # include 
-include_directories(include ${srdfdom_INCLUDE_DIRS} ${urdfdom_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
+include_directories(include ${XBotCoreModel_INCLUDE_DIRS} 
+                            ${kdl_parser_INCLUDE_DIRS}
+                            ${soem${LIB_TYPE}_INCLUDE_DIRS}
+                            ${iitecat_iface${LIB_TYPE}_INCLUDE_DIRS}
+                            ${walkman_master${LIB_TYPE}_INCLUDE_DIRS}
+                            ${ecat_test_utils${LIB_TYPE}_INCLUDE_DIRS}
+                            ${sharedlibpp_INCLUDE_DIRS}
+                    )
+                            #${YARP_INCLUDE_DIRS}
 
 # exe
 add_executable(${PROJECT_NAME}
     src/XBotMain.cpp
 )
-
-# exe
-add_executable(XBotYARP
-    src/XBotYARPMain.cpp
-)
+# 
+# # exe
+# # add_executable(XBotYARP
+# #     src/XBotYARPMain.cpp
+# # )
 
 # lib
 add_library(XBotPluginHandler SHARED
     src/XBotEcat.cpp
     src/XBotCore.cpp
     src/XBotPluginHandler.cpp
+)
+
+add_library(XBotPlugin SHARED
+    src/XBotPlugin.cpp
 )
 
 # lib
@@ -95,66 +100,142 @@ if ( Xenomai_FOUND )
     set_xeno_flags(XBotPluginHandler)
 endif()
 
-add_subdirectory(src/XBotPlugin) # leave it here, the main dipends on the compiled plugins
+# add_subdirectory(src/XBotPlugin) # leave it here, the main dipends on the compiled plugins -> TBD use ALI
 
-# link the RT common libs
-target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS_RT}
-                                      ${srdfdom_LIBRARIES}
-                                      ${urdfdom_LIBRARIES}
-                                      ${kdl_parser_LIBRARIES}
+target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
+                                      ${XBotCoreModel_LIBRARIES}
+                                      ${soem${LIB_TYPE}_LIBRARIES} 
+                                      ${iitecat_iface${LIB_TYPE}_LIBRARIES}
+                                      ${walkman_masterwalkman_master${LIB_TYPE}_LIBRARIES}
+                                      ${ecat_test_utils${LIB_TYPE}_LIBRARIES}
                                       XBotPluginHandler
                                       XBotCommunicationHandler
-                                      XBotCommunicationPlugin)
+                                      )
+
                                       
-# link the NRT common libs
-target_link_libraries(XBotYARP ${COMMON_LIBS_NRT}
-                               ${srdfdom_LIBRARIES}
-                               ${urdfdom_LIBRARIES}
-                               ${kdl_parser_LIBRARIES}
-                               ${YARP_LIBRARIES}
-                               XBotCommunicationHandler)
+                                      
+target_link_libraries(XBotPluginHandler ${COMMON_LIBS}
+                                        ${XBotCoreModel_LIBRARIES}
+                                        ${soem${LIB_TYPE}_LIBRARIES} 
+                                        ${iitecat_iface${LIB_TYPE}_LIBRARIES}
+                                        ${walkman_master${LIB_TYPE}_LIBRARIES}
+                                        ${ecat_test_utils${LIB_TYPE}_LIBRARIES}
+                                        ${sharedlibpp_LIBRARIES}
+                                        )                                      
+                                      
+# # link the NRT common libs
+# # target_link_libraries(XBotYARP ${COMMON_LIBS_NRT}
+# #                                ${XBotCoreModel_LIBRARIES}
+# #                                ${YARP_LIBRARIES}
+# #                                XBotCommunicationHandler)
 
 if(NOT Xenomai_FOUND)
     set_cap_build(${PROJECT_NAME})
 endif()
 
 # install exe, lib and include
-install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
-install(TARGETS XBotYARP RUNTIME DESTINATION bin)
+# install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+# # install(TARGETS XBotYARP RUNTIME DESTINATION bin)
 install(TARGETS XBotPluginHandler RUNTIME LIBRARY DESTINATION lib)
 install(TARGETS XBotCommunicationHandler RUNTIME LIBRARY DESTINATION lib)
 
-install(DIRECTORY include/ 
-        DESTINATION include
-        FILES_MATCHING PATTERN "*.h*")
-
-if(NOT Xenomai_FOUND)
-    set_cap_install(${CMAKE_INSTALL_PREFIX}/bin/${PROJECT_NAME})
-endif()
-
-
-# Enable srdf generation from xacro
-set(ENABLE_SRDF_FROM_XACRO_GENERATION CACHE BOOL "ON")
-if ( ${ENABLE_SRDF_FROM_XACRO_GENERATION} )
-    # xacro
-    find_package(xacro REQUIRED)
-    # iterate over xacro files
-    file(GLOB xacro_files ${CMAKE_CURRENT_SOURCE_DIR}/configs/srdf/*.xacro)
-    foreach(it ${xacro_files})
-        # remove .xacro extension
-        string(REGEX MATCH "(.*)[.]xacro$" unused ${it})
-        set(output_filename ${CMAKE_MATCH_1})
-
-        # create a rule to generate ${output_filename} from {it}
-        xacro_add_xacro_file(${it} ${output_filename})
-
-        list(APPEND srdf_files ${output_filename})
-    endforeach(it)
-
-    # add an abstract target to actually trigger the builds
-    add_custom_target(media_files ALL DEPENDS ${srdf_files})
-endif()
-
 # documentation
 add_subdirectory(doc)
+
+########################################################################
+
+set(VARS_PREFIX ${PROJECT_NAME})
+
+set(${PROJECT_NAME}_MAJOR_VERSION 0)
+set(${PROJECT_NAME}_MINOR_VERSION 0)
+set(${PROJECT_NAME}_PATCH_VERSION 1)
+set(${PROJECT_NAME}_VERSION ${${PROJECT_NAME}_MAJOR_VERSION}.${${PROJECT_NAME}_MINOR_VERSION}.${${PROJECT_NAME}_PATCH_VERSION})
+
+find_package(YCM REQUIRED)
+include(YCMDefaultDirs)
+ycm_default_dirs(${VARS_PREFIX})
+
+target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
+                                                "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
+
+set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
+                                               SOVERSION ${${VARS_PREFIX}_VERSION})
+
+install(DIRECTORY include/
+        DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"
+        FILES_MATCHING PATTERN "*.h*")
+
+install(TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}
+        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
+        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
+        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
+
+
+
+#enabling it will add all XBotInterface dependencies as dependencies for third party users
+set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS ${PROJECT_NAME})
+
+
+include(InstallBasicPackageFiles)
+install_basic_package_files(${PROJECT_NAME} VARS_PREFIX ${VARS_PREFIX}
+                                    VERSION ${${VARS_PREFIX}_VERSION}
+                                    COMPATIBILITY SameMajorVersion
+                                    TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
+                                    NO_CHECK_REQUIRED_COMPONENTS_MACRO)                                    
+
+include(AddUninstallTarget)
+
+if(NOT Xenomai_FOUND)
+    set_cap_install(${CMAKE_INSTALL_PREFIX}/bin/${VARS_PREFIX}-${${VARS_PREFIX}_VERSION})
+endif()
+
+
+############################
+#### INSTALL XBOTPLUGIN ####
+############################
+
+set(VARS_PREFIX XBotPlugin)
+
+set(XBotPlugin_MAJOR_VERSION 0)
+set(XBotPlugin_MINOR_VERSION 0)
+set(XBotPlugin_PATCH_VERSION 1)
+set(XBotPlugin_VERSION ${XBotPlugin_MAJOR_VERSION}.${XBotPlugin_MINOR_VERSION}.${XBotPlugin_PATCH_VERSION})
+
+find_package(YCM REQUIRED)
+include(YCMDefaultDirs)
+ycm_default_dirs(${VARS_PREFIX})
+
+target_include_directories(XBotPlugin PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
+                                                "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
+
+set_target_properties(XBotPlugin PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
+                                               SOVERSION ${${VARS_PREFIX}_VERSION})
+
+install(DIRECTORY include/
+        DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"
+        FILES_MATCHING PATTERN "*.h*")
+
+install(TARGETS XBotPlugin
+        EXPORT XBotPlugin
+        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
+        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
+        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
+
+
+
+#enabling it will add all XBotInterface dependencies as dependencies for third party users
+set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS XBotPlugin)
+
+
+include(InstallBasicPackageFiles)
+install_basic_package_files(XBotPlugin VARS_PREFIX ${VARS_PREFIX}
+                                    VERSION ${${VARS_PREFIX}_VERSION}
+                                    COMPATIBILITY SameMajorVersion
+                                    TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
+                                    NO_CHECK_REQUIRED_COMPONENTS_MACRO)                                    
+
+
+
+
 

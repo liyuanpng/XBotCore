@@ -28,7 +28,9 @@
 #define __X_BOT_PLUGIN_HANDLER_H__
 
 #include <XBotCore/XBotCore.h>
-#include <XBotCore/XBotPlugin.hpp>
+#include <XBotCore/XBotPlugin.h>
+#include <SharedLibraryClassFactory.h>
+#include <SharedLibraryClass.h>
 
 namespace XBot
 {
@@ -56,11 +58,20 @@ protected:
     
 
 private: 
-    
+
     bool load_plugins();
     
-    std::vector< std::shared_ptr<XBot::XBotPlugin> > plugins; 
-    int plugins_num; 
+    static bool computeAbsolutePath ( const std::string& input_path,
+                                       const std::string& middle_path,
+                                       std::string& absolute_path ); // TBD do it with UTILS
+    
+    std::string _path_to_config_file;
+    
+    // Dynamic loading related variables
+    std::vector<std::shared_ptr<shlibpp::SharedLibraryClassFactory<XBot::XBotPlugin>>> _rtplugin_factory;
+    std::vector<std::string> _rtplugin_names;
+    std::vector<std::shared_ptr<shlibpp::SharedLibraryClass<XBot::XBotPlugin>>> _rtplugin_vector;
+
 
 };
 

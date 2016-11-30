@@ -36,8 +36,9 @@
 #include <XBotCore/IXBotJoint.h>
 #include <XBotCore/IXBotChain.h>
 #include <XBotCore/IXBotRobot.h>
-#include <XBotCore/XBotCoreModel.hpp>
 #include <XBotCore/IXBotFT.h>
+
+#include <XBotCoreModel.h>
 
 namespace XBot
 {
