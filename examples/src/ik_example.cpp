@@ -63,11 +63,11 @@ bool IkExample::init_control_plugin(std::string path_to_config_file, RobotInterf
 
 void IkExample::control_loop(double time, double period)
 {
-//     _robot->sense();
     
     if( (time - get_first_loop_time()) <= _homing_time ){
         _robot->setPositionReference(_q0 + 0.5*(1-std::cos(3.1415*(time - get_first_loop_time())/_homing_time))*(_q_home-_q0));
         _robot->move();
+        _robot->sense();
         return;
     }
     
@@ -81,7 +81,7 @@ void IkExample::control_loop(double time, double period)
         _ik_started = true;
     }
     
-    double dt = 0.0001;
+    double dt = 0.001;
 
     // Set the desired end-effector pose at current time
     _desired_pose.linear() = _initial_pose.linear();
@@ -116,6 +116,8 @@ void IkExample::control_loop(double time, double period)
     
     _ik_time += dt;
     
+//     _robot->sense();
+//     _robot->printTracking();
     
 }
 

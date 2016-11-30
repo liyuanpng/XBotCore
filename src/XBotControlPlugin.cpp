@@ -35,18 +35,20 @@ XBotControlPlugin::~XBotControlPlugin()
 
 bool XBotControlPlugin::init(std::string path_to_config_file, 
                              std::string name, 
+                             std::shared_ptr<XBot::IXBotJoint> joint,
                              std::shared_ptr< IXBotModel > model, 
                              std::shared_ptr< IXBotChain > chain, 
                              std::shared_ptr< IXBotRobot > robot, 
                              std::shared_ptr< IXBotFT > ft)
 {
     this->name = name;
+    this->joint = joint;
     this->model = model;
     this->chain = chain;
     this->ft = ft;
     
     AnyMapPtr any_map = std::make_shared<AnyMap>();
-    (*any_map)["XBotRobot"] = boost::any(robot);
+    (*any_map)["XBotJoint"] = boost::any(joint);
     
     RobotInterface::Ptr robotinterface = RobotInterface::getRobot(path_to_config_file, any_map);
     
