@@ -142,7 +142,9 @@ bool XBot::XBotPluginHandler::plugin_handler_loop(void)
     std::vector<float> plugin_execution_time(_rtplugin_vector.size()); // TBD circular array and write to file in the plugin_handler_close
     for(int i = 0; i < _rtplugin_vector.size(); i++) {
         float plugin_start_time = (iit::ecat::get_time_ns() / 10e3); //microsec
-        (*_rtplugin_vector[i])->run(0, -1); // TBD actual time
+        
+         double run_time = ( (double) iit::ecat::get_time_ns() ) / 10e9; // TBD test it
+        (*_rtplugin_vector[i])->run( run_time, -1); // TBD actual time
         plugin_execution_time[i] = (iit::ecat::get_time_ns() / 10e3) - plugin_start_time; //microsec
 //         DPRINTF("Plugin %d - %s : execution_time = %f microsec\n", i, plugins[i]->name.c_str(), plugin_execution_time[i]);
     }
