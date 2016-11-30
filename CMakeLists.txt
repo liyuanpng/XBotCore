@@ -187,7 +187,7 @@ install_basic_package_files(${PROJECT_NAME} VARS_PREFIX ${VARS_PREFIX}
 include(AddUninstallTarget)
 
 if(NOT Xenomai_FOUND)
-    set_cap_install(${CMAKE_INSTALL_PREFIX}/bin/${VARS_PREFIX}-${${VARS_PREFIX}_VERSION})
+    set_cap_install(${CMAKE_INSTALL_PREFIX}/bin/${PROJECT_NAME}-${${PROJECT_NAME}_VERSION})
 endif()
 
 
