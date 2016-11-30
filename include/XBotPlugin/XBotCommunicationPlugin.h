@@ -56,6 +56,7 @@ public:
     XBotCommunicationPlugin();
 
     virtual bool init(std::string name,
+                    std::shared_ptr<XBot::IXBotJoint> joint,
                     std::shared_ptr<XBot::IXBotModel> model, 
                     std::shared_ptr<XBot::IXBotChain> chain,
                     std::shared_ptr<XBot::IXBotRobot> robot,

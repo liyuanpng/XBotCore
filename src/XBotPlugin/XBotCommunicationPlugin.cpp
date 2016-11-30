@@ -28,18 +28,27 @@
 
 #define MAX_ALLOWED_TEMPERATURE 70
 
-XBot::XBotCommunicationPlugin::XBotCommunicationPlugin( std::string name,
-                                                        std::shared_ptr<XBot::IXBotModel> model, 
-                                                        std::shared_ptr<XBot::IXBotChain> chain,
-                                                        std::shared_ptr<XBot::IXBotRobot> robot,
-                                                        std::shared_ptr<XBot::IXBotFT> ft) :
-                                                        XBotPlugin(name, model, chain, robot, ft)
+XBot::XBotCommunicationPlugin::XBotCommunicationPlugin() :
+                                                        XBotPlugin(name, joint, model, chain, robot, ft)
 {
 
 }
 
-bool XBot::XBotCommunicationPlugin::init(void)
+bool XBot::XBotCommunicationPlugin::init(std::string name,
+                                         std::shared_ptr<XBot::IXBotJoint> joint,
+                                         std::shared_ptr<XBot::IXBotModel> model, 
+                                         std::shared_ptr<XBot::IXBotChain> chain,
+                                         std::shared_ptr<XBot::IXBotRobot> robot,
+                                         std::shared_ptr<XBot::IXBotFT> ft)
 {
+    // initalize XBot interfaces
+    this->joint = joint;
+    this->model = model;
+    this->chain = chain;
+    this->robot = robot;
+    this->ft = ft;
+    
+    
     for(auto& c : model->get_robot()) {
         for(int i=0; i< c.second.size(); i++) { // TBD check if the motor exist
             xddps[c.second[i]] = std::make_shared<XDDP_pipe>();

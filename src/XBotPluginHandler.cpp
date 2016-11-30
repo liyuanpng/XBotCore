@@ -114,9 +114,10 @@ bool XBot::XBotPluginHandler::plugin_handler_init(void)
     XBot::XBotCoreModel model = get_robot_model();
 
     std::shared_ptr<XBot::IXBotModel> actual_model = std::make_shared<XBot::XBotCoreModel>(model);
-    std::shared_ptr<XBot::IXBotChain> actual_chain(this); // TBD ? [](XBot::IXBotChain* ptr){return;}
-    std::shared_ptr<XBot::IXBotRobot> actual_robot(this);
-    std::shared_ptr<XBot::IXBotFT> actual_ft(this);
+    std::shared_ptr<XBot::IXBotJoint> actual_joint(this, [](XBot::IXBotJoint* ptr){return;});
+    std::shared_ptr<XBot::IXBotChain> actual_chain(this, [](XBot::IXBotChain* ptr){return;});
+    std::shared_ptr<XBot::IXBotRobot> actual_robot(this, [](XBot::IXBotRobot* ptr){return;});
+    std::shared_ptr<XBot::IXBotFT> actual_ft(this, [](XBot::IXBotFT* ptr){return;});
     
     // iterate over the plugins and call the init()
     int plugins_num = _rtplugin_vector.size();
@@ -124,6 +125,7 @@ bool XBot::XBotPluginHandler::plugin_handler_init(void)
     for(int i = 0; i < plugins_num; i++) {
         if(!(*_rtplugin_vector[i])->init(_path_to_config_file, 
                                          _rtplugin_names[i],
+                                         actual_joint,
                                          actual_model, 
                                          actual_chain,
                                          actual_robot,
