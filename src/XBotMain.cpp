@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) try {
     main_common(shutdown);
     
     threads["boards_ctrl"] = new XBot::XBotPluginHandler(argv[1]);
-    threads["boards_ctrl"]->create(true, 2);
+    threads["boards_ctrl"]->create(false, 2);
 
     while (main_loop) {
         sleep(1); 
