@@ -28,7 +28,7 @@ HomingExample::HomingExample()
 
 }
 
-bool HomingExample::init_control_plugin(RobotInterface::Ptr robot)
+bool HomingExample::init_control_plugin(std::string path_to_config_file, RobotInterface::Ptr robot)
 {
     _robot = robot;
     
@@ -36,7 +36,7 @@ bool HomingExample::init_control_plugin(RobotInterface::Ptr robot)
     _robot->sense();
     _robot->getJointPosition(_q0);
     
-    std::cout << "_qo from SRDF : " << _q0 << std::endl;
+    std::cout << "_q0 from SRDF : " << _q0 << std::endl;
     _time = 0;
 
     return true;
@@ -44,8 +44,6 @@ bool HomingExample::init_control_plugin(RobotInterface::Ptr robot)
 
 void HomingExample::control_loop(double time, double period)
 {
-//     std::cout << "LOOPING..." << std::endl;
-//     _robot->sense();
     _robot->setPositionReference(_q0 + 0.5*(1-std::cos(0.5*(_time)))*(_q_home-_q0));
     _robot->move();
     

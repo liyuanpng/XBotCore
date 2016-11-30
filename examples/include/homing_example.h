@@ -31,21 +31,16 @@ namespace XBot {
         HomingExample();
         
         virtual bool close();
-        
-       
 
     protected:
         
+        virtual bool init_control_plugin(std::string path_to_config_file, RobotInterface::Ptr robot);
         virtual void control_loop(double time, double period);
-        
-        virtual bool init_control_plugin(RobotInterface::Ptr robot);
         
     private:
         
         RobotInterface::Ptr _robot;
-        
         Eigen::VectorXd _q0, _q_home;
-        
         double _time;
         
     };
