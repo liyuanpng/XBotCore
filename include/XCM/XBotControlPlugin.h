@@ -41,13 +41,12 @@ namespace XBot {
                           std::shared_ptr< IXBotRobot > robot, 
                           std::shared_ptr< IXBotFT > ft) final;
                           
-        virtual void run(double time, double period) final;
-        
-        
-        
-    protected:
-        
         virtual bool init_control_plugin(std::string path_to_config_file, RobotInterface::Ptr robot) = 0;
+                          
+        virtual void run(double time, double period) final;
+
+    protected:
+
         virtual void control_loop(double time, double period) = 0;
         
         double get_first_loop_time() const;

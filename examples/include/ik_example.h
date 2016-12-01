@@ -30,6 +30,8 @@ namespace XBot {
         
         IkExample();
         
+        virtual bool init_control_plugin(std::string path_to_config_file, RobotInterface::Ptr robot);
+        
         virtual bool close();
         
        
@@ -38,7 +40,7 @@ namespace XBot {
         
         virtual void control_loop(double time, double period);
         
-        virtual bool init_control_plugin(std::string path_to_config_file, RobotInterface::Ptr robot);
+        
         
     private:
         
