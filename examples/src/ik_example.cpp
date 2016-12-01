@@ -77,15 +77,14 @@ void IkExample::control_loop(double time, double period)
         _model->getPose(_end_effector, _initial_pose);
         _model->getJointPosition(_q);
         _desired_pose = _initial_pose;
-        _ik_time = 0;
         _ik_started = true;
     }
     
-    double dt = 0.001;
+    double dt = period;
 
     // Set the desired end-effector pose at current time
     _desired_pose.linear() = _initial_pose.linear();
-    _desired_pose.translation() = _initial_pose.translation() + Eigen::Vector3d(0,0,1)*0.5*_length*(1-std::cos(2*3.1415/_period*_ik_time));
+    _desired_pose.translation() = _initial_pose.translation() + Eigen::Vector3d(0,0,1)*0.5*_length*(1-std::cos(2*3.1415/_period*time));
     // Compute the pose corresponding to the model state
     _model->getPose(_end_effector, _actual_pose);
     
@@ -98,7 +97,7 @@ void IkExample::control_loop(double time, double period)
     
     // Compute the jacobian matrix
     _model->getJacobian(_end_effector, _J);
-    _model->maskJacobian("torso", _J);
+    _model->maskJacobian("torso", _J); // We don't want the torso to move
     
     // Compute the required joint velocities
     _qdot = _J.jacobiSvd(Eigen::ComputeThinU|Eigen::ComputeThinV).solve(_xdot);
@@ -114,8 +113,7 @@ void IkExample::control_loop(double time, double period)
     _robot->setReferenceFrom(*_model, Sync::Position);
     _robot->move();
     
-    _ik_time += dt;
-    
+
 //     _robot->sense();
 //     _robot->printTracking();
     
