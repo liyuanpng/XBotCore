@@ -36,7 +36,7 @@ JointTrajectoryGenerator::JointTrajectoryGenerator(XBot::RobotInterface::Ptr rob
     
     _dq_max = (_q0 - _qmin).array().min((_qmax - _q0).array());
     
-    double safety_margin = 0.3;
+    double safety_margin = 0.1;
     _dq_max *= safety_margin;
 
     
@@ -46,7 +46,10 @@ void JointTrajectoryGenerator::getQ(double dt, Eigen::VectorXd& q)
 {
     _time += dt;
     q = _q0 + _dq_max * std::sin( 2*3.1415*_time / _period );
-    q(_robot.getDofIndex(_robot.chain("torso").getJointName(0))) = 0;
+    
+    for(int i = 0; i < _robot.chain("torso").getJointNum(); i++) {
+        q(_robot.getDofIndex(_robot.chain("torso").getJointName(i))) = 0;
+    }
 }
 
 

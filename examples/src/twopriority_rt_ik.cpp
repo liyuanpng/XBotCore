@@ -215,6 +215,10 @@ namespace demo {
             _xdot2.segment(_lp_index[i], task.getSize()) = task.getB();
             
         }
+        
+        // NOTE mask torso
+        _model->maskJacobian("torso", _J1);
+        _model->maskJacobian("torso", _J2);
 
         _svd1.compute(_J1, Eigen::ComputeThinU | Eigen::ComputeThinV);
 
@@ -224,7 +228,7 @@ namespace demo {
         _singular_values_1.array() += 0.01;
 	_singular_values_1 = _singular_values_1.array().inverse();
 	
-	std::cout << "SV1: " << _singular_values_1.transpose() << std::endl;
+// 	std::cout << "SV1: " << _singular_values_1.transpose() << std::endl;
         
         _J1p.noalias() = _svd1.matrixV().leftCols(num_valid_sv)*
 			      _singular_values_1.head(num_valid_sv).asDiagonal()*
@@ -248,7 +252,7 @@ namespace demo {
             _singular_values_2.array() += 0.01;
 	    _singular_values_2 = _singular_values_2.array().inverse();
 
-	    std::cout << "SV2: " << _singular_values_2.transpose() << std::endl;
+// 	    std::cout << "SV2: " << _singular_values_2.transpose() << std::endl;
             
             _J2p.noalias() = _svd2tilde.matrixV().leftCols(num_valid_sv)*
 			      _singular_values_2.head(num_valid_sv).asDiagonal()*

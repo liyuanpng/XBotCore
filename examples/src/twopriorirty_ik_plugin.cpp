@@ -81,8 +81,8 @@ namespace demo {
         _ik->addTaskHighPriority(_right_arm_position);
         _ik->addTaskHighPriority(_left_arm_position);
         
-        _ik->addTaskLowPriority(_right_elbow);
-        _ik->addTaskLowPriority(_left_elbow);
+//         _ik->addTaskLowPriority(_right_elbow);
+//         _ik->addTaskLowPriority(_left_elbow);
         
         return true;
         
@@ -91,7 +91,7 @@ namespace demo {
     
     void TwoPriorityIkPlugin::control_loop(double time, double period)
     {
-//         period = 0.001;
+//         period = 0.0005;
         std::cout << "Period: " << period << std::endl;
         _robot->sense();
     
@@ -131,10 +131,10 @@ namespace demo {
         _left_elbow->setReference(desired_position_elbow_l);
         _right_elbow->setReference(desired_position_elbow_r);
         
-        std::cout << "ERROR LEFT: " << _left_arm_position->getError().transpose() << std::endl;
-        std::cout << "ERROR RIGHT: " << _right_arm_position->getError().transpose() << std::endl;
-	std::cout << "ERROR ELBOW_LEFT: " << _left_elbow->getError().transpose() << std::endl;
-	std::cout << "ERROR ELBOW_RIGHT: " << _right_elbow->getError().transpose() << std::endl;
+//         std::cout << "ERROR LEFT: " << _left_arm_position->getError().transpose() << std::endl;
+//         std::cout << "ERROR RIGHT: " << _right_arm_position->getError().transpose() << std::endl;
+// 	std::cout << "ERROR ELBOW_LEFT: " << _left_elbow->getError().transpose() << std::endl;
+// 	std::cout << "ERROR ELBOW_RIGHT: " << _right_elbow->getError().transpose() << std::endl;
         
         _ik->update(period);
         
