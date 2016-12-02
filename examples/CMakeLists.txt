@@ -48,12 +48,12 @@ include_directories(include)
 ###########
 ## Build ##
 ###########
-add_library(IkExample src/ik_example.cpp)
-add_library(HomingExample src/homing_example.cpp)
-add_library(JointTrajectoryGenerator src/joint_space_demo_trajectory.cpp)
-add_library(PlayJointSpaceDemo src/play_joint_space_demo.cpp)
-add_library(TwoPriorityRtIk src/twopriority_rt_ik.cpp)
-add_library(TwoPriorityRtIkPlugin src/twopriorirty_ik_plugin.cpp)
+add_library(IkExample SHARED src/ik_example.cpp)
+add_library(HomingExample SHARED src/homing_example.cpp)
+add_library(JointTrajectoryGenerator SHARED src/joint_space_demo_trajectory.cpp)
+add_library(PlayJointSpaceDemo SHARED src/play_joint_space_demo.cpp)
+add_library(TwoPriorityRtIk SHARED src/twopriority_rt_ik.cpp)
+add_library(TwoPriorityRtIkPlugin SHARED src/twopriorirty_ik_plugin.cpp)
 
 ##########
 ## Link ##
