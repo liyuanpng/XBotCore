@@ -48,8 +48,8 @@ include_directories(include)
 ###########
 ## Build ##
 ###########
-add_library(IkExample src/ik_example.cpp)
-add_library(HomingExample src/homing_example.cpp)
+add_library(IkExample SHARED src/ik_example.cpp)
+add_library(HomingExample SHARED src/homing_example.cpp)
 
 ##########
 ## Link ##

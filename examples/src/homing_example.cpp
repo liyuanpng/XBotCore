@@ -36,16 +36,29 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file, RobotIn
     _robot->sense();
     _robot->getJointPosition(_q0);
     
+    _q_home *= -1;
+    
     std::cout << "_q0 from SRDF : " << _q0 << std::endl;
     _time = 0;
 
+    _robot->print();
+    
     return true;
 }
 
 void HomingExample::control_loop(double time, double period)
 {
-    _robot->setPositionReference(_q0 + 0.5*(1-std::cos(0.5*(_time)))*(_q_home-_q0));
+    _robot->setPositionReference(_q0 + 0.5*(1-std::cos(0.5*(time - get_first_loop_time())))*(_q_home-_q0));
     _robot->move();
+    
+//     _robot->sense();
+//     _robot->setReferenceFrom(_robot->model(), XBot::Sync::Position);
+//     _robot->move();
+    
+//     _robot->sense();
+//     _robot->print();
+    
+     _robot->printTracking();    
     
     _time += 0.001;
 }
