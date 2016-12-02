@@ -34,10 +34,10 @@ namespace XBot {
         typedef std::shared_ptr<SharedMemory> Ptr;
         
         template <typename T>
-        bool advertise(std::string object_name, std::shared_ptr<T> ptr);
+        bool advertise(std::string object_name, std::shared_ptr<T>& object_ptr);
         
         template <typename T>
-        std::shared_ptr<T> get(std::string object_name);
+        bool get(std::string object_name, std::shared_ptr<const T>& object_ptr);
         
         
     protected:
@@ -49,39 +49,58 @@ namespace XBot {
     };
     
 template <typename T>
-bool SharedMemory::advertise(std::string object_name, std::shared_ptr< T > ptr)
+bool SharedMemory::advertise(std::string object_name, std::shared_ptr<T>& object_ptr)
 {
     if( _map.count(object_name) > 0 ){
-        std::cerr << "ERROR in " << __func__ << "! Object " << object_name << " already defined!" << std::endl;
-        return false;
+        
+        // If the required object exists, try to cast it to the required type T
+        try{
+            object_ptr = boost::any_cast<std::shared_ptr<T>>(_map.at(object_name));
+        }
+        catch(...){
+            // If not, return false and print an error
+            std::cerr << "ERROR in " << __func__ << "! Object " << object_name << " is not of type " << typeid(T) << "!" << std::endl;
+            return false;
+        }
+        
+        // Cast was ok, return true
+        return true;
     }
     
+    // If the object does not exist, add and return the pointer
+    std::shared_ptr< T > ptr;
     _map[object_name] = boost::any(ptr);
-    
+    object_ptr = ptr;
     return true;
+    
     
 }
 
 template <typename T>
-std::shared_ptr< T > SharedMemory::get(std::string object_name)
+bool SharedMemory::get(std::string object_name, std::shared_ptr<const T>& object_ptr)
 {
-    std::shared_ptr<T> ptr;
+    
     
     if( _map.count(object_name) == 0 ){
-        std::cerr << "ERROR in " << __func__ << "! Object " << object_name << " is not defined!" << std::endl;
-        return ptr;
+        // If required object does not exist in the map, we create and return the pointer
+        std::shared_ptr<T> ptr;
+        _map[object_name] = boost::any(ptr);
+        return true;
     }
     
-
+    // If the required object exists, try to see if it can be cast to the required type T
     try{
-        ptr = boost::any_cast<std::shared_ptr<T>>(_map.at(object_name));
+        object_ptr = boost::any_cast<std::shared_ptr<const T>>(_map.at(object_name));
     }
     catch(...){
+        // If not, 
         std::cerr << "ERROR in " << __func__ << "! Object " << object_name << " is not of type " << typeid(T) << "!" << std::endl;
-        return ptr;
+        return false;
     }
     
-    return ptr;
+    // Cast went alright, return true
+    
+    return true;
 }
 
     
