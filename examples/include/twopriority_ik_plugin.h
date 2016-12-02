@@ -46,8 +46,8 @@ namespace demo {
         Eigen::VectorXd _q_home, _q_initial, _q_traj;
         double _homing_time;
         
-        PositionTask::Ptr _right_arm_position, _right_elbow;
-        PositionTask::Ptr _left_arm_position, _left_elbow;
+        SixDofTask::Ptr _right_arm_position, _left_arm_position; 
+        PositionTask::Ptr _right_elbow, _left_elbow;
         
     };
     

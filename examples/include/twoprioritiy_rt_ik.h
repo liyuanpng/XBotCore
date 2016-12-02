@@ -70,6 +70,8 @@ namespace demo{
         SixDofTask(XBot::ModelInterface::Ptr model, std::string link_name, const Eigen::Vector3d& position);
         
         bool setReference(const Eigen::Affine3d& ref_pose);
+	const std::string& getLinkName() const { return _link_name; }
+	const Eigen::Vector3d& getControlPoint() const { return _ref; }
         bool setIkGain(double ik_gain){ if( ik_gain > 0 ){ _ik_gain = ik_gain; return true; } }
         void setMaxVelocity(double v_max, double omega_max){ _v_max = v_max; _omega_max = omega_max; }
         const Eigen::Affine3d& getReference() const { return _desired; }

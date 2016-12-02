@@ -36,7 +36,7 @@ JointTrajectoryGenerator::JointTrajectoryGenerator(XBot::RobotInterface::Ptr rob
     
     _dq_max = (_q0 - _qmin).array().min((_qmax - _q0).array());
     
-    double safety_margin = 0.1;
+    double safety_margin = 0.3;
     _dq_max *= safety_margin;
 
     

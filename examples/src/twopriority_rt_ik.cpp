@@ -106,9 +106,9 @@ namespace demo {
     void SixDofTask::update()
     {
         _model->getPose(_link_name, _pose);
-        _model->getPointPosition(_link_name, _ref, _position);
-        _pose.translation() = _position;
-        _model->getJacobian(_link_name, _ref, _J);
+//         _model->getPointPosition(_link_name, _ref, _position);
+//         _pose.translation() = _position;
+        _model->getJacobian(_link_name, _J);
         computeCartesianError(_desired, _pose, _error);
 
         double velocity_norm = _error.head(3).norm()*_ik_gain;
@@ -132,6 +132,12 @@ namespace demo {
         error.resize(6);
         
         Eigen::Quaterniond q(actual.linear()), q_d(ref.linear());
+	if(q.dot(q_d) < 0){
+	    q.x() *= -1;
+	    q.y() *= -1;
+	    q.z() *= -1;
+	    q.w() *= -1;
+	}
         Eigen::Vector3d orientation_error = q.w()*q_d.vec() - q_d.w()*q.vec() - q_d.vec().cross(q.vec());
         Eigen::Vector3d position_error = ref.translation() - actual.translation();
         
@@ -214,9 +220,16 @@ namespace demo {
 
         // Compute pseudoinverse from SVD 
         _singular_values_1 = _svd1.singularValues();
-        _singular_values_1.array() += 0.001;
+	int num_valid_sv = (_singular_values_1.array() > 0.01).count();
+        _singular_values_1.array() += 0.01;
+	_singular_values_1 = _singular_values_1.array().inverse();
+	
+	std::cout << "SV1: " << _singular_values_1.transpose() << std::endl;
         
-        _J1p.noalias() = _svd1.matrixV()*_singular_values_1.asDiagonal()*_svd1.matrixU().transpose();
+        _J1p.noalias() = _svd1.matrixV().leftCols(num_valid_sv)*
+			      _singular_values_1.head(num_valid_sv).asDiagonal()*
+			      _svd1.matrixU().leftCols(num_valid_sv).transpose();
+			      
         _P1 = (_eye - _J1p*_J1);
             
         if( _lp_size == 0 ){
@@ -231,9 +244,16 @@ namespace demo {
             
             _svd2tilde.compute(_J2tilde, Eigen::ComputeThinU | Eigen::ComputeThinV);
             _singular_values_2 = _svd2tilde.singularValues();
-            _singular_values_2.array() += 0.001;
+	      int num_valid_sv = (_singular_values_2.array() > 0.01).count();
+            _singular_values_2.array() += 0.01;
+	    _singular_values_2 = _singular_values_2.array().inverse();
+
+	    std::cout << "SV2: " << _singular_values_2.transpose() << std::endl;
             
-            _J2p.noalias() = _svd2tilde.matrixV()*_singular_values_2.asDiagonal()*_svd2tilde.matrixU().transpose();
+            _J2p.noalias() = _svd2tilde.matrixV().leftCols(num_valid_sv)*
+			      _singular_values_2.head(num_valid_sv).asDiagonal()*
+			      _svd2tilde.matrixU().leftCols(num_valid_sv).transpose();
+			      
             _P2 = _eye - _J2p*_J2;
             
             _qdot = _J1p*_xdot1 + _P1*_J2p*_xdot2tilde + _P1*_P2*_q0;

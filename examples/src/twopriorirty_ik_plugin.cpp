@@ -43,23 +43,23 @@ namespace demo {
         _model->update();
         
         // Declare a joint trajectory generator which starts from home
-        _generator = std::make_shared<JointTrajectoryGenerator>(robot, 10, _q_home);
+        _generator = std::make_shared<JointTrajectoryGenerator>(robot, 20, _q_home);
         
         // Declare a IK solver
         _ik = std::make_shared<TwoPriorityRtIk>(_model);
         
         // Declare a high priority task for the left and for the right arm position
-        _right_arm_position = std::make_shared<PositionTask>(_model, 
+        _right_arm_position = std::make_shared<SixDofTask>(_model, 
                                                              _robot->chain("right_arm").getTipLinkName(), 
                                                              Eigen::Vector3d(0,0,0)
                                                              );
             
-        _left_arm_position = std::make_shared<PositionTask>(_model, 
+        _left_arm_position = std::make_shared<SixDofTask>(_model, 
                                                             _robot->chain("left_arm").getTipLinkName(), 
                                                             Eigen::Vector3d(0,0,0)
                                                             );
         
-
+	
         
         
         _left_elbow = std::make_shared<PositionTask>(_model, 
@@ -107,14 +107,16 @@ namespace demo {
         _model_traj->setJointPosition(_q_traj);
         _model_traj->update();
         
-        Eigen::Vector3d desired_position_left, desired_position_right, desired_position_elbow_l, desired_position_elbow_r;
-        _model_traj->getPointPosition(_left_arm_position->getLinkName(), 
-                                      _left_arm_position->getControlPoint(), 
-                                      desired_position_left);
+	Eigen::Vector3d desired_position_elbow_l, desired_position_elbow_r;
+	Eigen::Affine3d desired_pose_left, desired_pose_right;
+	
+        _model_traj->getPose(_left_arm_position->getLinkName(), 
+                                       				// TBD write get pose with ref point , 
+                                      desired_pose_left);
         
-        _model_traj->getPointPosition(_right_arm_position->getLinkName(), 
-                                      _right_arm_position->getControlPoint(), 
-                                      desired_position_right);
+        _model_traj->getPose(_right_arm_position->getLinkName(), 
+                                     
+                                      desired_pose_right);
         
         _model_traj->getPointPosition(_right_elbow->getLinkName(), 
                                       _right_elbow->getControlPoint(), 
@@ -124,13 +126,15 @@ namespace demo {
                                       _left_elbow->getControlPoint(), 
                                       desired_position_elbow_l);
 //         
-        _left_arm_position->setReference(desired_position_left);
-        _right_arm_position->setReference(desired_position_right);
+        _left_arm_position->setReference(desired_pose_left);
+        _right_arm_position->setReference(desired_pose_right);
         _left_elbow->setReference(desired_position_elbow_l);
         _right_elbow->setReference(desired_position_elbow_r);
         
-//         std::cout << "DESIRED POSITION LEFT: " << desired_position_left.transpose() << std::endl;
-//         std::cout << "DESIRED POSITION RIGHT: " << desired_position_right.transpose() << std::endl;
+        std::cout << "ERROR LEFT: " << _left_arm_position->getError().transpose() << std::endl;
+        std::cout << "ERROR RIGHT: " << _right_arm_position->getError().transpose() << std::endl;
+	std::cout << "ERROR ELBOW_LEFT: " << _left_elbow->getError().transpose() << std::endl;
+	std::cout << "ERROR ELBOW_RIGHT: " << _right_elbow->getError().transpose() << std::endl;
         
         _ik->update(period);
         
