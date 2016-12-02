@@ -27,7 +27,7 @@
 #ifndef __X_BOT_COMMUNICATION_PLUGIN_H__
 #define __X_BOT_COMMUNICATION_PLUGIN_H__
 
-#include <XBotCore/XBotPlugin.hpp>
+#include <XBotCore/XBotPlugin.h>
 
 #include <iit/advr/pipes.h>
 #include <iit/ecat/advr/esc.h>
@@ -56,6 +56,7 @@ public:
     XBotCommunicationPlugin();
 
     virtual bool init(std::string name,
+                    std::shared_ptr<XBot::IXBotJoint> joint,
                     std::shared_ptr<XBot::IXBotModel> model, 
                     std::shared_ptr<XBot::IXBotChain> chain,
                     std::shared_ptr<XBot::IXBotRobot> robot,
