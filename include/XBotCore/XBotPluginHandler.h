@@ -67,6 +67,9 @@ private:
     
     std::string _path_to_config_file;
     
+    std::vector<double> _last_time, _time, _period, _elapsed_time;
+     bool _first_loop;
+     
     // Dynamic loading related variables
     std::vector<std::shared_ptr<shlibpp::SharedLibraryClassFactory<XBot::XBotPlugin>>> _rtplugin_factory;
     std::vector<std::string> _rtplugin_names;
