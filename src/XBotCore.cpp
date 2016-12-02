@@ -130,7 +130,7 @@ bool XBot::XBotCore::get_robot_motor_pos(std::map< int, float >& motor_pos)
 }
 
 
-bool XBot::XBotCore::get_robot_link_vel(std::map< std::string, float >& link_vel)
+bool XBot::XBotCore::get_robot_link_vel(std::map< std::string, int16_t >& link_vel)
 {
     bool ret = true;
     for(auto& c : robot) {
@@ -139,7 +139,7 @@ bool XBot::XBotCore::get_robot_link_vel(std::map< std::string, float >& link_vel
     return ret;
 }
 
-bool XBot::XBotCore::get_robot_link_vel(std::map< int, float >& link_vel)
+bool XBot::XBotCore::get_robot_link_vel(std::map< int, int16_t >& link_vel)
 {
     bool ret = true;
     for(auto& c : robot) {
@@ -166,7 +166,7 @@ bool XBot::XBotCore::get_robot_motor_vel(std::map< int, int16_t >& motor_vel)
     return ret;
 }
 
-bool XBot::XBotCore::get_robot_torque(std::map< std::string, int16_t >& torque)
+bool XBot::XBotCore::get_robot_torque(std::map< std::string, float >& torque)
 {
     bool ret = true;
     for(auto& c : robot) {
@@ -175,7 +175,7 @@ bool XBot::XBotCore::get_robot_torque(std::map< std::string, int16_t >& torque)
     return ret;
 }
 
-bool XBot::XBotCore::get_robot_torque(std::map< int, int16_t >& torque)
+bool XBot::XBotCore::get_robot_torque(std::map< int, float >& torque)
 {
     bool ret = true;
     for(auto& c : robot) {
@@ -184,20 +184,20 @@ bool XBot::XBotCore::get_robot_torque(std::map< int, int16_t >& torque)
     return ret;
 }
 
-bool XBot::XBotCore::get_robot_max_temperature(std::map< std::string, uint16_t >& max_temperature)
+bool XBot::XBotCore::get_robot_temperature(std::map< std::string, uint16_t >& temperature)
 {
     bool ret = true;
     for(auto& c : robot) {
-        ret &= get_chain_max_temperature(c.first, max_temperature);
+        ret &= get_chain_temperature(c.first, temperature);
     }
     return ret;
 }
 
-bool XBot::XBotCore::get_robot_max_temperature(std::map< int, uint16_t >& max_temperature)
+bool XBot::XBotCore::get_robot_temperature(std::map< int, uint16_t >& temperature)
 {
     bool ret = true;
     for(auto& c : robot) {
-        ret &= get_chain_max_temperature(c.first, max_temperature);
+        ret &= get_chain_temperature(c.first, temperature);
     }
     return ret;
 }
@@ -516,7 +516,7 @@ bool XBot::XBotCore::get_chain_motor_pos(std::string chain_name, std::map< int, 
     return false;
 }
 
-bool XBot::XBotCore::get_chain_link_vel(std::string chain_name, std::map< std::string, float >& link_vel)
+bool XBot::XBotCore::get_chain_link_vel(std::string chain_name, std::map< std::string, int16_t >& link_vel)
 {
     if( robot.count(chain_name) ) {
         std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
@@ -537,7 +537,7 @@ bool XBot::XBotCore::get_chain_link_vel(std::string chain_name, std::map< std::s
     return false;
 }
 
-bool XBot::XBotCore::get_chain_link_vel(std::string chain_name, std::map< int, float >& link_vel)
+bool XBot::XBotCore::get_chain_link_vel(std::string chain_name, std::map< int, int16_t >& link_vel)
 {
     if( robot.count(chain_name) ) {
         std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
@@ -596,7 +596,7 @@ bool XBot::XBotCore::get_chain_motor_vel(std::string chain_name, std::map< int, 
     return false;
 }
 
-bool XBot::XBotCore::get_chain_torque(std::string chain_name, std::map< std::string, int16_t >& torque)
+bool XBot::XBotCore::get_chain_torque(std::string chain_name, std::map< std::string, float >& torque)
 {
     if( robot.count(chain_name) ) {
         std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
@@ -617,7 +617,7 @@ bool XBot::XBotCore::get_chain_torque(std::string chain_name, std::map< std::str
     return false;
 }
 
-bool XBot::XBotCore::get_chain_torque(std::string chain_name, std::map< int, int16_t >& torque)
+bool XBot::XBotCore::get_chain_torque(std::string chain_name, std::map< int, float >& torque)
 {
     if( robot.count(chain_name) ) {
         std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
@@ -636,7 +636,7 @@ bool XBot::XBotCore::get_chain_torque(std::string chain_name, std::map< int, int
     return false;
 }
 
-bool XBot::XBotCore::get_chain_max_temperature(std::string chain_name, std::map< std::string, uint16_t >& max_temperature)
+bool XBot::XBotCore::get_chain_temperature(std::string chain_name, std::map< std::string, uint16_t >& temperature)
 {
     if( robot.count(chain_name) ) {
         std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
@@ -644,35 +644,35 @@ bool XBot::XBotCore::get_chain_max_temperature(std::string chain_name, std::map<
         std::string actual_joint_name;
         for( int i = 0; i < enabled_joints_num; i++) {
             actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            max_temperature[actual_joint_name] = 0;
-            if( !get_max_temperature(actual_chain_enabled_joints[i], max_temperature.at(actual_joint_name)))  {
-                DPRINTF("ERROR: get_chain_max_temperature() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
+            temperature[actual_joint_name] = 0;
+            if( !get_temperature(actual_chain_enabled_joints[i], temperature.at(actual_joint_name)))  {
+                DPRINTF("ERROR: get_chain_temperature() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
                 return false;
             }
         }
         return true;
     }
     
-    DPRINTF("ERROR: get_chain_max_temperature() on chain %s, that does not exits in the robot\n", chain_name.c_str());
+    DPRINTF("ERROR: get_chain_temperature() on chain %s, that does not exits in the robot\n", chain_name.c_str());
     return false;
 }
 
-bool XBot::XBotCore::get_chain_max_temperature(std::string chain_name, std::map< int, uint16_t >& max_temperature)
+bool XBot::XBotCore::get_chain_temperature(std::string chain_name, std::map< int, uint16_t >& temperature)
 {
     if( robot.count(chain_name) ) {
         std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
         int enabled_joints_num = actual_chain_enabled_joints.size();
         for( int i = 0; i < enabled_joints_num; i++) {
-            max_temperature[actual_chain_enabled_joints[i]] = 0;
-            if( !get_max_temperature(actual_chain_enabled_joints[i], max_temperature.at(actual_chain_enabled_joints[i])))  {
-                DPRINTF("ERROR: get_chain_max_temperature() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
+            temperature[actual_chain_enabled_joints[i]] = 0;
+            if( !get_temperature(actual_chain_enabled_joints[i], temperature.at(actual_chain_enabled_joints[i])))  {
+                DPRINTF("ERROR: get_chain_temperature() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
                 return false;
             }
         }
         return true;
     }
     
-    DPRINTF("ERROR: get_chain_max_temperature() on chain %s, that does not exits in the robot\n", chain_name.c_str());
+    DPRINTF("ERROR: get_chain_temperature() on chain %s, that does not exits in the robot\n", chain_name.c_str());
     return false;
 }
 
@@ -1212,7 +1212,7 @@ bool XBot::XBotCore::get_motor_pos(int joint_id, float& motor_pos)
     return false;  
 }
 
-bool XBot::XBotCore::get_link_vel(int joint_id, float& link_vel)
+bool XBot::XBotCore::get_link_vel(int joint_id, int16_t& link_vel)
 {
     
     // check if the joint requested exists
@@ -1242,7 +1242,7 @@ bool XBot::XBotCore::get_motor_vel(int joint_id, int16_t& motor_vel)
     return false;  
 }
 
-bool XBot::XBotCore::get_torque(int joint_id, int16_t& torque)
+bool XBot::XBotCore::get_torque(int joint_id, float& torque)
 {
     
     // check if the joint requested exists
@@ -1257,18 +1257,18 @@ bool XBot::XBotCore::get_torque(int joint_id, int16_t& torque)
     return false; 
 }
 
-bool XBot::XBotCore::get_max_temperature(int joint_id, uint16_t& max_temperature)
+bool XBot::XBotCore::get_temperature(int joint_id, uint16_t& temperature)
 {
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
         // get the data
-        max_temperature = motors[rid2Pos(joint_id)]->getRxPDO().max_temperature;
+        temperature = motors[rid2Pos(joint_id)]->getRxPDO().temperature;
         return true;
     }
     
     // we don't touch the value that you passed
-    DPRINTF("Trying to get_max_temperature() on joint with joint_id : %d that does not exists\n", joint_id);
+    DPRINTF("Trying to get_temperature() on joint with joint_id : %d that does not exists\n", joint_id);
     return false; 
 }
 
@@ -1390,8 +1390,12 @@ bool XBot::XBotCore::set_gains(int joint_id, const std::vector<uint16_t>& gains)
     if( motors.count(rid2Pos(joint_id)) ) {
         // set the data
         last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
-        for(int i = 0; i < gains.size(); i++) {
-            last_pdo_tx.gains[i] = gains[i];
+        if(gains.size() == 5) {
+            last_pdo_tx.gain_0 = gains[0];
+            last_pdo_tx.gain_1 = gains[1];
+            last_pdo_tx.gain_2 = gains[2];
+            last_pdo_tx.gain_3 = gains[3];
+            last_pdo_tx.gain_4 = gains[4];
         }
         
         motors[rid2Pos(joint_id)]->setTxPDO(last_pdo_tx);

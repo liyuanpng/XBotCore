@@ -119,14 +119,8 @@ void XBot::XBotEcat::init_preOP(void)
         }
         else {
             DPRINTF("Starting motor %d in idle\n", moto->get_robot_id());
-            // NOTE idle or not reognized TBD check!
+            // NOTE idle or not recognized TBD check!
         }
-//         if(moto->am_i_LpESC()) {
-//             moto->start(CTRL_SET_POS_MODE);
-//         }
-//         else if(moto->am_i_HpESC()) {
-//             moto->start(CTRL_SET_MIX_POS_MODE);
-//         }
     }
     
     return;

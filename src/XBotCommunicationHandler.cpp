@@ -219,7 +219,7 @@ bool XBot::XBotCommunicationHandler::get_motor_pos(int joint_id, float& motor_po
     return true;
 }
 
-bool XBot::XBotCommunicationHandler::get_link_vel(int joint_id, float& link_vel)
+bool XBot::XBotCommunicationHandler::get_link_vel(int joint_id, int16_t& link_vel)
 {
     mutex.at(joint_id)->lock();
     link_vel = pdo_motor.at(joint_id)->pdo_data_rx.link_vel;
@@ -235,7 +235,7 @@ bool XBot::XBotCommunicationHandler::get_motor_vel(int joint_id, int16_t& motor_
     return true;
 }
 
-bool XBot::XBotCommunicationHandler::get_torque(int joint_id, int16_t& torque)
+bool XBot::XBotCommunicationHandler::get_torque(int joint_id, float& torque)
 {
     mutex.at(joint_id)->lock();
     torque = pdo_motor.at(joint_id)->pdo_data_rx.torque;
@@ -243,10 +243,10 @@ bool XBot::XBotCommunicationHandler::get_torque(int joint_id, int16_t& torque)
     return true;
 }
 
-bool XBot::XBotCommunicationHandler::get_max_temperature(int joint_id, uint16_t& max_temperature)
+bool XBot::XBotCommunicationHandler::get_temperature(int joint_id, uint16_t& temperature)
 {
     mutex.at(joint_id)->lock();
-    max_temperature = pdo_motor.at(joint_id)->pdo_data_rx.max_temperature;
+    temperature = pdo_motor.at(joint_id)->pdo_data_rx.temperature;
     mutex.at(joint_id)->unlock();
     return true;
 }
@@ -311,8 +311,12 @@ bool XBot::XBotCommunicationHandler::set_tor_ref(int joint_id, const int16_t& to
 bool XBot::XBotCommunicationHandler::set_gains(int joint_id, const std::vector< uint16_t >& gains)
 {
     mutex.at(joint_id)->lock();
-    for(int i = 0; i < gains.size(); i++) {
-        pdo_motor.at(joint_id)->pdo_data_tx.gains[i] = gains[i];
+    if(gains.size() == 5) {
+        pdo_motor.at(joint_id)->pdo_data_tx.gain_0 = gains[0];
+        pdo_motor.at(joint_id)->pdo_data_tx.gain_1 = gains[1];
+        pdo_motor.at(joint_id)->pdo_data_tx.gain_2 = gains[2];
+        pdo_motor.at(joint_id)->pdo_data_tx.gain_3 = gains[3];
+        pdo_motor.at(joint_id)->pdo_data_tx.gain_4 = gains[4];
     }
     mutex.at(joint_id)->unlock();
     return true;

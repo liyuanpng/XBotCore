@@ -140,17 +140,17 @@ public:
     virtual bool get_robot_motor_pos(std::map<std::string, float>& motor_pos) final;
     virtual bool get_robot_motor_pos(std::map<int, float>& motor_pos) final;
     
-    virtual bool get_robot_link_vel(std::map<std::string, float>& link_vel) final;
-    virtual bool get_robot_link_vel(std::map<int, float>& link_vel) final;
+    virtual bool get_robot_link_vel(std::map<std::string, int16_t>& link_vel) final;
+    virtual bool get_robot_link_vel(std::map<int, int16_t>& link_vel) final;
     
     virtual bool get_robot_motor_vel(std::map<std::string, int16_t>& motor_vel) final;
     virtual bool get_robot_motor_vel(std::map<int, int16_t>& motor_vel) final;
     
-    virtual bool get_robot_torque(std::map<std::string, int16_t>& torque) final;
-    virtual bool get_robot_torque(std::map<int, int16_t>& torque) final;
+    virtual bool get_robot_torque(std::map<std::string, float>& torque) final;
+    virtual bool get_robot_torque(std::map<int, float>& torque) final;
     
-    virtual bool get_robot_max_temperature(std::map<int, uint16_t>& max_temperature) final;    
-    virtual bool get_robot_max_temperature(std::map<std::string, uint16_t>& max_temperature) final;
+    virtual bool get_robot_temperature(std::map<int, uint16_t>& temperature) final;    
+    virtual bool get_robot_temperature(std::map<std::string, uint16_t>& temperature) final;
     
     virtual bool get_robot_fault(std::map<int, uint16_t>& fault) final;    
     virtual bool get_robot_fault(std::map<std::string, uint16_t>& fault) final;
@@ -196,17 +196,17 @@ public:
     virtual bool get_chain_motor_pos(std::string chain_name, std::map<std::string, float>& motor_pos) final;
     virtual bool get_chain_motor_pos(std::string chain_name, std::map<int, float>& motor_pos) final;
     
-    virtual bool get_chain_link_vel(std::string chain_name, std::map<std::string, float>& link_vel) final;
-    virtual bool get_chain_link_vel(std::string chain_name, std::map<int, float>& link_vel) final;
+    virtual bool get_chain_link_vel(std::string chain_name, std::map<std::string, int16_t>& link_vel) final;
+    virtual bool get_chain_link_vel(std::string chain_name, std::map<int, int16_t>& link_vel) final;
     
     virtual bool get_chain_motor_vel(std::string chain_name, std::map<std::string, int16_t>& motor_vel) final;
     virtual bool get_chain_motor_vel(std::string chain_name, std::map<int, int16_t>& motor_vel) final;
     
-    virtual bool get_chain_torque(std::string chain_name, std::map<std::string, int16_t>& torque) final;
-    virtual bool get_chain_torque(std::string chain_name, std::map<int, int16_t>& torque) final;
+    virtual bool get_chain_torque(std::string chain_name, std::map<std::string, float>& torque) final;
+    virtual bool get_chain_torque(std::string chain_name, std::map<int, float>& torque) final;
     
-    virtual bool get_chain_max_temperature(std::string chain_name, std::map<int, uint16_t>& max_temperature) final;    
-    virtual bool get_chain_max_temperature(std::string chain_name, std::map<std::string, uint16_t>& max_temperature) final;
+    virtual bool get_chain_temperature(std::string chain_name, std::map<int, uint16_t>& temperature) final;    
+    virtual bool get_chain_temperature(std::string chain_name, std::map<std::string, uint16_t>& temperature) final;
     
     virtual bool get_chain_fault(std::string chain_name, std::map<int, uint16_t>& fault) final;    
     virtual bool get_chain_fault(std::string chain_name, std::map<std::string, uint16_t>& fault) final;
@@ -296,13 +296,13 @@ private:
     
     virtual bool get_motor_pos(int joint_id, float& motor_pos) final;
     
-    virtual bool get_link_vel(int joint_id, float& link_vel) final;
+    virtual bool get_link_vel(int joint_id, int16_t& link_vel) final;
     
     virtual bool get_motor_vel(int joint_id, int16_t& motor_vel) final;
     
-    virtual bool get_torque(int joint_id, int16_t& torque) final;
+    virtual bool get_torque(int joint_id, float& torque) final;
     
-    virtual bool get_max_temperature(int joint_id, uint16_t& max_temperature) final;
+    virtual bool get_temperature(int joint_id, uint16_t& temperature) final;
     
     virtual bool get_fault(int joint_id, uint16_t& fault) final;
     

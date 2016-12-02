@@ -75,13 +75,13 @@ public:
     
     virtual bool get_motor_pos(int joint_id, float& motor_pos) final;
     
-    virtual bool get_link_vel(int joint_id, float& link_vel) final;
+    virtual bool get_link_vel(int joint_id, int16_t& link_vel) final;
     
     virtual bool get_motor_vel(int joint_id, int16_t& motor_vel) final;
     
-    virtual bool get_torque(int joint_id, int16_t& torque) final;
+    virtual bool get_torque(int joint_id, float& torque) final;
     
-    virtual bool get_max_temperature(int joint_id, uint16_t& max_temperature) final;
+    virtual bool get_temperature(int joint_id, uint16_t& temperature) final;
     
     virtual bool get_fault(int joint_id, uint16_t& fault) final;
     

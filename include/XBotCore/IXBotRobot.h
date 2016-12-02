@@ -53,17 +53,17 @@ public:
     virtual bool get_robot_motor_pos(std::map<std::string, float>& motor_pos) = 0;
     virtual bool get_robot_motor_pos(std::map<int, float>& motor_pos) = 0;
     
-    virtual bool get_robot_link_vel(std::map<std::string, float>& link_vel) = 0;
-    virtual bool get_robot_link_vel(std::map<int, float>& link_vel) = 0;
+    virtual bool get_robot_link_vel(std::map<std::string, int16_t>& link_vel) = 0;
+    virtual bool get_robot_link_vel(std::map<int, int16_t>& link_vel) = 0;
     
     virtual bool get_robot_motor_vel(std::map<std::string, int16_t>& motor_vel) = 0;
     virtual bool get_robot_motor_vel(std::map<int, int16_t>& motor_vel) = 0;
     
-    virtual bool get_robot_torque(std::map<std::string, int16_t>& torque) = 0;
-    virtual bool get_robot_torque(std::map<int, int16_t>& torque) = 0;
+    virtual bool get_robot_torque(std::map<std::string, float>& torque) = 0;
+    virtual bool get_robot_torque(std::map<int, float>& torque) = 0;
     
-    virtual bool get_robot_max_temperature(std::map<int, uint16_t>& max_temperature) = 0;    
-    virtual bool get_robot_max_temperature(std::map<std::string, uint16_t>& max_temperature) = 0;
+    virtual bool get_robot_temperature(std::map<int, uint16_t>& temperature) = 0;    
+    virtual bool get_robot_temperature(std::map<std::string, uint16_t>& temperature) = 0;
     
     virtual bool get_robot_fault(std::map<int, uint16_t>& fault) = 0;    
     virtual bool get_robot_fault(std::map<std::string, uint16_t>& fault) = 0;
