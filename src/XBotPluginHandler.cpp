@@ -135,6 +135,13 @@ bool XBot::XBotPluginHandler::plugin_handler_init(void)
             ret = false;
         }
     }
+    
+        
+    _first_loop = true;
+    _time.resize(_rtplugin_vector.size(), 0.0);
+    _last_time.resize(_rtplugin_vector.size());
+    _period.resize(_rtplugin_vector.size());
+    
     return ret;
 }
 
@@ -142,12 +149,26 @@ bool XBot::XBotPluginHandler::plugin_handler_init(void)
 bool XBot::XBotPluginHandler::plugin_handler_loop(void)
 {
     std::vector<float> plugin_execution_time(_rtplugin_vector.size()); // TBD circular array and write to file in the plugin_handler_close
-    for(int i = 0; i < _rtplugin_vector.size(); i++) {
+    for( int i = 0; i < _rtplugin_vector.size(); i++) {
         float plugin_start_time = (iit::ecat::get_time_ns() / 10e3); //microsec
-        (*_rtplugin_vector[i])->run(0, -1); // TBD actual time
+        const auto& plugin = _rtplugin_vector[i];
+        _time[i] = iit::ecat::get_time_ns() / 10e9;
+        if(_first_loop){
+            _period[i] = 0;
+        }
+        else{
+            _period[i] = _time[i] - _last_time[i];
+        }
+        
+        (*plugin)->run(_time[i], _period[i]);
+        
         plugin_execution_time[i] = (iit::ecat::get_time_ns() / 10e3) - plugin_start_time; //microsec
 //         DPRINTF("Plugin %d - %s : execution_time = %f microsec\n", i, plugins[i]->name.c_str(), plugin_execution_time[i]);
+        
     }
+    
+    _last_time = _time;
+    _first_loop = false;
     return true;
 }
 
