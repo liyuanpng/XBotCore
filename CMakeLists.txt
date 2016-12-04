@@ -47,15 +47,15 @@ include(MacroOptionalBuild)
 find_package(YCM REQUIRED)
 
 find_package(XBotInterface REQUIRED)
-find_package(XBotCore REQUIRED)
-find_package(XBotPlugin REQUIRED)
+find_package(XBotCore-interfaces REQUIRED)
+
 
 option(BUILD_TESTS "Compile XCM tests" FALSE)
 
 
 
 include_directories(include ${XBotInterface_INCLUDE_DIRS}
-                            ${XBotCore_INCLUDE_DIRS}
+                            ${XBotCore-interfaces_INCLUDE_DIRS}
                             )
 
                             
@@ -66,13 +66,13 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/XBotControlPlugin.cpp)
                                  
 target_link_libraries(XCM PUBLIC ${XBotInterface_LIBRARIES}
-                                 ${XBotPlugin_LIBRARIES}
+                                 ${XBotCore-interfaces_LIBRARIES}
                                  )
 
                                     
 target_include_directories(XCM PUBLIC
                             ${XBotInterface_INCLUDE_DIRS}
-                            ${XBotCore_INCLUDE_DIRS}
+                            ${XBotCore-interfaces_INCLUDE_DIRS}
                             )
 
 

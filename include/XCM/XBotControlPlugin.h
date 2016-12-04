@@ -21,7 +21,7 @@
 #define __XBOTCONTROLMODULE_XBOTCONTROLPLUGIN_H__
 
 #include <XBotInterface/RobotInterface.h>
-#include <XBotCore/XBotPlugin.h>
+#include <XBotCore-interfaces/XBotPlugin.h>
 
 namespace XBot {
  
