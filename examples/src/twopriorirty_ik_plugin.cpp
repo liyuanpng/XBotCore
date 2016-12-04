@@ -83,8 +83,16 @@ namespace demo {
         _ik->addTaskHighPriority(_right_arm_position);
         _ik->addTaskHighPriority(_left_arm_position);
         
-//         _ik->addTaskLowPriority(_right_elbow);
-//         _ik->addTaskLowPriority(_left_elbow);
+        _ik->addTaskLowPriority(_right_elbow);
+        _ik->addTaskLowPriority(_left_elbow);
+        
+        
+        // Get references from shared shared_memory
+        _desired_pose_left = shared_memory->get<Eigen::Affine3d>("w_T_left_ee");
+        _desired_pose_right = shared_memory->get<Eigen::Affine3d>("w_T_right_ee");
+        _desired_pose_left_elb = shared_memory->get<Eigen::Affine3d>("w_T_left_elb");
+        _desired_pose_right_elb = shared_memory->get<Eigen::Affine3d>("w_T_right_elb");
+
         
         return true;
         
@@ -103,35 +111,12 @@ namespace demo {
             _robot->move();
             return;
         }
-        
-        // Get current config
-        _generator->getQ(period, _q_traj);
-        _model_traj->setJointPosition(_q_traj);
-        _model_traj->update();
-        
-	Eigen::Vector3d desired_position_elbow_l, desired_position_elbow_r;
-	Eigen::Affine3d desired_pose_left, desired_pose_right;
-	
-        _model_traj->getPose(_left_arm_position->getLinkName(), 
-                                       				// TBD write get pose with ref point , 
-                                      desired_pose_left);
-        
-        _model_traj->getPose(_right_arm_position->getLinkName(), 
-                                     
-                                      desired_pose_right);
-        
-        _model_traj->getPointPosition(_right_elbow->getLinkName(), 
-                                      _right_elbow->getControlPoint(), 
-                                      desired_position_elbow_r);
-        
-        _model_traj->getPointPosition(_left_elbow->getLinkName(), 
-                                      _left_elbow->getControlPoint(), 
-                                      desired_position_elbow_l);
-//         
-        _left_arm_position->setReference(desired_pose_left);
-        _right_arm_position->setReference(desired_pose_right);
-        _left_elbow->setReference(desired_position_elbow_l);
-        _right_elbow->setReference(desired_position_elbow_r);
+
+
+        _left_arm_position->setReference(*_desired_pose_left);
+        _right_arm_position->setReference(*_desired_pose_right);
+        _left_elbow->setReference(_desired_pose_left_elb->translation());
+        _right_elbow->setReference(_desired_pose_right_elb->translation());
         
 //         std::cout << "ERROR LEFT: " << _left_arm_position->getError().transpose() << std::endl;
 //         std::cout << "ERROR RIGHT: " << _right_arm_position->getError().transpose() << std::endl;

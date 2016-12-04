@@ -48,6 +48,9 @@ namespace demo {
         Eigen::VectorXd _q_home, _q_initial, _q_traj;
         double _homing_time;
         
+        XBot::SharedObject<Eigen::Affine3d> _desired_pose_left, _desired_pose_right;
+        XBot::SharedObject<Eigen::Affine3d> _desired_pose_left_elb, _desired_pose_right_elb;
+        
         SixDofTask::Ptr _right_arm_position, _left_arm_position; 
         PositionTask::Ptr _right_elbow, _left_elbow;
         

@@ -41,11 +41,23 @@ namespace demo {
         
     private:
         
+        XBot::SharedMemory::Ptr _shared_memory;
         XBot::RobotInterface::Ptr _robot;
+        XBot::ModelInterface::Ptr _model;
+        
+        
         std::shared_ptr<JointTrajectoryGenerator> _generator;
         Eigen::VectorXd _q;
         Eigen::VectorXd _q_home, _q0;
         double _homing_time;
+        
+        XBot::SharedObject<Eigen::VectorXd> _q_gen;
+        XBot::SharedObject<Eigen::Affine3d> _T_left_ee, 
+                                            _T_right_ee, 
+                                            _T_left_elb, 
+                                            _T_right_elb;
+       
+
         
         
     };

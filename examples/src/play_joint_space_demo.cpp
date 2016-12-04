@@ -28,6 +28,22 @@ bool PlayJointSpaceDemo::init_control_plugin(std::string path_to_config_file,
                                              XBot::RobotInterface::Ptr robot)
 {
     _robot = robot;
+    _model = XBot::ModelInterface::getModel(path_to_config_file);
+    _shared_memory = shared_memory;
+    
+    // Advertise shared objects
+    _q_gen = shared_memory->advertise<Eigen::VectorXd>("q_gen");
+    _T_left_ee = shared_memory->advertise<Eigen::Affine3d>("w_T_left_ee");
+    _T_right_ee = shared_memory->advertise<Eigen::Affine3d>("w_T_right_ee");
+    _T_left_elb = shared_memory->advertise<Eigen::Affine3d>("w_T_left_elb");
+    _T_right_elb = shared_memory->advertise<Eigen::Affine3d>("w_T_right_elb");
+    
+    // Allocate shared objects
+    _q_gen.reset(new Eigen::VectorXd);
+    _T_left_ee.reset(new Eigen::Affine3d);
+    _T_right_ee.reset(new Eigen::Affine3d);
+    _T_left_elb.reset(new Eigen::Affine3d);
+    _T_right_elb.reset(new Eigen::Affine3d);
     
     robot->getRobotState("home", _q_home);
     _generator = std::make_shared<JointTrajectoryGenerator>(robot, 20, _q_home);
@@ -49,10 +65,22 @@ void PlayJointSpaceDemo::control_loop(double time, double period)
     }
     
     _generator->getQ(period, _q);
-    _robot->setPositionReference(_q);
+    *_q_gen = _q;
+    _model->setJointPosition(_q);
+    _model->update();
+    
+    _model->getPose(_robot->chain("right_arm").getTipLinkName(), *_T_right_ee);
+    _model->getPose(_robot->chain("left_arm").getTipLinkName(), *_T_left_ee);
+    _model->getPose(_robot->chain("left_arm").getUrdfLinks()[4]->name, *_T_left_elb);
+    _model->getPose(_robot->chain("right_arm").getUrdfLinks()[4]->name, *_T_right_elb);
+ 
+
+    
+    
+//     _robot->setPositionReference(_q);
     
 //     _robot->printTracking();
-    _robot->move();
+//     _robot->move();
 }
 
 bool PlayJointSpaceDemo::close()
