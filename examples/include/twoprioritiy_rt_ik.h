@@ -67,7 +67,7 @@ namespace demo{
         
         typedef std::shared_ptr<SixDofTask> Ptr;
         
-        SixDofTask(XBot::ModelInterface::Ptr model, std::string link_name, const Eigen::Vector3d& position);
+        SixDofTask(XBot::ModelInterface::Ptr model, std::string link_name);
         
         bool setReference(const Eigen::Affine3d& ref_pose);
 	const std::string& getLinkName() const { return _link_name; }
@@ -138,7 +138,7 @@ namespace demo{
 
     private:
         
-        
+        void dampedSingularValueInverse(Eigen::VectorXd& sv, double damping_factor = 0.01);
 
         std::vector<Task::Ptr> _hp_tasks, _lp_tasks;
         std::vector<double> _hp_weights, _lp_weights;

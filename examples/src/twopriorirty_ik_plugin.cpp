@@ -52,17 +52,13 @@ namespace demo {
         
         // Declare a high priority task for the left and for the right arm position
         _right_arm_position = std::make_shared<SixDofTask>(_model, 
-                                                             _robot->chain("right_arm").getTipLinkName(), 
-                                                             Eigen::Vector3d(0,0,0)
-                                                             );
+                                                             _robot->chain("right_arm").getTipLinkName()
+                                                          );
             
         _left_arm_position = std::make_shared<SixDofTask>(_model, 
-                                                            _robot->chain("left_arm").getTipLinkName(), 
-                                                            Eigen::Vector3d(0,0,0)
-                                                            );
-        
-	
-        
+                                                          _robot->chain("left_arm").getTipLinkName()
+                                                         );
+
         
         _left_elbow = std::make_shared<PositionTask>(_model, 
                                                      _robot->chain("left_arm").getUrdfLinks()[4]->name, 
@@ -73,10 +69,10 @@ namespace demo {
                                                       _robot->chain("right_arm").getUrdfLinks().at(4)->name, 
                                                       Eigen::Vector3d(0,0,0)
                                                       );
-        _left_arm_position->setIkGain(10);
-        _right_arm_position->setIkGain(10);
-        _left_elbow->setIkGain(10);
-        _right_elbow->setIkGain(10);
+        _left_arm_position->setIkGain(100);
+        _right_arm_position->setIkGain(100);
+        _left_elbow->setIkGain(1);
+        _right_elbow->setIkGain(1);
         
         
          // Add tasks to IK
@@ -92,6 +88,9 @@ namespace demo {
         _desired_pose_right = shared_memory->get<Eigen::Affine3d>("w_T_right_ee");
         _desired_pose_left_elb = shared_memory->get<Eigen::Affine3d>("w_T_left_elb");
         _desired_pose_right_elb = shared_memory->get<Eigen::Affine3d>("w_T_right_elb");
+        _q_ref = shared_memory->get<Eigen::VectorXd>("q_gen");
+        
+        
 
         
         return true;
@@ -118,14 +117,15 @@ namespace demo {
         _left_elbow->setReference(_desired_pose_left_elb->translation());
         _right_elbow->setReference(_desired_pose_right_elb->translation());
         
-//         std::cout << "ERROR LEFT: " << _left_arm_position->getError().transpose() << std::endl;
-//         std::cout << "ERROR RIGHT: " << _right_arm_position->getError().transpose() << std::endl;
-// 	std::cout << "ERROR ELBOW_LEFT: " << _left_elbow->getError().transpose() << std::endl;
-// 	std::cout << "ERROR ELBOW_RIGHT: " << _right_elbow->getError().transpose() << std::endl;
+        std::cout << "ERROR LEFT: " << _left_arm_position->getError().transpose() << std::endl;
+        std::cout << "ERROR RIGHT: " << _right_arm_position->getError().transpose() << std::endl;
+	std::cout << "ERROR ELBOW_LEFT: " << _left_elbow->getError().transpose() << std::endl;
+	std::cout << "ERROR ELBOW_RIGHT: " << _right_elbow->getError().transpose() << std::endl;
         
         _ik->update(period);
         
         _robot->setReferenceFrom(*_model, XBot::Sync::Position);
+//         _robot->setPositionReference(*_q_ref);
         _robot->move();
 //         _robot->printTracking();
         

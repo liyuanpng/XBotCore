@@ -57,11 +57,10 @@ namespace demo {
     
     
     
-    SixDofTask::SixDofTask(XBot::ModelInterface::Ptr model, std::string link_name, const Eigen::Vector3d& position):
+    SixDofTask::SixDofTask(XBot::ModelInterface::Ptr model, std::string link_name):
     Task(std::string("SIXDOF_")+link_name, 6, model), _link_name(link_name), _ik_gain(100), _v_max(100), _omega_max(100)
     {
         _desired.setIdentity();
-        _ref.setIdentity();
         _error.setZero(6);
         
     }
@@ -106,8 +105,6 @@ namespace demo {
     void SixDofTask::update()
     {
         _model->getPose(_link_name, _pose);
-//         _model->getPointPosition(_link_name, _ref, _position);
-//         _pose.translation() = _position;
         _model->getJacobian(_link_name, _J);
         computeCartesianError(_desired, _pose, _error);
 
@@ -224,15 +221,12 @@ namespace demo {
 
         // Compute pseudoinverse from SVD 
         _singular_values_1 = _svd1.singularValues();
-	int num_valid_sv = (_singular_values_1.array() > 0.01).count();
-        _singular_values_1.array() += 0.01;
-	_singular_values_1 = _singular_values_1.array().inverse();
-	
-// 	std::cout << "SV1: " << _singular_values_1.transpose() << std::endl;
+        std::cout << "SV1: " << _singular_values_1.transpose() << std::endl;
+	dampedSingularValueInverse(_singular_values_1);
         
-        _J1p.noalias() = _svd1.matrixV().leftCols(num_valid_sv)*
-			      _singular_values_1.head(num_valid_sv).asDiagonal()*
-			      _svd1.matrixU().leftCols(num_valid_sv).transpose();
+        _J1p.noalias() = _svd1.matrixV()*
+			      _singular_values_1.asDiagonal()*
+			      _svd1.matrixU().transpose();
 			      
         _P1 = (_eye - _J1p*_J1);
             
@@ -248,19 +242,16 @@ namespace demo {
             
             _svd2tilde.compute(_J2tilde, Eigen::ComputeThinU | Eigen::ComputeThinV);
             _singular_values_2 = _svd2tilde.singularValues();
-	      int num_valid_sv = (_singular_values_2.array() > 0.01).count();
-            _singular_values_2.array() += 0.01;
-	    _singular_values_2 = _singular_values_2.array().inverse();
-
-// 	    std::cout << "SV2: " << _singular_values_2.transpose() << std::endl;
+            std::cout << "SV2: " << _singular_values_2.transpose() << std::endl;
+            dampedSingularValueInverse(_singular_values_2);
             
-            _J2p.noalias() = _svd2tilde.matrixV().leftCols(num_valid_sv)*
-			      _singular_values_2.head(num_valid_sv).asDiagonal()*
-			      _svd2tilde.matrixU().leftCols(num_valid_sv).transpose();
+            _J2p.noalias() = _svd2tilde.matrixV()*
+                                _singular_values_2.asDiagonal()*
+                                _svd2tilde.matrixU().transpose();
 			      
             _P2 = _eye - _J2p*_J2;
             
-            _qdot = _J1p*_xdot1 + _P1*_J2p*_xdot2tilde + _P1*_P2*_q0;
+            _qdot = _J1p*_xdot1 + _P1*(_J2p*_xdot2tilde + _P2*_q0);
 
         }
         
@@ -274,5 +265,12 @@ namespace demo {
         _model->setJointPosition(_q);
         
             
+    }
+    
+    void TwoPriorityRtIk::dampedSingularValueInverse(Eigen::VectorXd& sv, double threshold)
+    {
+        for( int i = 0; i < sv.size(); i++ ){
+            sv(i) = sv(i) < sv(0)*threshold ? 0 : 1.0/sv(i);
+        }
     }
 }
