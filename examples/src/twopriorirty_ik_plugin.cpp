@@ -23,7 +23,9 @@ SHLIBPP_DEFINE_SHARED_SUBCLASS(TwoPriorityRtIkPlugin_factory, demo::TwoPriorityI
 
 namespace demo {
     
-    bool TwoPriorityIkPlugin::init_control_plugin(std::string path_to_config_file, XBot::RobotInterface::Ptr robot)
+    bool TwoPriorityIkPlugin::init_control_plugin(std::string path_to_config_file, 
+                                                  XBot::SharedMemory::Ptr shared_memory, 
+                                                  XBot::RobotInterface::Ptr robot)
     {
         // Save the robot and obtain a couple of models
         _robot = robot;

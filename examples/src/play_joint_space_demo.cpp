@@ -23,7 +23,9 @@ SHLIBPP_DEFINE_SHARED_SUBCLASS(PlayJointSpaceDemo_factory, demo::PlayJointSpaceD
 
 namespace demo {
     
-bool PlayJointSpaceDemo::init_control_plugin(std::string path_to_config_file, XBot::RobotInterface::Ptr robot)
+bool PlayJointSpaceDemo::init_control_plugin(std::string path_to_config_file, 
+                                             XBot::SharedMemory::Ptr shared_memory, 
+                                             XBot::RobotInterface::Ptr robot)
 {
     _robot = robot;
     

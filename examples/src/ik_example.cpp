@@ -42,7 +42,9 @@ IkExample::IkExample()
 
 }
 
-bool IkExample::init_control_plugin(std::string path_to_config_file, RobotInterface::Ptr robot)
+bool IkExample::init_control_plugin(std::string path_to_config_file, 
+                                    XBot::SharedMemory::Ptr shared_memory, 
+                                    RobotInterface::Ptr robot)
 {
     _robot = robot;
     _model = ModelInterface::getModel(path_to_config_file);
