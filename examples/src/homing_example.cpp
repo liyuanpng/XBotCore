@@ -36,6 +36,8 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file, RobotIn
     _robot->sense();
     _robot->getJointPosition(_q0);
     
+    if( !_robot->checkJointLimits(_q_home) ) throw;
+    
 //     _q_home *= -1;
     
     std::cout << "_q0 from SRDF : " << _q0 << std::endl;
