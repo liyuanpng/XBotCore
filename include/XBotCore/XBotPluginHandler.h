@@ -28,7 +28,9 @@
 #define __X_BOT_PLUGIN_HANDLER_H__
 
 #include <XBotCore/XBotCore.h>
-#include <XBotCore/XBotPlugin.h>
+
+#include <XBotCore-interfaces/XBotPlugin.h>
+
 #include <SharedLibraryClassFactory.h>
 #include <SharedLibraryClass.h>
 

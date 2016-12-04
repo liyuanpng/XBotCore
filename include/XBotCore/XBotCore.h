@@ -33,10 +33,11 @@
 #include <iit/ecat/advr/esc.h>
 
 #include <XBotCore/XBotEcat.h>
-#include <XBotCore/IXBotJoint.h>
-#include <XBotCore/IXBotChain.h>
-#include <XBotCore/IXBotRobot.h>
-#include <XBotCore/IXBotFT.h>
+
+#include <XBotCore-interfaces/IXBotJoint.h>
+#include <XBotCore-interfaces/IXBotChain.h>
+#include <XBotCore-interfaces/IXBotRobot.h>
+#include <XBotCore-interfaces/IXBotFT.h>
 
 #include <XBotCoreModel.h>
 

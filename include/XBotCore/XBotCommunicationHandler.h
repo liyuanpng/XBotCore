@@ -35,10 +35,8 @@
 #include <mutex>
 #include <cstring>
 
-#include <XBotCore/IXBotJoint.h>
-#include <XBotCore/IXBotFT.h>
-// #include <XBotCore/IXBotChain.h>
-// #include <XBotCore/IXBotRobot.h>
+#include <XBotCore-interfaces/IXBotJoint.h>
+#include <XBotCore-interfaces/IXBotFT.h>
 
 #include <XBotCoreModel.h>
 
