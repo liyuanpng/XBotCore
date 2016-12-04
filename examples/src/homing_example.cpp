@@ -32,7 +32,7 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file, RobotIn
 {
     _robot = robot;
     
-    _robot->getRobotState("home", _q_home);
+    _robot->getRobotState("home_weird", _q_home);
     _robot->sense();
     _robot->getJointPosition(_q0);
     
