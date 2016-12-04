@@ -51,7 +51,7 @@ namespace XBot {
         
         Eigen::VectorXd _q0, _q_home;
         double _alpha;
-        double _homing_time;
+        double _homing_time, _ik_started_time;
         double _ik_time;
         
         bool _ik_started;
