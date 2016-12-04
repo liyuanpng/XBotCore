@@ -152,7 +152,7 @@ bool XBot::XBotPluginHandler::plugin_handler_loop(void)
     for( int i = 0; i < _rtplugin_vector.size(); i++) {
         float plugin_start_time = (iit::ecat::get_time_ns() / 10e3); //microsec
         const auto& plugin = _rtplugin_vector[i];
-        _time[i] = iit::ecat::get_time_ns() / 10e9;
+        _time[i] = iit::ecat::get_time_ns() / 10e8;
         if(_first_loop){
             _period[i] = 0;
         }
