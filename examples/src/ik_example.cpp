@@ -56,7 +56,7 @@ bool IkExample::init_control_plugin(std::string path_to_config_file, RobotInterf
     _ik_started = false;
     
     _end_effector = _robot->chain("left_arm").getTipLinkName();
-    _length = 0.4;
+    _length = 0.3;
     _period = 6;
     return true;
 }
