@@ -36,7 +36,7 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file, RobotIn
     _robot->sense();
     _robot->getJointPosition(_q0);
     
-    _q_home *= -1;
+//     _q_home *= -1;
     
     std::cout << "_q0 from SRDF : " << _q0 << std::endl;
     _time = 0;
@@ -58,7 +58,7 @@ void HomingExample::control_loop(double time, double period)
 //     _robot->sense();
 //     _robot->print();
     
-     _robot->printTracking();    
+//      _robot->printTracking();    
     
     _time += 0.001;
 }
