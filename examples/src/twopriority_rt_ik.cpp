@@ -221,7 +221,7 @@ namespace demo {
 
         // Compute pseudoinverse from SVD 
         _singular_values_1 = _svd1.singularValues();
-        std::cout << "SV1: " << _singular_values_1.transpose() << std::endl;
+//         std::cout << "SV1: " << _singular_values_1.transpose() << std::endl;
 	dampedSingularValueInverse(_singular_values_1);
         
         _J1p.noalias() = _svd1.matrixV()*
@@ -242,7 +242,7 @@ namespace demo {
             
             _svd2tilde.compute(_J2tilde, Eigen::ComputeThinU | Eigen::ComputeThinV);
             _singular_values_2 = _svd2tilde.singularValues();
-            std::cout << "SV2: " << _singular_values_2.transpose() << std::endl;
+//             std::cout << "SV2: " << _singular_values_2.transpose() << std::endl;
             dampedSingularValueInverse(_singular_values_2);
             
             _J2p.noalias() = _svd2tilde.matrixV()*
