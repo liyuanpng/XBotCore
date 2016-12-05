@@ -46,7 +46,7 @@ bool PlayJointSpaceDemo::init_control_plugin(std::string path_to_config_file,
     _T_right_elb.reset(new Eigen::Affine3d);
     
     robot->getRobotState("home", _q_home);
-    _generator = std::make_shared<JointTrajectoryGenerator>(robot, 20, _q_home);
+    _generator = std::make_shared<JointTrajectoryGenerator>(robot, 10, _q_home);
     
     _robot->sense();
     _robot->getJointPosition(_q0);

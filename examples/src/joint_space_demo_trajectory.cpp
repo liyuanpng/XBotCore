@@ -48,7 +48,8 @@ void JointTrajectoryGenerator::getQ(double dt, Eigen::VectorXd& q)
     q = _q0 + _dq_max * std::sin( 2*3.1415*_time / _period );
     
     for(int i = 0; i < _robot.chain("torso").getJointNum(); i++) {
-        q(_robot.getDofIndex(_robot.chain("torso").getJointName(i))) = 0;
+        int torso_id = _robot.getDofIndex(_robot.chain("torso").getJointName(i));
+        q(torso_id) = _q0(torso_id);
     }
 }
 
