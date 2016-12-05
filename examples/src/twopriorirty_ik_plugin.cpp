@@ -79,8 +79,8 @@ namespace demo {
         _ik->addTaskHighPriority(_right_arm_position);
         _ik->addTaskHighPriority(_left_arm_position);
         
-        _ik->addTaskLowPriority(_right_elbow);
-        _ik->addTaskLowPriority(_left_elbow);
+//         _ik->addTaskLowPriority(_right_elbow);
+//         _ik->addTaskLowPriority(_left_elbow);
         
         
         // Get references from shared shared_memory
