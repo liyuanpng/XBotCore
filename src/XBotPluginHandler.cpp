@@ -119,12 +119,15 @@ bool XBot::XBotPluginHandler::plugin_handler_init(void)
     std::shared_ptr<XBot::IXBotRobot> actual_robot(this, [](XBot::IXBotRobot* ptr){return;});
     std::shared_ptr<XBot::IXBotFT> actual_ft(this, [](XBot::IXBotFT* ptr){return;});
     
+    XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
+    
     // iterate over the plugins and call the init()
     int plugins_num = _rtplugin_vector.size();
     bool ret = true;
     for(int i = 0; i < plugins_num; i++) {
         if(!(*_rtplugin_vector[i])->init(_path_to_config_file, 
                                          _rtplugin_names[i],
+                                         shared_memory,
                                          actual_joint,
                                          actual_model, 
                                          actual_chain,
@@ -141,6 +144,12 @@ bool XBot::XBotPluginHandler::plugin_handler_init(void)
     _time.resize(_rtplugin_vector.size(), 0.0);
     _last_time.resize(_rtplugin_vector.size());
     _period.resize(_rtplugin_vector.size());
+    _end_time.resize(_rtplugin_vector.size());
+    _execution_time_buffer.resize(_rtplugin_vector.size());
+    
+    for(int i = 0; i < _rtplugin_vector.size(); i++) {
+        _execution_time_buffer[i] = boost::circular_buffer_space_optimized<uint16_t>(100000);
+    }
     
     return ret;
 }
@@ -161,6 +170,9 @@ bool XBot::XBotPluginHandler::plugin_handler_loop(void)
         }
         
         (*plugin)->run(_time[i], _period[i]);
+        
+        _end_time[i] = iit::ecat::get_time_ns() / 10e8;
+//         _execution_time_buffer[i].push_back(static_cast<uint16_t>((_end_time[i] - _time[i]) * 1000000));
         
         plugin_execution_time[i] = (iit::ecat::get_time_ns() / 10e3) - plugin_start_time; //microsec
 //         DPRINTF("Plugin %d - %s : execution_time = %f microsec\n", i, plugins[i]->name.c_str(), plugin_execution_time[i]);
@@ -187,6 +199,25 @@ bool XBot::XBotPluginHandler::plugin_handler_close(void)
 XBot::XBotPluginHandler::~XBotPluginHandler()
 {
     printf("~XBotPluginHandler()\n");
+    std::string _path_to_log_dir = "/home/embedded/PDO_log_from_tmp/";
+    if( _path_to_log_dir != "" ){
+        std::fstream fs;
+        fs.open (_path_to_log_dir+std::string("execution_time.txt"), 
+                 std::fstream::in | std::fstream::out | std::fstream::app);
+
+        for( int i = 0; i < _rtplugin_vector.size(); i++ ){
+            
+            fs << "PLUGIN NAME: " << _rtplugin_names[i] << std::endl;
+            
+            for( int j = 0; j < _execution_time_buffer[i].size(); j++ ){
+                fs << _execution_time_buffer[i][j] << std::endl;
+            }
+            
+            fs << "\n\n\n\n" << std::endl;
+
+        }
+        fs.close();
+    }
 }
 
 bool XBot::XBotPluginHandler::computeAbsolutePath(const std::string& input_path, 

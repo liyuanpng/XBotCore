@@ -34,6 +34,8 @@
 #include <SharedLibraryClassFactory.h>
 #include <SharedLibraryClass.h>
 
+#include <boost/circular_buffer.hpp>
+
 namespace XBot
 {
     class XBotPluginHandler;
@@ -69,8 +71,10 @@ private:
     
     std::string _path_to_config_file;
     
-    std::vector<double> _last_time, _time, _period, _elapsed_time;
-     bool _first_loop;
+    std::vector<double> _last_time, _time, _period, _end_time;
+    bool _first_loop;
+    
+    std::vector<boost::circular_buffer_space_optimized<uint16_t>> _execution_time_buffer;
      
     // Dynamic loading related variables
     std::vector<std::shared_ptr<shlibpp::SharedLibraryClassFactory<XBot::XBotPlugin>>> _rtplugin_factory;
