@@ -51,6 +51,10 @@ include_directories(include)
 add_library(IkExample SHARED src/ik_example.cpp)
 add_library(HomingExample SHARED src/homing_example.cpp)
 
+if ( Xenomai_FOUND )
+#     set_xeno_flags(HomingExample)
+endif()
+
 
 ##########
 ## Link ##
