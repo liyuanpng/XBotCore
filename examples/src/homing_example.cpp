@@ -47,6 +47,9 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file,
 
     _robot->print();
     
+    // get the left arm FT
+    _l_arm_ft = _robot->getForceTorque().at("l_arm_ft");
+    
     return true;
 }
 
@@ -54,6 +57,10 @@ void HomingExample::control_loop(double time, double period)
 {
     _robot->setPositionReference(_q0 + 0.5*(1-std::cos(0.5*(time - get_first_loop_time())))*(_q_home-_q0));
     _robot->move();
+    
+    // sense to get wrench
+    _robot->sense();
+    _l_arm_ft->getWrench(_l_arm_wrench);
     
 //     _robot->sense();
 //     _robot->setReferenceFrom(_robot->model(), XBot::Sync::Position);

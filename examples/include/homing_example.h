@@ -47,6 +47,9 @@ namespace XBot {
         Eigen::VectorXd _q0, _q_home;
         double _time;
         
+        ForceTorqueSensor::ConstPtr _l_arm_ft;
+        Eigen::Matrix<double, 6, 1> _l_arm_wrench;
+        
     };
     
 }
