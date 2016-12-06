@@ -50,6 +50,7 @@ bool XBotControlPlugin::init(std::string path_to_config_file,
     
     AnyMapPtr any_map = std::make_shared<AnyMap>();
     (*any_map)["XBotJoint"] = boost::any(joint);
+    (*any_map)["XBotFT"] = boost::any(ft);
     
     RobotInterface::Ptr robotinterface = RobotInterface::getRobot(path_to_config_file, any_map);
     
