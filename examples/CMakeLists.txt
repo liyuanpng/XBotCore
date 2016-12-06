@@ -50,20 +50,14 @@ include_directories(include)
 ###########
 add_library(IkExample SHARED src/ik_example.cpp)
 add_library(HomingExample SHARED src/homing_example.cpp)
-add_library(JointTrajectoryGenerator SHARED src/joint_space_demo_trajectory.cpp)
-add_library(PlayJointSpaceDemo SHARED src/play_joint_space_demo.cpp)
-add_library(TwoPriorityRtIk SHARED src/twopriority_rt_ik.cpp)
-add_library(TwoPriorityRtIkPlugin SHARED src/twopriorirty_ik_plugin.cpp)
+
 
 ##########
 ## Link ##
 ##########
 target_link_libraries(IkExample XCM)
 target_link_libraries(HomingExample XCM)
-target_link_libraries(JointTrajectoryGenerator XCM)
-target_link_libraries(PlayJointSpaceDemo XCM JointTrajectoryGenerator)
-target_link_libraries(TwoPriorityRtIk XCM)
-target_link_libraries(TwoPriorityRtIkPlugin XCM TwoPriorityRtIk JointTrajectoryGenerator)
+
 
 #############
 ## Install ##
@@ -151,165 +145,7 @@ install_basic_package_files(HomingExample VARS_PREFIX ${VARS_PREFIX}
                                     TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
                                     NO_CHECK_REQUIRED_COMPONENTS_MACRO)
                                     
-set(VARS_PREFIX "JointTrajectoryGenerator")
 
-set(JointTrajectoryGenerator_MAJOR_VERSION 0)
-set(JointTrajectoryGenerator_MINOR_VERSION 1)
-set(JointTrajectoryGenerator_PATCH_VERSION 0)
-set(JointTrajectoryGenerator_VERSION ${JointTrajectoryGenerator_MAJOR_VERSION}.${JointTrajectoryGenerator_MINOR_VERSION}.${JointTrajectoryGenerator_PATCH_VERSION})
-
-find_package(YCM REQUIRED)
-include(YCMDefaultDirs)
-ycm_default_dirs(${VARS_PREFIX})
-
-target_include_directories(JointTrajectoryGenerator PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
-                                                "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
-
-set_target_properties(JointTrajectoryGenerator PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
-                                               SOVERSION ${${VARS_PREFIX}_VERSION})
-
-install(DIRECTORY include/
-        DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"
-        FILES_MATCHING PATTERN "*.h*")
-
-install(TARGETS JointTrajectoryGenerator
-        EXPORT JointTrajectoryGenerator
-        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
-        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
-        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
-
-
-
-#enabling it will add all JointTrajectoryGenerator dependencies as dependencies for third party users
-set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS JointTrajectoryGenerator)
-
-
-include(InstallBasicPackageFiles)
-install_basic_package_files(JointTrajectoryGenerator VARS_PREFIX ${VARS_PREFIX}
-                                    VERSION ${${VARS_PREFIX}_VERSION}
-                                    COMPATIBILITY SameMajorVersion
-                                    TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
-                                    NO_CHECK_REQUIRED_COMPONENTS_MACRO)
-                                    
-set(VARS_PREFIX "PlayJointSpaceDemo")
-
-set(PlayJointSpaceDemo_MAJOR_VERSION 0)
-set(PlayJointSpaceDemo_MINOR_VERSION 1)
-set(PlayJointSpaceDemo_PATCH_VERSION 0)
-set(PlayJointSpaceDemo_VERSION ${PlayJointSpaceDemo_MAJOR_VERSION}.${PlayJointSpaceDemo_MINOR_VERSION}.${PlayJointSpaceDemo_PATCH_VERSION})
-
-find_package(YCM REQUIRED)
-include(YCMDefaultDirs)
-ycm_default_dirs(${VARS_PREFIX})
-
-target_include_directories(PlayJointSpaceDemo PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
-                                                "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
-
-set_target_properties(PlayJointSpaceDemo PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
-                                               SOVERSION ${${VARS_PREFIX}_VERSION})
-
-install(DIRECTORY include/
-        DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"
-        FILES_MATCHING PATTERN "*.h*")
-
-install(TARGETS PlayJointSpaceDemo
-        EXPORT PlayJointSpaceDemo
-        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
-        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
-        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
-
-
-
-#enabling it will add all PlayJointSpaceDemo dependencies as dependencies for third party users
-set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS PlayJointSpaceDemo)
-
-
-include(InstallBasicPackageFiles)
-install_basic_package_files(PlayJointSpaceDemo VARS_PREFIX ${VARS_PREFIX}
-                                    VERSION ${${VARS_PREFIX}_VERSION}
-                                    COMPATIBILITY SameMajorVersion
-                                    TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
-                                    NO_CHECK_REQUIRED_COMPONENTS_MACRO)
-                                    
-set(VARS_PREFIX "TwoPriorityRtIk")
-
-set(TwoPriorityRtIk_MAJOR_VERSION 0)
-set(TwoPriorityRtIk_MINOR_VERSION 1)
-set(TwoPriorityRtIk_PATCH_VERSION 0)
-set(TwoPriorityRtIk_VERSION ${TwoPriorityRtIk_MAJOR_VERSION}.${TwoPriorityRtIk_MINOR_VERSION}.${TwoPriorityRtIk_PATCH_VERSION})
-
-find_package(YCM REQUIRED)
-include(YCMDefaultDirs)
-ycm_default_dirs(${VARS_PREFIX})
-
-target_include_directories(TwoPriorityRtIk PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
-                                                "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
-
-set_target_properties(TwoPriorityRtIk PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
-                                               SOVERSION ${${VARS_PREFIX}_VERSION})
-
-install(DIRECTORY include/
-        DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"
-        FILES_MATCHING PATTERN "*.h*")
-
-install(TARGETS TwoPriorityRtIk
-        EXPORT TwoPriorityRtIk
-        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
-        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
-        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
-
-
-
-#enabling it will add all TwoPriorityRtIk dependencies as dependencies for third party users
-set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS TwoPriorityRtIk)
-
-
-include(InstallBasicPackageFiles)
-install_basic_package_files(TwoPriorityRtIk VARS_PREFIX ${VARS_PREFIX}
-                                    VERSION ${${VARS_PREFIX}_VERSION}
-                                    COMPATIBILITY SameMajorVersion
-                                    TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
-                                    NO_CHECK_REQUIRED_COMPONENTS_MACRO)
-
-set(VARS_PREFIX "TwoPriorityRtIkPlugin")
-
-set(TwoPriorityRtIkPlugin_MAJOR_VERSION 0)
-set(TwoPriorityRtIkPlugin_MINOR_VERSION 1)
-set(TwoPriorityRtIkPlugin_PATCH_VERSION 0)
-set(TwoPriorityRtIkPlugin_VERSION ${TwoPriorityRtIkPlugin_MAJOR_VERSION}.${TwoPriorityRtIkPlugin_MINOR_VERSION}.${TwoPriorityRtIkPlugin_PATCH_VERSION})
-
-find_package(YCM REQUIRED)
-include(YCMDefaultDirs)
-ycm_default_dirs(${VARS_PREFIX})
-
-target_include_directories(TwoPriorityRtIkPlugin PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
-                                                "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
-
-set_target_properties(TwoPriorityRtIkPlugin PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
-                                               SOVERSION ${${VARS_PREFIX}_VERSION})
-
-install(DIRECTORY include/
-        DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"
-        FILES_MATCHING PATTERN "*.h*")
-
-install(TARGETS TwoPriorityRtIkPlugin
-        EXPORT TwoPriorityRtIkPlugin
-        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
-        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
-        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
-
-
-
-#enabling it will add all TwoPriorityRtIkPlugin dependencies as dependencies for third party users
-set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS TwoPriorityRtIkPlugin)
-
-
-include(InstallBasicPackageFiles)
-install_basic_package_files(TwoPriorityRtIkPlugin VARS_PREFIX ${VARS_PREFIX}
-                                    VERSION ${${VARS_PREFIX}_VERSION}
-                                    COMPATIBILITY SameMajorVersion
-                                    TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
-                                    NO_CHECK_REQUIRED_COMPONENTS_MACRO)
                                     
                                     
 include(AddUninstallTarget)
