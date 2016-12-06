@@ -34,7 +34,7 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file,
 {
     _robot = robot;
     
-    _robot->getRobotState("home_weird", _q_home);
+    _robot->getRobotState("navvab_home", _q_home);
     _robot->sense();
     _robot->getJointPosition(_q0);
     
@@ -44,6 +44,7 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file,
     
     std::cout << "_q0 from SRDF : " << _q0 << std::endl;
     _time = 0;
+    _homing_time = 4;
 
     _robot->print();
     
@@ -55,12 +56,20 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file,
 
 void HomingExample::control_loop(double time, double period)
 {
-    _robot->setPositionReference(_q0 + 0.5*(1-std::cos(0.5*(time - get_first_loop_time())))*(_q_home-_q0));
-    _robot->move();
     
+   // Go to homing
+    if( (time - get_first_loop_time()) <= _homing_time ){
+        _robot->setPositionReference(_q0 + 0.5*(1-std::cos(3.1415*(time - get_first_loop_time())/_homing_time))*(_q_home-_q0));
+        _robot->move();
+        return;
+        
+    }
+    
+    _robot->move();
+
     // sense to get wrench
-    _robot->sense();
-    _l_arm_ft->getWrench(_l_arm_wrench);
+//     _robot->sense();
+//     _l_arm_ft->getWrench(_l_arm_wrench);
     
 //     _robot->sense();
 //     _robot->setReferenceFrom(_robot->model(), XBot::Sync::Position);
@@ -71,7 +80,7 @@ void HomingExample::control_loop(double time, double period)
     
 //      _robot->printTracking();    
     
-    _time += 0.001;
+//     _time += 0.001;
 }
 
 bool HomingExample::close()
