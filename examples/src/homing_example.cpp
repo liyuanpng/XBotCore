@@ -38,11 +38,11 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file,
     _robot->sense();
     _robot->getJointPosition(_q0);
     
-    if( !_robot->checkJointLimits(_q_home) ) throw;
+//     if( !_robot->checkJointLimits(_q_home) ) throw;
     
 //     _q_home *= -1;
     
-    std::cout << "_q0 from SRDF : " << _q0 << std::endl;
+    std::cout << "_q_home from SRDF : " << _q_home << std::endl;
     _time = 0;
     _homing_time = 4;
 
@@ -50,6 +50,9 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file,
     
     // get the left arm FT
     _l_arm_ft = _robot->getForceTorque().at("l_arm_ft");
+    
+    _l_hand_pos = _l_hand_ref = 0.0;
+    _close_hand = true;
     
     return true;
 }
@@ -65,7 +68,19 @@ void HomingExample::control_loop(double time, double period)
         
     }
     
-    _robot->move();
+//     if(_close_hand) {
+//         _robot->sense();
+//         
+//         _l_hand_pos =_robot->chain("left_hand").getJointPosition(0);
+//         printf("reading %f\n", _l_hand_pos);
+//         
+//         _l_hand_ref = 13;
+//         _robot->chain("left_hand").setPositionReference(0, _l_hand_ref);
+//         printf("ref %f\n", _l_hand_ref);
+//         
+//         _robot->move();
+//         _close_hand = false;
+//     }
 
     // sense to get wrench
 //     _robot->sense();

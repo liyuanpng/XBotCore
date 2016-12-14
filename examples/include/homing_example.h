@@ -50,6 +50,10 @@ namespace XBot {
         ForceTorqueSensor::ConstPtr _l_arm_ft;
         Eigen::Matrix<double, 6, 1> _l_arm_wrench;
         
+        double _l_hand_pos;
+        double _l_hand_ref;
+        bool _close_hand;
+        
     };
     
 }
