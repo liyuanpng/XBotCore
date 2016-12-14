@@ -117,6 +117,10 @@ void XBot::XBotEcat::init_preOP(void)
             DPRINTF("Starting motor %d in mix_pos_3c\n", moto->get_robot_id());
             moto->start(CTRL_SET_MIX_POS_MODE);
         }
+        else if(moto->get_control_mode() == "impedance_d4") {
+            DPRINTF("Starting motor %d in impedance_d4\n", moto->get_robot_id());
+            moto->start(CTRL_SET_IMPED_MODE);
+        }
         else {
             DPRINTF("Starting motor %d in idle\n", moto->get_robot_id());
             // NOTE idle or not recognized TBD check!
