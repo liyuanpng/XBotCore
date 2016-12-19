@@ -42,7 +42,9 @@ IkExample::IkExample()
 
 }
 
-bool IkExample::init_control_plugin(std::string path_to_config_file, RobotInterface::Ptr robot)
+bool IkExample::init_control_plugin(std::string path_to_config_file, 
+                                    XBot::SharedMemory::Ptr shared_memory, 
+                                    RobotInterface::Ptr robot)
 {
     _robot = robot;
     _model = ModelInterface::getModel(path_to_config_file);
@@ -52,12 +54,12 @@ bool IkExample::init_control_plugin(std::string path_to_config_file, RobotInterf
     _robot->getJointPosition(_q0);
     
     _alpha = 0;
-    _homing_time = 4;
+    _homing_time = 5;
     _ik_started = false;
     
-    _end_effector = _robot->chain("right_arm").getTipLinkName();
-    _length = 0.4;
-    _period = 4;
+    _end_effector = _robot->chain("left_arm").getTipLinkName();
+    _length = 0.3;
+    _period = 6;
     return true;
 }
 
@@ -72,11 +74,14 @@ void IkExample::control_loop(double time, double period)
     }
     
     if( !_ik_started ){
-        _robot->sense();
-        _model->syncFrom(*_robot);
+//         _robot->sense();
+//         _model->syncFrom(*_robot);
+	_model->setJointPosition(_q_home);
+	_model->update();
         _model->getPose(_end_effector, _initial_pose);
         _model->getJointPosition(_q);
         _desired_pose = _initial_pose;
+	_ik_started_time = time;
         _ik_started = true;
     }
     
@@ -84,7 +89,7 @@ void IkExample::control_loop(double time, double period)
 
     // Set the desired end-effector pose at current time
     _desired_pose.linear() = _initial_pose.linear();
-    _desired_pose.translation() = _initial_pose.translation() + Eigen::Vector3d(0,0,1)*0.5*_length*(1-std::cos(2*3.1415/_period*time));
+    _desired_pose.translation() = _initial_pose.translation() + Eigen::Vector3d(0,0,1)*0.5*_length*(1-std::cos(2*3.1415/_period*(time-_ik_started_time)));
     // Compute the pose corresponding to the model state
     _model->getPose(_end_effector, _actual_pose);
     

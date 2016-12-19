@@ -51,11 +51,17 @@ include_directories(include)
 add_library(IkExample SHARED src/ik_example.cpp)
 add_library(HomingExample SHARED src/homing_example.cpp)
 
+if ( Xenomai_FOUND )
+#     set_xeno_flags(HomingExample)
+endif()
+
+
 ##########
 ## Link ##
 ##########
 target_link_libraries(IkExample XCM)
 target_link_libraries(HomingExample XCM)
+
 
 #############
 ## Install ##
@@ -144,4 +150,6 @@ install_basic_package_files(HomingExample VARS_PREFIX ${VARS_PREFIX}
                                     NO_CHECK_REQUIRED_COMPONENTS_MACRO)
                                     
 
+                                    
+                                    
 include(AddUninstallTarget)

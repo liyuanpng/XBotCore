@@ -30,7 +30,9 @@ namespace XBot {
         
         IkExample();
         
-        virtual bool init_control_plugin(std::string path_to_config_file, RobotInterface::Ptr robot);
+        virtual bool init_control_plugin(std::string path_to_config_file, 
+                                         XBot::SharedMemory::Ptr shared_memory,
+                                         RobotInterface::Ptr robot);
         
         virtual bool close();
         
@@ -51,7 +53,7 @@ namespace XBot {
         
         Eigen::VectorXd _q0, _q_home;
         double _alpha;
-        double _homing_time;
+        double _homing_time, _ik_started_time;
         double _ik_time;
         
         bool _ik_started;

@@ -30,7 +30,9 @@ namespace XBot {
         
         HomingExample();
         
-        virtual bool init_control_plugin(std::string path_to_config_file, RobotInterface::Ptr robot);
+        virtual bool init_control_plugin(std::string path_to_config_file,
+                                         XBot::SharedMemory::Ptr shared_memory,
+                                         RobotInterface::Ptr robot);
         
         virtual bool close();
 
@@ -43,7 +45,14 @@ namespace XBot {
         
         RobotInterface::Ptr _robot;
         Eigen::VectorXd _q0, _q_home;
-        double _time;
+        double _time, _homing_time;
+        
+        ForceTorqueSensor::ConstPtr _l_arm_ft;
+        Eigen::Matrix<double, 6, 1> _l_arm_wrench;
+        
+        double _l_hand_pos;
+        double _l_hand_ref;
+        bool _close_hand;
         
     };
     

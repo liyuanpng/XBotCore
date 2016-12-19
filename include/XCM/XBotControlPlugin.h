@@ -21,7 +21,7 @@
 #define __XBOTCONTROLMODULE_XBOTCONTROLPLUGIN_H__
 
 #include <XBotInterface/RobotInterface.h>
-#include <XBotCore/XBotPlugin.h>
+#include <XBotCore-interfaces/XBotPlugin.h>
 
 namespace XBot {
  
@@ -35,13 +35,16 @@ namespace XBot {
         
         virtual bool init(std::string path_to_config_file,
                           std::string name, 
+                          XBot::SharedMemory::Ptr shared_memory,
                           std::shared_ptr<XBot::IXBotJoint> joint,
                           std::shared_ptr< IXBotModel > model, 
                           std::shared_ptr< IXBotChain > chain, 
                           std::shared_ptr< IXBotRobot > robot, 
                           std::shared_ptr< IXBotFT > ft) final;
                           
-        virtual bool init_control_plugin(std::string path_to_config_file, RobotInterface::Ptr robot) = 0;
+        virtual bool init_control_plugin(std::string path_to_config_file, 
+                                         XBot::SharedMemory::Ptr shared_memory,
+                                         RobotInterface::Ptr robot) = 0;
                           
         virtual void run(double time, double period) final;
 

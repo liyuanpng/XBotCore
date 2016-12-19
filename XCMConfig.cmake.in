@@ -1,0 +1,17 @@
+set(XCM_VERSION @XCM_VERSION@)
+
+@PACKAGE_INIT@
+
+set_and_check(XCM_INCLUDEDIR "@PACKAGE_XCM_INCLUDEDIR@")
+include(CMakeFindDependencyMacro)
+find_package(YCM)
+find_package(XBotInterface REQUIRED)
+find_package(XBotCore-interfaces REQUIRED)
+
+if(NOT TARGET XCM::XCM)
+  include("${CMAKE_CURRENT_LIST_DIR}/XCMTargets.cmake")
+endif()
+
+# Compatibility
+set(XCM_LIBRARIES XCM::XCM)
+set(XCM_INCLUDE_DIRS ${XCM_INCLUDEDIR})

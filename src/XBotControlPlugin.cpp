@@ -35,6 +35,7 @@ XBotControlPlugin::~XBotControlPlugin()
 
 bool XBotControlPlugin::init(std::string path_to_config_file, 
                              std::string name, 
+                             XBot::SharedMemory::Ptr shared_memory,
                              std::shared_ptr<XBot::IXBotJoint> joint,
                              std::shared_ptr< IXBotModel > model, 
                              std::shared_ptr< IXBotChain > chain, 
@@ -49,10 +50,11 @@ bool XBotControlPlugin::init(std::string path_to_config_file,
     
     AnyMapPtr any_map = std::make_shared<AnyMap>();
     (*any_map)["XBotJoint"] = boost::any(joint);
+    (*any_map)["XBotFT"] = boost::any(ft);
     
     RobotInterface::Ptr robotinterface = RobotInterface::getRobot(path_to_config_file, any_map);
     
-    return init_control_plugin(path_to_config_file, robotinterface);
+    return init_control_plugin(path_to_config_file, shared_memory, robotinterface);
 
 }
 
@@ -62,6 +64,7 @@ void XBotControlPlugin::run(double time, double period)
         _initial_time = time;
         _initial_time_set = true;
     }
+    
     control_loop(time, period);
 }
 

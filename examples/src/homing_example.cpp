@@ -28,26 +28,74 @@ HomingExample::HomingExample()
 
 }
 
-bool HomingExample::init_control_plugin(std::string path_to_config_file, RobotInterface::Ptr robot)
+bool HomingExample::init_control_plugin(std::string path_to_config_file, 
+                                        XBot::SharedMemory::Ptr shared_memory, 
+                                        RobotInterface::Ptr robot)
 {
     _robot = robot;
     
-    _robot->getRobotState("home", _q_home);
+    _robot->getRobotState("navvab_home", _q_home);
     _robot->sense();
     _robot->getJointPosition(_q0);
     
-    std::cout << "_q0 from SRDF : " << _q0 << std::endl;
+//     if( !_robot->checkJointLimits(_q_home) ) throw;
+    
+//     _q_home *= -1;
+    
+    std::cout << "_q_home from SRDF : " << _q_home << std::endl;
     _time = 0;
+    _homing_time = 4;
 
+    _robot->print();
+    
+    // get the left arm FT
+    _l_arm_ft = _robot->getForceTorque().at("l_arm_ft");
+    
+    _l_hand_pos = _l_hand_ref = 0.0;
+    _close_hand = true;
+    
     return true;
 }
 
 void HomingExample::control_loop(double time, double period)
 {
-    _robot->setPositionReference(_q0 + 0.5*(1-std::cos(0.5*(_time)))*(_q_home-_q0));
-    _robot->move();
     
-    _time += 0.001;
+   // Go to homing
+    if( (time - get_first_loop_time()) <= _homing_time ){
+        _robot->setPositionReference(_q0 + 0.5*(1-std::cos(3.1415*(time - get_first_loop_time())/_homing_time))*(_q_home-_q0));
+        _robot->move();
+        return;
+        
+    }
+    
+//     if(_close_hand) {
+//         _robot->sense();
+//         
+//         _l_hand_pos =_robot->chain("left_hand").getJointPosition(0);
+//         printf("reading %f\n", _l_hand_pos);
+//         
+//         _l_hand_ref = 13;
+//         _robot->chain("left_hand").setPositionReference(0, _l_hand_ref);
+//         printf("ref %f\n", _l_hand_ref);
+//         
+//         _robot->move();
+//         _close_hand = false;
+//     }
+
+    // sense to get wrench
+//     _robot->sense();
+//     _l_arm_ft->getWrench(_l_arm_wrench);
+    
+//     _robot->sense();
+//     _robot->setReferenceFrom(_robot->model(), XBot::Sync::Position);
+//     _robot->move();
+    
+//     _robot->sense();
+//     _robot->print();
+    
+//      _robot->printTracking();    
+    
+//     _time += 0.001;
 }
 
 bool HomingExample::close()
