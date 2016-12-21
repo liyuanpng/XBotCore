@@ -29,8 +29,9 @@
 #define __X_BOT_CORE_H__
 
 #include <iit/advr/ec_boards_base.h>
-#include <iit/advr/pipes.h>
 #include <iit/ecat/advr/esc.h>
+
+#include <iit/ecat/advr/pipes.h>
 
 #include <XBotCore/XBotEcat.h>
 
