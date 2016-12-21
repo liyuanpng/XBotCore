@@ -129,7 +129,8 @@ target_link_libraries(XBotPluginHandler ${COMMON_LIBS}
 # #                                XBotCommunicationHandler)
 
 if(NOT Xenomai_FOUND)
-    set_cap_build(${PROJECT_NAME})
+    # NOTE do it manually on the build
+    # set_cap_build(${PROJECT_NAME})
 endif()
 
 # install exe, lib and include
