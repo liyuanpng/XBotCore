@@ -24,10 +24,9 @@ Here you can find the [documentation](http://95.110.214.65/XBotCore/index.html).
 
 *description*:    
 The WALKMAN RT PC is responsible for the RT communication with the robot (EtherCAT based).  
-It has three ethernet connections:  
-* internet connection
+It has two ethernet connections:  
 * connection with the robot EtherCAT slaves network
-* connection with external control pc (YARP control modules)
+* connection with external control pc (control modules)
 
 *what to run*:      
 
@@ -45,26 +44,26 @@ Open 3 terminal on WALKMAN RT PC:
 
 * On terminal # 1 start XBotCore: it will start the motors using the control mode and the gains specified in the YAML config file passed as an argument.  
 ~$ **cd $XBOTCORE_ROOT**  
-~$ **XBotCore configs/config_walkman.YAML**  
+~$ **XBotCore configs/config_walkman.yaml**  
 
 * On terminal # 2 start YARP name server: check that it is bind the the local address (10.24.3.102)   
 ~$ **yarpserver --write**  
 
 * On terminal # 3 start XBotYARP: it will start the Not-Real-Time YARP communication with XBotCore opening all the YARP ports needed to communicate with the robot using YARP (like in gazebo with the robot model).  
 ~$ **cd $XBOTCORE_ROOT**  
-~$ **XBotYARP configs/config_walkman.YAML**
+~$ **XBotYARP configs/config_walkman.yaml**
 
 ### **WALKMAN external control PC**
 
-*hostname*:         coman-control-pc
+*hostname*:         walkman-pilot-pc
 
-*username*:         walkman
+*username*:         lucamuratore
 
 *password*:         send an email to luca.muratore@iit.it or alessio.rocchi@iit.it for the password
 
 *operating system*: Ubuntu 14.04
 
-*local IP address*: 10.24.3.78
+*local IP address*: 10.24.3.77
 
 *description*:    
 The WALKMAN external control PC is responsible for the YARP control module.  
