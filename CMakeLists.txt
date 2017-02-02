@@ -56,6 +56,8 @@ include(MacroOptionalBuild)
 find_package(YCM REQUIRED)
 
 find_package(XBotInterface REQUIRED)
+
+find_package(XBotLogger REQUIRED)
 find_package(XBotCore-interfaces REQUIRED)
 
 
@@ -67,18 +69,19 @@ include_directories(include ${XBotInterface_INCLUDE_DIRS}
                             ${XBotCore-interfaces_INCLUDE_DIRS}
                             )
 
-                            
+
 # for every file in INCLUDES CMake already sets the property HEADER_FILE_ONLY
 file(GLOB_RECURSE XCM_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include" *.h*)
 
-add_library(XCM SHARED ${XBotInterface_INCLUDES} 
+add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/XBotControlPlugin.cpp)
-                                 
+
 target_link_libraries(XCM PUBLIC ${XBotInterface_LIBRARIES}
+                                 ${XBotLogger_LIBRARIES}
                                  ${XBotCore-interfaces_LIBRARIES}
                                  )
 
-                                    
+
 target_include_directories(XCM PUBLIC
                             ${XBotInterface_INCLUDE_DIRS}
                             ${XBotCore-interfaces_INCLUDE_DIRS}
@@ -140,5 +143,5 @@ optional_build(examples examples ON)
 if(BUILD_TESTS)
   enable_testing()
   add_custom_target(test_verbose ${CMAKE_CTEST_COMMAND} -V)
-  add_subdirectory(tests)  
+  add_subdirectory(tests)
 endif()
