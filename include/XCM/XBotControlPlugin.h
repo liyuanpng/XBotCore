@@ -25,7 +25,7 @@
 
 namespace XBot {
  
-    class XBotControlPlugin : XBotPlugin {
+    class XBotControlPlugin : public XBotPlugin {
       
     public:
         
