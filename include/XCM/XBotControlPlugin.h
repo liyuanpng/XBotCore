@@ -23,10 +23,9 @@
 #include <XBotInterface/RobotInterface.h>
 #include <XBotCore-interfaces/XBotPlugin.h>
 
-#define REGISTER_XBOT_PLUGIN(plugin_name, scoped_class_name) SHLIBPP_DEFINE_SHARED_SUBCLASS(plugin_name_factory, scoped_class_name, XBot::XBotControlPlugin);
+#define REGISTER_XBOT_PLUGIN(plugin_name, scoped_class_name) SHLIBPP_DEFINE_SHARED_SUBCLASS(plugin_name ## _factory, scoped_class_name, XBot::XBotControlPlugin);
 
 
-// SHLIBPP_DEFINE_SHARED_SUBCLASS(JointCalibrationPlugin_factory, XBot::JointCalibrationPlugin, XBot::XBotControlPlugin);
 
 namespace XBot {
 
