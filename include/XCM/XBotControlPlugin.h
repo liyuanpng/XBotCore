@@ -23,46 +23,51 @@
 #include <XBotInterface/RobotInterface.h>
 #include <XBotCore-interfaces/XBotPlugin.h>
 
+#define REGISTER_XBOT_PLUGIN(plugin_name, scoped_class_name) SHLIBPP_DEFINE_SHARED_SUBCLASS(plugin_name_factory, scoped_class_name, XBot::XBotControlPlugin);
+
+
+// SHLIBPP_DEFINE_SHARED_SUBCLASS(JointCalibrationPlugin_factory, XBot::JointCalibrationPlugin, XBot::XBotControlPlugin);
+
 namespace XBot {
- 
+
     class XBotControlPlugin : public XBotPlugin {
-      
+
     public:
-        
+
         XBotControlPlugin();
-        
+
         virtual ~XBotControlPlugin();
-        
+
         virtual bool init(std::string path_to_config_file,
-                          std::string name, 
+                          std::string name,
                           XBot::SharedMemory::Ptr shared_memory,
                           std::shared_ptr<XBot::IXBotJoint> joint,
-                          std::shared_ptr< IXBotModel > model, 
-                          std::shared_ptr< IXBotChain > chain, 
-                          std::shared_ptr< IXBotRobot > robot, 
+                          std::shared_ptr< IXBotModel > model,
+                          std::shared_ptr< IXBotChain > chain,
+                          std::shared_ptr< IXBotRobot > robot,
                           std::shared_ptr< IXBotFT > ft) final;
-                          
-        virtual bool init_control_plugin(std::string path_to_config_file, 
+
+        virtual bool init_control_plugin(std::string path_to_config_file,
                                          XBot::SharedMemory::Ptr shared_memory,
                                          RobotInterface::Ptr robot) = 0;
-                          
+
         virtual void run(double time, double period) final;
 
     protected:
 
         virtual void control_loop(double time, double period) = 0;
-        
+
         double get_first_loop_time() const;
-        
+
     private:
-        
+
         bool _initial_time_set;
         double _initial_time;
-        
-        
-        
+
+
+
     };
-    
+
 }
 
 #endif
