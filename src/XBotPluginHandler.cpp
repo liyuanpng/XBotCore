@@ -188,6 +188,7 @@ bool XBot::XBotPluginHandler::plugin_handler_close(void)
 {
     bool ret = true;
     for(int i = 0; i < _rtplugin_vector.size(); i++) {
+        DPRINTF("INFO: closing plugin # %d \n", i);
         if(!(*_rtplugin_vector[i])->close()) {
             DPRINTF("ERROR: plugin %s - close() failed\n", (*_rtplugin_vector[i])->name.c_str());
             ret = false;
@@ -198,6 +199,7 @@ bool XBot::XBotPluginHandler::plugin_handler_close(void)
 
 XBot::XBotPluginHandler::~XBotPluginHandler()
 {
+    plugin_handler_close();
     printf("~XBotPluginHandler()\n");
     std::string _path_to_log_dir = "/home/embedded/PDO_log_from_tmp/";
     if( _path_to_log_dir != "" ){
