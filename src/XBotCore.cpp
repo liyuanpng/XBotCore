@@ -1189,6 +1189,9 @@ bool XBot::XBotCore::get_link_pos(int joint_id, float& link_pos)
     if( motors.count(rid2Pos(joint_id)) ) {
         // get the data
         link_pos = motors[rid2Pos(joint_id)]->getRxPDO().link_pos;
+        
+        // HACK temp fix
+        arm_roll_temp_fix(link_pos, joint_id, true);
         return true;
     }
     
@@ -1204,6 +1207,10 @@ bool XBot::XBotCore::get_motor_pos(int joint_id, float& motor_pos)
     if( motors.count(rid2Pos(joint_id)) ) {
         // get the data
         motor_pos = motors[rid2Pos(joint_id)]->getRxPDO().motor_pos;
+              
+        // HACK temp fix
+        arm_roll_temp_fix(motor_pos, joint_id, true);
+        
         return true;
     }
     
@@ -1339,6 +1346,9 @@ bool XBot::XBotCore::set_pos_ref(int joint_id, const float& pos_ref)
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
+        // HACK temp fix
+        arm_roll_temp_fix(const_cast<float&>(pos_ref),  joint_id, false);
+        
         // set the data
         motors[rid2Pos(joint_id)]->set_posRef(pos_ref);
         return true;
@@ -1522,7 +1532,29 @@ bool XBot::XBotCore::get_ft_rtt(int ft_id, uint16_t& rtt)
     return false;   
 }
 
-
+void XBot::XBotCore::arm_roll_temp_fix(float& v, int joint_id, bool read)
+{
+    // TODO modify joint limits for the higher level
+    
+    // RIGHT ARM SH ROLL
+    if(joint_id == 12) {
+        if(read) {
+            v = (v) * (-1) - 1.5707;
+        }
+        else {
+            v = ((v) + 1.5707) / -1;
+        }
+    }
+    // LEFT ARM SH ROLL
+    else if(joint_id == 22) {
+        if(read) {
+            v = (v) * (-1) + 1.5707;
+        }
+        else {
+            v = ((v) - 1.5707) / -1;
+        }
+    }
+}
 
 XBot::XBotCore::~XBotCore() {
     printf("~XBotCore()\n");

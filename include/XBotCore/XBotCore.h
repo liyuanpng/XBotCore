@@ -331,6 +331,7 @@ private:
     
     virtual bool set_aux(int joint_id, const float& aux) final;
 
+    void arm_roll_temp_fix(float& v, int joint_id, bool read);
     
 
 };
