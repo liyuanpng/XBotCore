@@ -74,7 +74,8 @@ include_directories(include ${XBotInterface_INCLUDE_DIRS}
 file(GLOB_RECURSE XCM_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include" *.h*)
 
 add_library(XCM SHARED ${XBotInterface_INCLUDES}
-                        src/XBotControlPlugin.cpp)
+                        src/XBotControlPlugin.cpp
+                        src/XBotPluginHandler.cpp)
 
 target_link_libraries(XCM PUBLIC ${XBotInterface_LIBRARIES}
                                  ${XBotLogger_LIBRARIES}
@@ -86,6 +87,9 @@ target_include_directories(XCM PUBLIC
                             ${XBotInterface_INCLUDE_DIRS}
                             ${XBotCore-interfaces_INCLUDE_DIRS}
                             )
+
+add_executable(DummyMain src/DummyMain.cpp)
+target_link_libraries(DummyMain XCM)
 
 
 ########################################################################

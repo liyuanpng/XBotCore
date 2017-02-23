@@ -34,7 +34,7 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file,
 {
     _robot = robot;
     
-    _robot->getRobotState("navvab_home", _q_home);
+    _robot->getRobotState("home", _q_home);
     _robot->sense();
     _robot->getJointPosition(_q0);
     
@@ -47,10 +47,7 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file,
     _homing_time = 4;
 
     _robot->print();
-    
-    // get the left arm FT
-    _l_arm_ft = _robot->getForceTorque().at("l_arm_ft");
-    
+     
     _l_hand_pos = _l_hand_ref = 0.0;
     _close_hand = true;
     
