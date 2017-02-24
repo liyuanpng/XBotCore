@@ -283,6 +283,21 @@ bool XBot::XBotCommunicationHandler::get_aux(int joint_id, float& aux)
     return true;
 }
 
+bool XBot::XBotCommunicationHandler::get_gains(int joint_id, std::vector< uint16_t >& gain_vector)
+{
+    mutex.at(joint_id)->lock();
+    // resize the gain vector
+    gain_vector.resize(5);  
+    gain_vector[0] = pdo_motor.at(joint_id)->pdo_data_tx.gain_0;
+    gain_vector[1] = pdo_motor.at(joint_id)->pdo_data_tx.gain_1;
+    gain_vector[2] = pdo_motor.at(joint_id)->pdo_data_tx.gain_2;
+    gain_vector[3] = pdo_motor.at(joint_id)->pdo_data_tx.gain_3;
+    gain_vector[4] = pdo_motor.at(joint_id)->pdo_data_tx.gain_4;
+    mutex.at(joint_id)->unlock();
+    return true;
+}
+
+
 bool XBot::XBotCommunicationHandler::set_pos_ref(int joint_id, const float& pos_ref)
 {
     mutex.at(joint_id)->lock();
