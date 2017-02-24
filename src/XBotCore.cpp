@@ -1332,6 +1332,27 @@ bool XBot::XBotCore::get_aux(int joint_id, float& aux)
     return false;  
 }
 
+bool XBot::XBotCore::get_gains(int joint_id, std::vector< uint16_t >& gain_vector)
+{
+    // resize the gain vector
+    gain_vector.resize(5);
+    // check if the joint requested exists
+    if( motors.count(rid2Pos(joint_id)) ) {
+        gain_vector[0] = motors[rid2Pos(joint_id)]->getTxPDO().gain_0;
+        gain_vector[1] = motors[rid2Pos(joint_id)]->getTxPDO().gain_1;
+        gain_vector[2] = motors[rid2Pos(joint_id)]->getTxPDO().gain_2;
+        gain_vector[3] = motors[rid2Pos(joint_id)]->getTxPDO().gain_3;
+        gain_vector[4] = motors[rid2Pos(joint_id)]->getTxPDO().gain_4;
+            
+        return true;
+    }
+    
+    // we don't touch the value that you passed
+    DPRINTF("Trying to get_gains() on joint with joint_id : %d that does not exists\n", joint_id);
+    return false; 
+}
+
+
 
 
 bool XBot::XBotCore::set_pos_ref(int joint_id, const float& pos_ref)
