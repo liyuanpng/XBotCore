@@ -314,6 +314,8 @@ private:
     
     virtual bool get_aux(int joint_id, float& aux) final;
     
+    virtual bool get_gains(int joint_id, std::vector< uint16_t >& gain_vector) final;
+    
     // NOTE IXBotJoint setters
     virtual bool set_pos_ref(int joint_id, const float& pos_ref) final;
     
