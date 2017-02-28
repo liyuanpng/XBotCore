@@ -46,6 +46,7 @@ bool XBotControlPlugin::init(std::string path_to_config_file,
     this->joint = joint;
     this->model = model;
     this->chain = chain;
+    this->robot = robot;
     this->ft = ft;
     
     AnyMapPtr any_map = std::make_shared<AnyMap>();
