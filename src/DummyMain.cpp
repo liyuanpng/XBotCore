@@ -11,11 +11,31 @@ int main(int argc, char **argv){
 
     using namespace XBot;
 
+
+
+    std::string path_to_cfg;
+
+    if(argc > 1){
+        path_to_cfg = std::string(argv[1]);
+    }
+    else{
+
+    }
+
+    std::string framework = "DUMMY";
+
+    if(argc > 2){
+        framework = std::string(argv[2]);
+    }
+    else{
+
+    }
+
+
+
+    RobotInterface::Ptr robot = RobotInterface::getRobot(path_to_cfg, AnyMapPtr(), framework);
+
     signal(SIGINT, sigint_handler);
-
-    std::string path_to_cfg(argv[1]);
-
-    RobotInterface::Ptr robot = RobotInterface::getRobot(path_to_cfg, AnyMapPtr(), "DUMMY");
 
     PluginHandler plugin_handler(robot, path_to_cfg);
 
@@ -28,7 +48,9 @@ int main(int argc, char **argv){
 
         plugin_handler.run(time);
         time += 0.001;
-        
+
+        usleep(1000);
+
     }
 
     plugin_handler.close();
