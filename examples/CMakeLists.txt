@@ -1,4 +1,4 @@
-# 
+#
 #  Copyright (C) 2016 IIT-ADVR
 #  Author: Luca Muratore
 #  email: luca.muratore@iit.it
@@ -50,6 +50,8 @@ include_directories(include)
 ###########
 add_library(IkExample SHARED src/ik_example.cpp)
 add_library(HomingExample SHARED src/homing_example.cpp)
+add_executable(IpcExampleRT src/example_ipc_rt.cpp)
+add_executable(IpcExampleNRT src/example_ipc_nonrt.cpp)
 
 if ( Xenomai_FOUND )
 #     set_xeno_flags(HomingExample)
@@ -61,6 +63,8 @@ endif()
 ##########
 target_link_libraries(IkExample XCM)
 target_link_libraries(HomingExample XCM)
+target_link_libraries(IpcExampleNRT XCM)
+target_link_libraries(IpcExampleRT XCM)
 
 
 #############
@@ -107,8 +111,8 @@ install_basic_package_files(IkExample VARS_PREFIX ${VARS_PREFIX}
                                     COMPATIBILITY SameMajorVersion
                                     TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
                                     NO_CHECK_REQUIRED_COMPONENTS_MACRO)
-                                    
-                                    
+
+
 set(VARS_PREFIX "HomingExample")
 
 set(HomingExample_MAJOR_VERSION 0)
@@ -148,8 +152,8 @@ install_basic_package_files(HomingExample VARS_PREFIX ${VARS_PREFIX}
                                     COMPATIBILITY SameMajorVersion
                                     TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
                                     NO_CHECK_REQUIRED_COMPONENTS_MACRO)
-                                    
 
-                                    
-                                    
+
+
+
 include(AddUninstallTarget)
