@@ -32,7 +32,6 @@ XBot::XBotPluginHandler::XBotPluginHandler(const char* config_yaml) :
     XBotCore(config_yaml), 
     _path_to_config_file(config_yaml)
 {
-    // TBD read the plugins to load from YAML
 }
 
 bool XBot::XBotPluginHandler::load_plugins() {
