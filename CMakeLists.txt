@@ -59,7 +59,7 @@ find_package(XBotInterface REQUIRED)
 find_package(XBotLogger REQUIRED)
 find_package(XBotCore-interfaces REQUIRED)
 
-find_package(catkin QUIET COMPONENTS roscpp sensor_msgs)
+find_package(catkin QUIET COMPONENTS roscpp sensor_msgs std_srvs)
 find_package(YARP QUIET)
 find_package(kdl_parser REQUIRED)
 
@@ -113,7 +113,7 @@ endif()
 
 
 add_executable(DummyMain src/DummyMain.cpp)
-target_link_libraries(DummyMain XCM)
+target_link_libraries(DummyMain XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
 
 add_executable(PluginManager src/XBotPluginManager.cpp)
 target_link_libraries(PluginManager XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
