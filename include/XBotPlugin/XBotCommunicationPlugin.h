@@ -29,8 +29,7 @@
 
 #include <XBotCore-interfaces/XBotPlugin.h>
 
-#include <iit/ecat/advr/pipes.h>
-#include <iit/ecat/advr/esc.h>
+#include <XBotCore-interfaces/XBotESC.h>
 
 #include <memory>
 
