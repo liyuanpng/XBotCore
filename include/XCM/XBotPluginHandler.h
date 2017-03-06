@@ -23,6 +23,7 @@
 
 #include <XCM/XBotControlPlugin.h>
 #include <XBotCore-interfaces/All.h>
+#include <XBotCore-interfaces/XDomainCommunication.h>
 
 #include <SharedLibraryClassFactory.h>
 #include <SharedLibraryClass.h>
@@ -49,8 +50,6 @@ namespace XBot {
 
     private:
 
-//         bool parseYAML ( const std::string &path_to_cfg ); // TBD do it with UTILS
-
 
         static bool computeAbsolutePath ( const std::string& input_path,
                                         const std::string& midlle_path,
@@ -64,9 +63,12 @@ namespace XBot {
         std::vector<std::shared_ptr<shlibpp::SharedLibraryClassFactory<XBot::XBotControlPlugin>>> _rtplugin_factory;
         std::vector<std::string> _rtplugin_names;
         std::vector<std::shared_ptr<shlibpp::SharedLibraryClass<XBot::XBotControlPlugin>>> _rtplugin_vector;
+        std::vector<bool> _plugin_init_success;
+        std::vector<XBot::SubscriberRT<XBot::Command>> _plugin_command;
+        std::vector<std::string> _plugin_state;
+        std::vector<bool> _first_loop;
 
         std::vector<double> _last_time, _time, _period, _elapsed_time;
-        bool _first_loop;
 
         RobotInterface::Ptr _robot;
         std::string _path_to_cfg;

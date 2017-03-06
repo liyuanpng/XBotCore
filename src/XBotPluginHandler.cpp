@@ -43,7 +43,7 @@ bool PluginHandler::load_plugins()
     else{
 
         if(!_root_cfg["XBotRTPlugins"]["plugins"]){
-            std::cerr << "ERROR in " << __func__ << "!XBotRTPlugins node does NOT contain mandatory node plugins!" << std::endl;
+            std::cerr << "ERROR in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node plugins!" << std::endl;
         return false;
         }
         else{
@@ -89,7 +89,6 @@ bool PluginHandler::load_plugins()
 
     }
 
-    _first_loop = true;
     _time.resize(_rtplugin_vector.size());
     _last_time.resize(_rtplugin_vector.size());
     _period.resize(_rtplugin_vector.size());
@@ -100,8 +99,13 @@ bool PluginHandler::load_plugins()
 bool PluginHandler::init_plugins()
 {
     XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
+    _plugin_init_success.resize(_rtplugin_vector.size(), false);
+    _plugin_command.resize(_rtplugin_vector.size());
+    _plugin_state.resize(_rtplugin_vector.size(), "STOPPED");
+    _first_loop.resize(_rtplugin_vector.size(), true);
 
     bool ret = true;
+
     for(int i = 0; i < _rtplugin_vector.size(); i++) {
         if(!(*_rtplugin_vector[i])->init_control_plugin( _path_to_cfg,
                                                          shared_memory,
@@ -111,32 +115,75 @@ bool PluginHandler::init_plugins()
             printf("ERROR: plugin %s - init() failed\n", (*_rtplugin_vector[i])->name.c_str());
             ret = false;
         }
+
+        std::cout << "Plugin " << (*_rtplugin_vector[i])->name << " initialized successfully!" << std::endl;
+        _plugin_init_success[i] = true;
+        _plugin_command[i].init("xbot_rt_plugin_"+_rtplugin_names[i]+"_switch");
     }
+
     return ret;
 }
 
 
 void PluginHandler::run(double time)
 {
+
+    XBot::Command cmd;
+
     for( int i = 0; i < _rtplugin_vector.size(); i++){
 
         const auto& plugin = _rtplugin_vector[i];
 
         _time[i] = time;
 
-        if(_first_loop){
+        if(_first_loop[i]){
             _period[i] = 0;
+            _first_loop[i] = false;
         }
         else{
             _period[i] = _time[i] - _last_time[i];
         }
 
-        (*plugin)->run(_time[i], _period[i]);
+        /* If init was unsuccessful, do not run */
+        if(!_plugin_init_success[i]) continue;
+
+
+
+        /* STATE STOPPED */
+
+        if( _plugin_state[i] == "STOPPED" ){
+
+            if( _plugin_command[i].read(cmd) ){
+
+                /* If start command has been received, set plugin to RUNNING */
+                if( cmd.str() == "start" ){
+                    (*plugin)->on_start(_time[i]);
+                    _plugin_state[i] = "RUNNING";
+                }
+            }
+        }
+
+        /* STATE RUNNING */
+
+        if( _plugin_state[i] == "RUNNING" ){
+
+            if( _plugin_command[i].read(cmd) ){
+
+                /* If stop command has been received, set plugin to STOPPED */
+                if( cmd.str() == "stop" ){
+                    (*plugin)->on_stop(_time[i]);
+                    _plugin_state[i] = "STOPPED";
+                }
+            }
+
+            (*plugin)->run(_time[i], _period[i]);
+
+        }
 
     }
 
     _last_time = _time;
-    _first_loop = false;
+
 }
 
 void PluginHandler::close()
