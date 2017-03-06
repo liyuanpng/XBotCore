@@ -38,9 +38,34 @@ void sigint_handler(int s){
 
 int main(int argc, char ** argv){
 
+    /* Get config file from command line */
+    std::string path_to_config_file = argv[1];
+//     YAML::Node root = YAML::Load(path_to_config_file);
 
     /* Get plugin vector from config file, save switch names, start pipe publishers */
     std::vector<std::string> plugin_names; // TBD get them from config
+
+    YAML::Node root_cfg = YAML::LoadFile(path_to_config_file);
+
+    if(!root_cfg["XBotRTPlugins"]){
+        std::cerr << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node XBotRTPlugins!" << std::endl;
+        return false;
+    }
+    else{
+
+        if(!root_cfg["XBotRTPlugins"]["plugins"]){
+            std::cerr << "ERROR in " << __func__ << "!XBotRTPlugins node does NOT contain mandatory node plugins!" << std::endl;
+        return false;
+        }
+        else{
+
+            for(const auto& plugin : root_cfg["XBotRTPlugins"]["plugins"]){
+                plugin_names.push_back(plugin.as<std::string>());
+            }
+        }
+
+    }
+
     std::vector<std::string> switch_names;
     std::vector<XBot::PublisherNRT<XBot::Command>> command_pub_vector;
     for(const std::string& name : plugin_names){
@@ -49,9 +74,6 @@ int main(int argc, char ** argv){
         command_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(switch_name));
     }
 
-
-    /* Build XBotInterface from config file */
-    std::string path_to_config_file = argv[1];
 
     /* By building a RobotinterfaceXBotRT we are able to make use of the
      * respectable XBotCommunicationHandler! */
@@ -102,7 +124,7 @@ int main(int argc, char ** argv){
         }
 
         /* Read robot state from RT layer and update robot */
-        robot->sense(false);
+//         robot->sense(false);
 
         /* Publish robot state to all frameworks */
         for(auto comm_ifc : communication_ifc_vector){
@@ -114,7 +136,9 @@ int main(int argc, char ** argv){
         master_communication_ifc->receiveReference(); // this updates robot
 
         /* Send received commands to the RT layer */
-        robot->move();
+//         robot->move();
+
+        usleep(5000);
     }
 
 
