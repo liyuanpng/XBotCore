@@ -32,7 +32,6 @@ int main(int argc, char **argv){
     }
 
 
-
     RobotInterface::Ptr robot = RobotInterface::getRobot(path_to_cfg, AnyMapPtr(), framework);
 
     signal(SIGINT, sigint_handler);

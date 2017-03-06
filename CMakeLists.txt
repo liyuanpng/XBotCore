@@ -56,9 +56,12 @@ include(MacroOptionalBuild)
 find_package(YCM REQUIRED)
 
 find_package(XBotInterface REQUIRED)
-
 find_package(XBotLogger REQUIRED)
 find_package(XBotCore-interfaces REQUIRED)
+
+find_package(catkin QUIET COMPONENTS roscpp sensor_msgs)
+find_package(YARP QUIET)
+find_package(kdl_parser REQUIRED)
 
 
 option(BUILD_TESTS "Compile XCM tests" FALSE)
@@ -67,6 +70,7 @@ option(BUILD_TESTS "Compile XCM tests" FALSE)
 
 include_directories(include ${XBotInterface_INCLUDE_DIRS}
                             ${XBotCore-interfaces_INCLUDE_DIRS}
+                            ${kdl_parser_INCLUDE_DIRS}
                             )
 
 
@@ -75,7 +79,10 @@ file(GLOB_RECURSE XCM_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include" *.h*)
 
 add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/XBotControlPlugin.cpp
-                        src/XBotPluginHandler.cpp)
+                        src/XBotPluginHandler.cpp
+                        src/XBotModuleHandler.cpp
+                        src/XBotControlModule.cpp)
+
 
 target_link_libraries(XCM PUBLIC ${XBotInterface_LIBRARIES}
                                  ${XBotLogger_LIBRARIES}
@@ -88,8 +95,29 @@ target_include_directories(XCM PUBLIC
                             ${XBotCore-interfaces_INCLUDE_DIRS}
                             )
 
+set(COMMUNICATION_INTERFACE_LIBRARIES)
+
+if(${catkin_FOUND})
+    add_definitions(-DUSE_ROS_COMMUNICATION_INTERFACE)
+    add_library(RosCommunicationInterface SHARED src/RosCommunicationInterface.cpp)
+    target_link_libraries(RosCommunicationInterface ${catkin_LIBRARIES})
+    set(COMMUNICATION_INTERFACE_LIBRARIES ${COMMUNICATION_INTERFACE_LIBRARIES} RosCommunicationInterface)
+endif()
+
+if(${YARP_FOUND})
+    add_definitions(-DUSE_YARP_COMMUNICATION_INTERFACE)
+    add_library(YarpCommunicationInterface SHARED src/YarpCommunicationInterface.cpp)
+    target_link_libraries(YarpCommunicationInterface ${YARP_LIBRARIES})
+    set(COMMUNICATION_INTERFACE_LIBRARIES ${COMMUNICATION_INTERFACE_LIBRARIES} YarpCommunicationInterface)
+endif()
+
+
 add_executable(DummyMain src/DummyMain.cpp)
 target_link_libraries(DummyMain XCM)
+
+add_executable(PluginManager src/XBotPluginManager.cpp)
+target_link_libraries(PluginManager XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
+
 
 
 ########################################################################
