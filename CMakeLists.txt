@@ -87,10 +87,6 @@ add_library(XBotPluginHandler SHARED
     src/XBotPluginHandler.cpp
 )
 
-# lib
-add_library(XBotCommunicationHandler SHARED
-    src/XBotCommunicationHandler.cpp
-)
 
 # set Xenomain flags if Xenomai is founded
 if ( Xenomai_FOUND )
@@ -108,7 +104,6 @@ target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
                                       ${walkman_masterwalkman_master${LIB_TYPE}_LIBRARIES}
                                       ${ecat_test_utils${LIB_TYPE}_LIBRARIES}
                                       XBotPluginHandler
-                                      XBotCommunicationHandler
                                       )
 
                                       
@@ -133,11 +128,7 @@ if(NOT Xenomai_FOUND)
     # set_cap_build(${PROJECT_NAME})
 endif()
 
-# install exe, lib and include
-# install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
-# # install(TARGETS XBotYARP RUNTIME DESTINATION bin)
 install(TARGETS XBotPluginHandler RUNTIME LIBRARY DESTINATION lib)
-install(TARGETS XBotCommunicationHandler RUNTIME LIBRARY DESTINATION lib)
 
 # documentation
 add_subdirectory(doc)
