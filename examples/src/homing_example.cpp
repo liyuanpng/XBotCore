@@ -54,17 +54,33 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file,
     _robot->initLog("/tmp/homing_example_log", 100000);
 
     return true;
+
+
 }
+
+void HomingExample::on_start(double time)
+{
+    _first_loop_time = time;
+    std::cout << name << " STARTED!!!" << std::endl;
+}
+
+void HomingExample::on_stop(double time)
+{
+    std::cout << name << " STOPPED!!!" << std::endl;
+}
+
 
 void HomingExample::control_loop(double time, double period)
 {
+
+    
 
     _robot->sense();
     _robot->log(time);
 
    // Go to homing
-    if( (time - get_first_loop_time()) <= _homing_time ){
-        _robot->setPositionReference(_q0 + 0.5*(1-std::cos(3.1415*(time - get_first_loop_time())/_homing_time))*(_q_home-_q0));
+    if( (time - _first_loop_time) <= _homing_time ){
+        _robot->setPositionReference(_q0 + 0.5*(1-std::cos(3.1415*(time - _first_loop_time)/_homing_time))*(_q_home-_q0));
         _robot->move();
         return;
 

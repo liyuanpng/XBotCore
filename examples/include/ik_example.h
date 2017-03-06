@@ -23,53 +23,57 @@
 #include <XCM/XBotControlPlugin.h>
 
 namespace XBot {
- 
+
     class IkExample : public XBotControlPlugin {
-      
+
     public:
-        
+
         IkExample();
-        
-        virtual bool init_control_plugin(std::string path_to_config_file, 
+
+        virtual bool init_control_plugin(std::string path_to_config_file,
                                          XBot::SharedMemory::Ptr shared_memory,
                                          RobotInterface::Ptr robot);
-        
+
         virtual bool close();
-        
-       
+
+        virtual void on_start(double time);
+
+        virtual void on_stop(double time);
+
+
 
     protected:
-        
+
         virtual void control_loop(double time, double period);
-        
-        
-        
+
+
+
     private:
-        
+
         RobotInterface::Ptr _robot;
         ModelInterface::Ptr _model;
-        
+
         std::string _end_effector;
-        
+
         Eigen::VectorXd _q0, _q_home;
         double _alpha;
-        double _homing_time, _ik_started_time;
+        double _homing_time, _ik_started_time, _first_loop_time;
         double _ik_time;
-        
+
         bool _ik_started;
-        
+
         Eigen::Affine3d _desired_pose, _actual_pose, _initial_pose;
         Eigen::VectorXd _cartesian_error;
         Eigen::VectorXd _qdot, _q, _xdot;
-        
+
         Eigen::MatrixXd _J;
-        
+
         double _length, _period;
-        
+
         double _time;
-        
+
     };
-    
+
 }
 
 #endif // __XCM_EXAMPLES_IK_EXAMPLE_H__
