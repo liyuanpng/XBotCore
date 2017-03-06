@@ -60,7 +60,7 @@ find_package(XBotLogger REQUIRED)
 find_package(XBotCore-interfaces REQUIRED)
 
 find_package(catkin QUIET COMPONENTS roscpp sensor_msgs std_srvs)
-find_package(YARP QUIET)
+# find_package(YARP QUIET)
 find_package(kdl_parser REQUIRED)
 
 
@@ -81,7 +81,8 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/XBotControlPlugin.cpp
                         src/XBotPluginHandler.cpp
                         src/XBotModuleHandler.cpp
-                        src/XBotControlModule.cpp)
+                        src/XBotControlModule.cpp
+                        src/XBotCommunicationHandler.cpp)
 
 
 target_link_libraries(XCM PUBLIC ${XBotInterface_LIBRARIES}

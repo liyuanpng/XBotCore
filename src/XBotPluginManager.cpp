@@ -18,7 +18,7 @@
 */
 
 #include <XCM/XBotCommunicationInterface.h>
-// #include <XBotCore-interfaces/XBotCommunicationHandler.h>
+#include <XCM/XBotCommunicationHandler.h>
 #include <XBotCore-interfaces/XDomainCommunication.h>
 #include <csignal>
 
