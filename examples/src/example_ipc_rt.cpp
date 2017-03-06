@@ -22,7 +22,7 @@ int main(int argc, char **argv){
         vec1.setConstant(it*2);
         pub_vec.write(vec1);
 
-        pub_str.write(XBot::Command(strings_to_send[it%strings_to_send.size()]));
+        pub_str.write(strings_to_send[it%strings_to_send.size()]);
 
         if(sub_vec.read(vec2)){
             std::cout << "RT process: received vector " << vec2.transpose() << std::endl;

@@ -4,6 +4,10 @@
 #include <vector>
 #include <string>
 
+void fs(const std::string& s);
+
+void fc(const XBot::Command& c);
+
 int main(int argc, char **argv){
 
 
@@ -17,12 +21,12 @@ int main(int argc, char **argv){
     std::vector<std::string> strings_to_send = {"HELLO", "I AM", "A NON-REALTIME", "PROCESS", "HOW", "ARE YOU?"};
 
 
-    for( int it = 0; it < 100; it++ ){
+    for( int it = 0; it < 1e10; it++ ){
 
         vec1.setConstant(it);
         pub_vec.write(vec1);
 
-        pub_str.write(XBot::Command(strings_to_send[it%strings_to_send.size()]));
+        pub_str.write(strings_to_send[it%strings_to_send.size()]);
 
         if(sub_vec.read(vec2)){
             std::cout << "NRT process: received vector " << vec2.transpose() << std::endl;
@@ -34,7 +38,7 @@ int main(int argc, char **argv){
             std::cout << "NRT process: received string " << str.str() << std::endl;
         }
 
-        sleep(1);
+        usleep(10000);
 
 
     }
