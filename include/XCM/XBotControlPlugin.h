@@ -26,46 +26,44 @@
 #define REGISTER_XBOT_PLUGIN(plugin_name, scoped_class_name) SHLIBPP_DEFINE_SHARED_SUBCLASS(plugin_name ## _factory, scoped_class_name, XBot::XBotControlPlugin);
 
 
-
 namespace XBot {
 
-    class XBotControlPlugin : public XBotPlugin {
+class XBotControlPlugin : public XBotPlugin {
 
-    public:
+public:
 
-        XBotControlPlugin();
+    XBotControlPlugin();
 
-        virtual ~XBotControlPlugin();
+    virtual ~XBotControlPlugin();
 
-        virtual bool init(std::string path_to_config_file,
-                          std::string name,
-                          XBot::SharedMemory::Ptr shared_memory,
-                          std::shared_ptr<XBot::IXBotJoint> joint,
-                          std::shared_ptr< IXBotModel > model,
-                          std::shared_ptr< IXBotChain > chain,
-                          std::shared_ptr< IXBotRobot > robot,
-                          std::shared_ptr< IXBotFT > ft) final;
+    virtual bool init(std::string path_to_config_file,
+                      std::string name,
+                      XBot::SharedMemory::Ptr shared_memory,
+                      std::shared_ptr<XBot::IXBotJoint> joint,
+                      std::shared_ptr< IXBotModel > model,
+                      std::shared_ptr< IXBotChain > chain,
+                      std::shared_ptr< IXBotRobot > robot,
+                      std::shared_ptr< IXBotFT > ft) final;
 
-        virtual bool init_control_plugin(std::string path_to_config_file,
-                                         XBot::SharedMemory::Ptr shared_memory,
-                                         RobotInterface::Ptr robot) = 0;
+    virtual bool init_control_plugin(std::string path_to_config_file,
+                                     XBot::SharedMemory::Ptr shared_memory,
+                                     RobotInterface::Ptr robot) = 0;
 
-        virtual void run(double time, double period) final;
+    virtual void on_start(double time) {};
 
-    protected:
+    virtual void on_stop(double time) {};
 
-        virtual void control_loop(double time, double period) = 0;
+    virtual void run(double time, double period) final;
 
-        double get_first_loop_time() const;
+protected:
 
-    private:
-
-        bool _initial_time_set;
-        double _initial_time;
+    virtual void control_loop(double time, double period) = 0;
 
 
+private:
 
-    };
+
+};
 
 }
 
