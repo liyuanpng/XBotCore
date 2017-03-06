@@ -23,6 +23,8 @@
 
 #include <XCM/XBotCommunicationInterface.h>
 #include <ros/ros.h>
+#include <std_srvs/SetBool.h>
+#include <boost/bind.hpp>
 
 namespace XBot {
 
@@ -43,7 +45,15 @@ protected:
 
 private:
 
+    bool callback(std_srvs::SetBoolRequest& req, std_srvs::SetBoolResponse& res, const std::string& port_name);
+
+    std::shared_ptr<ros::NodeHandle> _nh;
+
+    std::map<std::string, ros::ServiceServer> _services;
+    std::map<std::string, std::string> _msgs;
+
 };
+
 
 }
 

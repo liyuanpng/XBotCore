@@ -31,8 +31,8 @@ public:
 
     typedef std::shared_ptr<CommunicationInterface> Ptr;
 
-    CommunicationInterface();
-    CommunicationInterface(XBotInterface::Ptr robot);
+    CommunicationInterface() {}
+    CommunicationInterface(XBotInterface::Ptr robot): _robot(robot) {}
 
     virtual void sendRobotState() = 0;
     virtual void receiveReference() = 0;

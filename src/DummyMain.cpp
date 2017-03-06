@@ -45,6 +45,10 @@ int main(int argc, char **argv){
 
     while(g_loop_ok){
 
+        if( int(time*1000) % 1000 == 0 ){
+            std::cout << "Time: " << int(time) << std::endl;
+        }
+
         plugin_handler.run(time);
         time += 0.001;
 
