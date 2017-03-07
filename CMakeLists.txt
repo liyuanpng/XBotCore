@@ -60,7 +60,7 @@ find_package(XBotLogger REQUIRED)
 find_package(XBotCore-interfaces REQUIRED)
 
 find_package(catkin QUIET COMPONENTS roscpp sensor_msgs std_srvs)
-# find_package(YARP QUIET)
+find_package(YARP QUIET)
 find_package(kdl_parser REQUIRED)
 
 
@@ -77,17 +77,34 @@ include_directories(include ${XBotInterface_INCLUDE_DIRS}
 # for every file in INCLUDES CMake already sets the property HEADER_FILE_ONLY
 file(GLOB_RECURSE XCM_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include" *.h*)
 
+set(COMMUNICATION_INTERFACE_SOURCE_FILES)
+set(COMMUNICATION_INTERFACE_LIBRARIES)
+
+if(${catkin_FOUND})
+    add_definitions(-DUSE_ROS_COMMUNICATION_INTERFACE)
+    set(COMMUNICATION_INTERFACE_SOURCE_FILES ${COMMUNICATION_INTERFACE_SOURCE_FILES} src/RosCommunicationInterface.cpp)
+    set(COMMUNICATION_INTERFACE_LIBRARIES ${COMMUNICATION_INTERFACE_LIBRARIES} ${catkin_LIBRARIES})
+endif()
+
+if(${YARP_FOUND})
+    add_definitions(-DUSE_ROS_COMMUNICATION_INTERFACE)
+    set(COMMUNICATION_INTERFACE_SOURCE_FILES ${COMMUNICATION_INTERFACE_SOURCE_FILES} src/YarpCommunicationInterface.cpp)
+    set(COMMUNICATION_INTERFACE_LIBRARIES ${COMMUNICATION_INTERFACE_LIBRARIES} ${YARP_LIBRARIES})
+endif()
+
 add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/XBotControlPlugin.cpp
                         src/XBotPluginHandler.cpp
                         src/XBotModuleHandler.cpp
                         src/XBotControlModule.cpp
-                        src/XBotCommunicationHandler.cpp)
+			src/XBotCommunicationHandler.cpp
+                        ${COMMUNICATION_INTERFACE_SOURCE_FILES})
 
 
 target_link_libraries(XCM PUBLIC ${XBotInterface_LIBRARIES}
                                  ${XBotLogger_LIBRARIES}
                                  ${XBotCore-interfaces_LIBRARIES}
+                                 ${COMMUNICATION_INTERFACE_LIBRARIES}
                                  )
 
 
@@ -96,21 +113,7 @@ target_include_directories(XCM PUBLIC
                             ${XBotCore-interfaces_INCLUDE_DIRS}
                             )
 
-set(COMMUNICATION_INTERFACE_LIBRARIES)
 
-if(${catkin_FOUND})
-    add_definitions(-DUSE_ROS_COMMUNICATION_INTERFACE)
-    add_library(RosCommunicationInterface SHARED src/RosCommunicationInterface.cpp)
-    target_link_libraries(RosCommunicationInterface ${catkin_LIBRARIES})
-    set(COMMUNICATION_INTERFACE_LIBRARIES ${COMMUNICATION_INTERFACE_LIBRARIES} RosCommunicationInterface)
-endif()
-
-if(${YARP_FOUND})
-    add_definitions(-DUSE_YARP_COMMUNICATION_INTERFACE)
-    add_library(YarpCommunicationInterface SHARED src/YarpCommunicationInterface.cpp)
-    target_link_libraries(YarpCommunicationInterface ${YARP_LIBRARIES})
-    set(COMMUNICATION_INTERFACE_LIBRARIES ${COMMUNICATION_INTERFACE_LIBRARIES} YarpCommunicationInterface)
-endif()
 
 
 add_executable(DummyMain src/DummyMain.cpp)
