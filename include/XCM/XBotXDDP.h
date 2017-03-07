@@ -18,8 +18,8 @@
 */
 
 
-#ifndef __X_BOT_COMMUNICATION_HANDLER_H__
-#define __X_BOT_COMMUNICATION_HANDLER_H__
+#ifndef __X_BOT_XDDP_H__
+#define __X_BOT_XDDP_H__
 
 #include <XBotCore-interfaces/XBotESC.h>
 #include <iit/advr/thread_util.h>
@@ -34,7 +34,7 @@
 
 namespace XBot
 {
-    class XBotCommunicationHandler;
+    class XBotXDDP;
 }
 
 
@@ -43,15 +43,17 @@ namespace XBot
  *        non-RT XBotCore Interfaces implementation (using XDDP Pipes)
  * 
  */
-class XBot::XBotCommunicationHandler : public Thread_hook,
-                                       public XBot::IXBotJoint,
-                                       public XBot::IXBotFT
+class XBot::XBotXDDP :  public Thread_hook,
+                        public XBot::IXBotJoint,
+                        public XBot::IXBotFT
                         
 {
 public:
     
-    XBotCommunicationHandler(std::string config_file);
-    virtual ~XBotCommunicationHandler();
+    typedef std::shared_ptr<XBot::XBotXDDP> Ptr;
+    
+    XBotXDDP(std::string config_file);
+    virtual ~XBotXDDP();
     
     std::map<std::string,std::vector<int> > get_robot_map();
     std::map<std::string,int> get_ft_sensors_map();
@@ -205,4 +207,4 @@ private:
 
 };
 
-#endif //__X_BOT_COMMUNICATION_HANDLER_H__
+#endif //__X_BOT_XDDP_H__
