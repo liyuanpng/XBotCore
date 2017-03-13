@@ -92,7 +92,7 @@ int main(int argc, char ** argv){
     XBot::CommunicationInterface::Ptr master_communication_ifc;
 
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
-    master_communication_ifc = std::make_shared<XBot::CommunicationInterfaceROS>(robot); 
+    master_communication_ifc = std::make_shared<XBot::CommunicationInterfaceROS>(robot);  // TBD specify the MASTER who can send TX data
     communication_ifc_vector.push_back( master_communication_ifc );
 #endif
 
