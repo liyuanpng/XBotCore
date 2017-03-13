@@ -63,8 +63,8 @@ endif()
 ##########
 target_link_libraries(IkExample XCM)
 target_link_libraries(HomingExample XCM)
-target_link_libraries(IpcExampleNRT XCM)
-target_link_libraries(IpcExampleRT XCM)
+target_link_libraries(IpcExampleNRT XCM ${RT_LIBRARY})
+target_link_libraries(IpcExampleRT XCM ${RT_LIBRARY})
 
 
 #############
