@@ -29,6 +29,7 @@
 
 #include <XBotCore-interfaces/IXBotJoint.h>
 #include <XBotCore-interfaces/IXBotFT.h>
+#include <XBotCore-interfaces/XDomainCommunication.h>
 
 #include <XBotCoreModel.h>
 
@@ -156,25 +157,25 @@ private:
      * @brief fd reading from pipes: we read the robot from XBotCore XDDP pipe
      * 
      */
-    std::map<int,int> fd_read;
+    std::map<int,XBot::SubscriberNRT<XBot::RobotState>> fd_read;
     
     /**
      * @brief fd writing to pipes: we writhe to the robot with XBotCore XDDP pipe
      * 
      */
-    std::map<int,int> fd_write;
+    std::map<int,XBot::PublisherNRT<XBot::RobotState::pdo_tx>> fd_write;
     
     /**
      * @brief fd reading from pipes: we read the robot F-T XBotCore XDDP pipe
      * 
      */
-    std::map<int,int> fd_ft_read;
+    std::map<int,XBot::SubscriberNRT<XBot::RobotFT>> fd_ft_read;
     
     /**
      * @brief fd reading from pipes: we read the robot SDO XBotCore XDDP pipe
      * 
      */
-    std::map<int,int> fd_sdo_read;
+    std::map<int,XBot::SubscriberNRT<XBot::sdo_info>> fd_sdo_read;
     
     /**
      * @brief number of bytes read from pipes
@@ -193,7 +194,7 @@ private:
      * @brief PDO Motor map
      * 
      */
-    std::map<int, std::shared_ptr<XBot::McEscPdoTypes>> pdo_motor;
+    std::map<int, std::shared_ptr<XBot::RobotState>> pdo_motor;
     
     
     /**

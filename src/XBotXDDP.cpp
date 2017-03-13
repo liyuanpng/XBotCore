@@ -49,55 +49,44 @@ XBot::XBotXDDP::XBotXDDP(std::string config_file)
     // motors
     for(auto& c : robot) {
         for(int i=0; i< c.second.size(); i++) {
+
+            XBot::SubscriberNRT<XBot::RobotState> subscriber_rx(std::string("Motor_id_") + std::to_string(c.second[i]).c_str());
+            fd_read[c.second[i]] = subscriber_rx;
             
-            // initialize all the fd reading for the motors
-            int actual_fd = open((std::string("/proc/xenomai/registry/rtipc/xddp/") + std::string("Motor_id_") + std::to_string(c.second[i])).c_str(), O_RDONLY);
-            if(actual_fd > 0) {
-                fd_read[c.second[i]] = actual_fd;
-            }
-            
-            // initialize all the fd writing for the motors
-            actual_fd = open((std::string("/proc/xenomai/registry/rtipc/xddp/") + std::string("rt_in_Motor_id_") + std::to_string(c.second[i])).c_str(), O_WRONLY);
-            if(actual_fd > 0) {
-                fd_write[c.second[i]] = actual_fd;
-            }
-            
-            // initialize all the fd SDO reading for the motors
-            actual_fd = open((std::string("/proc/xenomai/registry/rtipc/xddp/") + std::string("sdo_Motor_id_") + std::to_string(c.second[i])).c_str(), O_RDONLY);
-            if(actual_fd > 0) {
-                fd_sdo_read[c.second[i]] = actual_fd;
-            }
-            
+            XBot::PublisherNRT<XBot::RobotState::pdo_tx> publisher_tx(std::string("rt_in_Motor_id_") + std::to_string(c.second[i]).c_str());
+            fd_write[c.second[i]] = publisher_tx;
+
+            XBot::SubscriberNRT<XBot::sdo_info> subscriber_sdo(std::string("sdo_Motor_id_") + std::to_string(c.second[i]).c_str());
+            fd_sdo_read[c.second[i]] = subscriber_sdo;
+          
             // initialize the mutex
             mutex[c.second[i]] = std::make_shared<std::mutex>();
             
             // initialize the pdo_motor
             if(fd_read.count(c.second[i])) {
-                XBot::McEscPdoTypes actual_pdo_motor;
-                int n_bytes = read(fd_read[c.second[i]], (void*)&actual_pdo_motor, sizeof(actual_pdo_motor));
-                if(n_bytes > 0) {
-                    pdo_motor[c.second[i]] = std::make_shared<XBot::McEscPdoTypes>(actual_pdo_motor);
-                }   
+                XBot::RobotState current_robot_state;
+                if( fd_read[c.second[i]].read(current_robot_state) ) {
+                    pdo_motor[c.second[i]] = std::make_shared<XBot::RobotState>(current_robot_state);
+                }
             }
 
             // initialize the sdo info
             if(fd_sdo_read.count(c.second[i])) {
-                XBot::sdo_info actual_sdo;
-                n_bytes = read(fd_sdo_read.at(c.second[i]), (void*)&actual_sdo, sizeof(actual_sdo));
-                if(n_bytes > 0) {
-                    sdo_info[c.second[i]] = std::make_shared<XBot::sdo_info>(actual_sdo);
+                XBot::sdo_info current_sdo_info;
+                if( fd_sdo_read[c.second[i]].read(current_sdo_info) ) {
+                    sdo_info[c.second[i]] = std::make_shared<XBot::sdo_info>(current_sdo_info);
                 }
             }
+
         }
     }
     
     //ft
     for(auto& ft_j : ft) {
         // initialize all the fd reading for the ft
-        int actual_fd = open((std::string("/proc/xenomai/registry/rtipc/xddp/") + std::string("Ft_id_") + std::to_string(ft_j.second)).c_str(), O_RDONLY);
-        if(actual_fd > 0) {
-            fd_ft_read[ft_j.second] = actual_fd;
-        }
+        XBot::SubscriberNRT<XBot::RobotFT> subscriber_ft(std::string("Ft_id_") + std::to_string(ft_j.second).c_str());
+        fd_ft_read[ft_j.second] = subscriber_ft;
+
         // initialize the mutex
         mutex[ft_j.second] = std::make_shared<std::mutex>();
     }
@@ -152,13 +141,14 @@ void XBot::XBotXDDP::th_loop(void *)
 {  
     for( auto& f: fd_write) {
         mutex.at(f.first)->lock();
-        XBot::McEscPdoTypes::pdo_tx actual_pdo_tx = pdo_motor.at(f.first)->pdo_data_tx;
-        n_bytes = write(f.second, (void*)&(actual_pdo_tx), sizeof(actual_pdo_tx));
         
-        // NOTE the single joint element can oly be controlled by either the RT or the N-RT so it should be commented!
-        XBot::McEscPdoTypes actual_pdo_motor;  
-        n_bytes = read(fd_read.at(f.first), (void*)&actual_pdo_motor, sizeof(actual_pdo_motor));
-        (*pdo_motor.at(f.first)).pdo_data_rx = actual_pdo_motor.pdo_data_rx;
+//         XBot::McEscPdoTypes::pdo_tx actual_pdo_tx = pdo_motor.at(f.first)->pdo_data_tx;
+//         n_bytes = write(f.second, (void*)&(actual_pdo_tx), sizeof(actual_pdo_tx));
+//         
+//         // NOTE the single joint element can oly be controlled by either the RT or the N-RT so it should be commented!
+//         XBot::McEscPdoTypes actual_pdo_motor;  
+//         n_bytes = read(fd_read.at(f.first), (void*)&actual_pdo_motor, sizeof(actual_pdo_motor));
+//         (*pdo_motor.at(f.first)).pdo_data_rx = actual_pdo_motor.pdo_data_rx;
         
         mutex.at(f.first)->unlock();
     }
