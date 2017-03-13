@@ -60,7 +60,7 @@ find_package(XBotLogger REQUIRED)
 find_package(XBotCore-interfaces REQUIRED)
 
 find_package(catkin QUIET COMPONENTS roscpp sensor_msgs std_srvs)
-find_package(YARP QUIET)
+# find_package(YARP QUIET)
 find_package(kdl_parser REQUIRED)
 
 
@@ -82,13 +82,13 @@ set(COMMUNICATION_INTERFACE_LIBRARIES)
 
 if(${catkin_FOUND})
     add_definitions(-DUSE_ROS_COMMUNICATION_INTERFACE)
-    set(COMMUNICATION_INTERFACE_SOURCE_FILES ${COMMUNICATION_INTERFACE_SOURCE_FILES} src/RosCommunicationInterface.cpp)
+    set(COMMUNICATION_INTERFACE_SOURCE_FILES ${COMMUNICATION_INTERFACE_SOURCE_FILES} src/CommunicationInterfaceROS.cpp)
     set(COMMUNICATION_INTERFACE_LIBRARIES ${COMMUNICATION_INTERFACE_LIBRARIES} ${catkin_LIBRARIES})
 endif()
 
 if(${YARP_FOUND})
-    add_definitions(-DUSE_ROS_COMMUNICATION_INTERFACE)
-    set(COMMUNICATION_INTERFACE_SOURCE_FILES ${COMMUNICATION_INTERFACE_SOURCE_FILES} src/YarpCommunicationInterface.cpp)
+    add_definitions(-DUSE_YARP_COMMUNICATION_INTERFACE)
+    set(COMMUNICATION_INTERFACE_SOURCE_FILES ${COMMUNICATION_INTERFACE_SOURCE_FILES} src/CommunicationInterfaceYARP.cpp)
     set(COMMUNICATION_INTERFACE_LIBRARIES ${COMMUNICATION_INTERFACE_LIBRARIES} ${YARP_LIBRARIES})
 endif()
 
@@ -97,7 +97,7 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/XBotPluginHandler.cpp
                         src/XBotModuleHandler.cpp
                         src/XBotControlModule.cpp
-			src/XBotCommunicationHandler.cpp
+			src/XBotXDDP.cpp
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES})
 
 
@@ -119,8 +119,8 @@ target_include_directories(XCM PUBLIC
 add_executable(DummyMain src/DummyMain.cpp)
 target_link_libraries(DummyMain XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
 
-add_executable(PluginManager src/XBotPluginManager.cpp)
-target_link_libraries(PluginManager XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
+add_executable(CommunicationHandler src/XBotCommunicationHandler.cpp)
+target_link_libraries(CommunicationHandler XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
 
 
 

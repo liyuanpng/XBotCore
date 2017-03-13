@@ -49,11 +49,13 @@ namespace XBot {
     protected:
 
     private:
-
+        
+        bool init_xddp();
+        void run_xddp();
 
         static bool computeAbsolutePath ( const std::string& input_path,
-                                        const std::string& midlle_path,
-                                        std::string& absolute_path ); // TBD do it with UTILS
+                                          const std::string& midlle_path,
+                                          std::string& absolute_path ); // TBD do it with UTILS
 
         YAML::Node _root_cfg;
 

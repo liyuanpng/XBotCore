@@ -28,12 +28,12 @@
 
 namespace XBot {
 
-class RosCommunicationInterface : public CommunicationInterface {
+class CommunicationInterfaceROS : public CommunicationInterface {
 
 public:
 
-    RosCommunicationInterface();
-    RosCommunicationInterface(XBotInterface::Ptr robot);
+    CommunicationInterfaceROS();
+    CommunicationInterfaceROS(XBotInterface::Ptr robot);
 
     virtual void sendRobotState();
     virtual void receiveReference();
@@ -57,4 +57,4 @@ private:
 
 }
 
-#endif
+#endif //__XBOT_COMMUNICATION_INTERFACE_ROS_H__

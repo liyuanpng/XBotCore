@@ -18,11 +18,11 @@
 */
 
 
-#include <XCM/XBotCommunicationInterfaceROS.h>
+#include <XCM/CommunicationInterfaceROS.h>
 
 namespace XBot {
 
-bool RosCommunicationInterface::callback(std_srvs::SetBoolRequest& req,
+bool CommunicationInterfaceROS::callback(std_srvs::SetBoolRequest& req,
                                          std_srvs::SetBoolResponse& res,
                                          const std::string& port_name)
 {
@@ -32,7 +32,7 @@ bool RosCommunicationInterface::callback(std_srvs::SetBoolRequest& req,
 }
 
 
-RosCommunicationInterface::RosCommunicationInterface():
+CommunicationInterfaceROS::CommunicationInterfaceROS():
     CommunicationInterface()
 {
     int argc = 1;
@@ -46,7 +46,7 @@ RosCommunicationInterface::RosCommunicationInterface():
     _nh = std::make_shared<ros::NodeHandle>();
 }
 
-RosCommunicationInterface::RosCommunicationInterface(XBotInterface::Ptr robot):
+CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot):
     CommunicationInterface(robot)
 {
     int argc = 1;
@@ -60,17 +60,17 @@ RosCommunicationInterface::RosCommunicationInterface(XBotInterface::Ptr robot):
     _nh = std::make_shared<ros::NodeHandle>();
 }
 
-void RosCommunicationInterface::sendRobotState()
+void CommunicationInterfaceROS::sendRobotState()
 {
 
 }
 
-void RosCommunicationInterface::receiveReference()
+void CommunicationInterfaceROS::receiveReference()
 {
 
 }
 
-bool RosCommunicationInterface::advertiseSwitch(const std::string& port_name)
+bool CommunicationInterfaceROS::advertiseSwitch(const std::string& port_name)
 {
     if( _services.count(port_name) > 0 ){
         return false;
@@ -78,7 +78,7 @@ bool RosCommunicationInterface::advertiseSwitch(const std::string& port_name)
 
     _services[port_name] = _nh->advertiseService<std_srvs::SetBoolRequest, std_srvs::SetBoolResponse>
                                     (port_name,
-                                     boost::bind(&RosCommunicationInterface::callback,
+                                     boost::bind(&CommunicationInterfaceROS::callback,
                                                  this,
                                                  _1, _2, port_name)
                                      );
@@ -89,7 +89,7 @@ bool RosCommunicationInterface::advertiseSwitch(const std::string& port_name)
     return true;
 }
 
-bool RosCommunicationInterface::receiveFromSwitch(const std::string& port_name, std::string& message)
+bool CommunicationInterfaceROS::receiveFromSwitch(const std::string& port_name, std::string& message)
 {
     ros::spinOnce();
     

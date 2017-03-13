@@ -23,11 +23,11 @@
 #include <csignal>
 
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
-#include <XCM/XBotCommunicationInterfaceROS.h>
+#include <XCM/CommunicationInterfaceROS.h>
 #endif
 
 #ifdef USE_YARP_COMMUNICATION_INTERFACE
-#include <XCM/XBotCommunicationInterfaceYARP.h>
+#include <XCM/CommunicationInterfaceYARP.h>
 #endif
 
 volatile sig_atomic_t running = 1;
@@ -79,8 +79,10 @@ int main(int argc, char ** argv){
     XBot::XBotXDDP::Ptr xddp_handler = std::make_shared<XBot::XBotXDDP>(path_to_config_file);
 //
     XBot::AnyMapPtr anymap = std::make_shared<XBot::AnyMap>();
-    (*anymap)["IXBotJoint"] = boost::any(xddp_handler);
-    (*anymap)["IXBotFT"] = boost::any(xddp_handler);
+    std::shared_ptr<XBot::IXBotJoint> xbot_joint = xddp_handler;
+    std::shared_ptr<XBot::IXBotFT> xbot_ft = xddp_handler;
+    (*anymap)["XBotJoint"] = boost::any(xbot_joint);
+    (*anymap)["XBotFT"] = boost::any(xbot_ft);
 
     auto robot = XBot::RobotInterface::getRobot(path_to_config_file, anymap, "XBotRT");
 
@@ -90,7 +92,7 @@ int main(int argc, char ** argv){
     XBot::CommunicationInterface::Ptr master_communication_ifc;
 
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
-    master_communication_ifc = std::make_shared<XBot::RosCommunicationInterface>(robot); // TBD FROM CONFIG
+    master_communication_ifc = std::make_shared<XBot::CommunicationInterfaceROS>(robot); 
     communication_ifc_vector.push_back( master_communication_ifc );
 #endif
 

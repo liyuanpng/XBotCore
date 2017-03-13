@@ -26,12 +26,12 @@
 
 namespace XBot {
 
-class YarpCommunicationInterface : public CommunicationInterface {
+class CommunicationInterfaceYARP : public CommunicationInterface {
 
 public:
 
-    RosCommunicationInterface();
-    RosCommunicationInterface(XBotInterface::Ptr robot);
+    CommunicationInterfaceYARP();
+    CommunicationInterfaceYARP(XBotInterface::Ptr robot);
 
     virtual void sendRobotState();
     virtual void receiveReference();
@@ -47,4 +47,4 @@ private:
 
 }
 
-#endif
+#endif //__XBOT_COMMUNICATION_INTERFACE_YARP_H__

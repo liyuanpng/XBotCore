@@ -39,7 +39,7 @@ namespace XBot
 
 
 /**
- * @brief XBotCore Communication Handler component: non-RT thread with ready to use
+ * @brief XBotCore XDDP component: non-RT thread with ready to use
  *        non-RT XBotCore Interfaces implementation (using XDDP Pipes)
  * 
  */
@@ -184,7 +184,7 @@ private:
     
     /**
      * @brief mutex
-     * virtual std::vector< float > get_ft();
+     * 
      */
     std::map<int,std::shared_ptr<std::mutex>> mutex;
     

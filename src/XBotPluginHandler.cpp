@@ -19,6 +19,8 @@
 
 #include <XCM/XBotPluginHandler.h>
 
+#include <XBotCore-interfaces/XBotPipes.h>
+
 namespace XBot {
 
 PluginHandler::PluginHandler(RobotInterface::Ptr robot, std::string path_to_cfg):
@@ -54,8 +56,6 @@ bool PluginHandler::load_plugins()
         }
 
     }
-
-
 
     bool success = true;
 
@@ -123,6 +123,18 @@ bool PluginHandler::init_plugins()
 
     return ret;
 }
+
+bool XBot::PluginHandler::init_xddp()
+{
+
+}
+
+
+void XBot::PluginHandler::run_xddp()
+{
+
+}
+
 
 
 void PluginHandler::run(double time)

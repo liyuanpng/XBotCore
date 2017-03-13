@@ -1,11 +1,11 @@
 #include <XCM/XBotModuleHandler.h>
 
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
-#include <XCM/XBotCommunicationInterfaceROS.h>
+#include <XCM/CommunicationInterfaceROS.h>
 #endif
 
 #ifdef USE_YARP_COMMUNICATION_INTERFACE
-#include <XCM/XBotCommunicationInterfaceYARP.h>
+#include <XCM/CommunicationInterfaceYARP.h>
 #endif
 
 namespace XBot {
@@ -26,11 +26,11 @@ ModuleHandler::ModuleHandler(std::string path_to_config_file,
     /* Get a vector of communication interfaces to/from NRT frameworks like ROS, YARP, ... */
 
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
-    _communication_interfaces.push_back( std::make_shared<XBot::RosCommunicationInterface>(robot) );
+    _communication_interfaces.push_back( std::make_shared<XBot::CommunicationInterfaceROS>(robot) );
 #endif
 
 #ifdef USE_YARP_COMMUNICATION_INTERFACE
-    _communication_interfaces.push_back( std::make_shared<XBot::YarpCommunicationInterface>(robot) );
+    _communication_interfaces.push_back( std::make_shared<XBot::CommunicationInterfaceYARP>(robot) );
 #endif
 
     for(auto& comm_ifc : _communication_interfaces){
