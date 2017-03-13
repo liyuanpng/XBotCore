@@ -97,7 +97,7 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/XBotPluginHandler.cpp
                         src/XBotModuleHandler.cpp
                         src/XBotControlModule.cpp
-			src/XBotCommunicationHandler.cpp
+#                         src/XBotCommunicationHandler.cpp
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES})
 
 

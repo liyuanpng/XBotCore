@@ -92,13 +92,14 @@ bool RosCommunicationInterface::advertiseSwitch(const std::string& port_name)
 bool RosCommunicationInterface::receiveFromSwitch(const std::string& port_name, std::string& message)
 {
     ros::spinOnce();
-    
+
     auto it = _msgs.find(port_name);
 
     if( it == _msgs.end() ) return false;
 
     message = it->second;
     if( message != "" ){
+        it->second = "";
         return true;
     }
     else {
