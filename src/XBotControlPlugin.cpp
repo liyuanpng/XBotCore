@@ -41,11 +41,11 @@ bool XBotControlPlugin::init(std::string path_to_config_file,
                              std::shared_ptr< IXBotFT > ft)
 {
     this->name = name;
-    this->joint = joint;
-    this->model = model;
-    this->chain = chain;
-    this->robot = robot;
-    this->ft = ft;
+    this->set_xbotcore_joint(joint);
+    this->set_xbotcore_model(model);
+    this->set_xbotcore_chain(chain);
+    this->set_xbotcore_robot(robot);
+    this->set_xbotcore_ft(ft);
 
     AnyMapPtr any_map = std::make_shared<AnyMap>();
     (*any_map)["XBotJoint"] = boost::any(joint);
