@@ -17,10 +17,14 @@ int main(int argc, char **argv){
     std::vector<std::string> strings_to_send = {"HELLO THERE!", "I AM", "A HARD-REALTIME", "PROCESS", "I AM", "FINE"};
 
 
-    for( int it = 0; it < 100; it++ ){
+    for( int it = 0; it < 1e10; it++ ){
+
+
 
         vec1.setConstant(it*2);
         pub_vec.write(vec1);
+
+        std::cout << "RT looping...publishing "<< vec1.transpose() << std::endl;
 
         pub_str.write(strings_to_send[it%strings_to_send.size()]);
 
@@ -34,7 +38,7 @@ int main(int argc, char **argv){
             std::cout << "RT process: received string " << str.str() << std::endl;
         }
 
-        sleep(1);
+        usleep(100000);
 
 
     }

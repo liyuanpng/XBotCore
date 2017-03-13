@@ -23,6 +23,8 @@ int main(int argc, char **argv){
 
     for( int it = 0; it < 1e10; it++ ){
 
+        std::cout << "NRT looping..." << std::endl;
+
         vec1.setConstant(it);
         pub_vec.write(vec1);
 
@@ -38,7 +40,7 @@ int main(int argc, char **argv){
             std::cout << "NRT process: received string " << str.str() << std::endl;
         }
 
-        usleep(10000);
+        sleep(1);
 
 
     }
