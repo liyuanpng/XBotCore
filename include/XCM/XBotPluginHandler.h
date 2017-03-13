@@ -21,9 +21,10 @@
 #ifndef __XCM_XBOT_PLUGIN_HANDLER_H__
 #define __XCM_XBOT_PLUGIN_HANDLER_H__
 
-#include <XCM/XBotControlPlugin.h>
 #include <XBotCore-interfaces/All.h>
-#include <XBotCore-interfaces/XDomainCommunication.h>
+
+#include <XCM/XBotControlPlugin.h>
+#include <XCM/TimeProvider.h>
 
 #include <SharedLibraryClassFactory.h>
 #include <SharedLibraryClass.h>
@@ -33,14 +34,16 @@ namespace XBot {
     class PluginHandler {
 
     public:
+        
+        typedef std::shared_ptr<PluginHandler> Ptr;
 
-        PluginHandler(RobotInterface::Ptr robot, std::string path_to_cfg);
+        PluginHandler(RobotInterface::Ptr robot, TimeProvider::Ptr time_provider);
 
         bool load_plugins();
 
         bool init_plugins();
 
-        void run(double time);
+        void run();
 
         void close();
 
@@ -57,6 +60,8 @@ namespace XBot {
                                           const std::string& midlle_path,
                                           std::string& absolute_path ); // TBD do it with UTILS
 
+        XBot::TimeProvider::Ptr _time_provider;
+        
         YAML::Node _root_cfg;
 
         bool _close_was_called;

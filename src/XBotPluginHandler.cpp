@@ -23,12 +23,12 @@
 
 namespace XBot {
 
-PluginHandler::PluginHandler(RobotInterface::Ptr robot, std::string path_to_cfg):
+PluginHandler::PluginHandler(RobotInterface::Ptr robot,  TimeProvider::Ptr time_provider):
     _robot(robot),
-    _path_to_cfg(path_to_cfg),
+    _time_provider(time_provider),
     _close_was_called(false)
 {
-
+    _path_to_cfg = _robot->getPathToConfig();
 }
 
 
@@ -137,7 +137,7 @@ void XBot::PluginHandler::run_xddp()
 
 
 
-void PluginHandler::run(double time)
+void PluginHandler::run()
 {
 
     XBot::Command cmd;
@@ -146,7 +146,7 @@ void PluginHandler::run(double time)
 
         const auto& plugin = _rtplugin_vector[i];
 
-        _time[i] = time;
+        _time[i] = _time_provider->get_time();
 
         if(_first_loop[i]){
             _period[i] = 0;

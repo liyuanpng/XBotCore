@@ -36,7 +36,9 @@ int main(int argc, char **argv){
 
     signal(SIGINT, sigint_handler);
 
-    PluginHandler plugin_handler(robot, path_to_cfg);
+    
+    auto time_provider = std::make_shared<SimpleTimeProvider>();
+    PluginHandler plugin_handler(robot, time_provider);
 
     plugin_handler.load_plugins();
     plugin_handler.init_plugins();
@@ -44,12 +46,14 @@ int main(int argc, char **argv){
     double time = 0;
 
     while(g_loop_ok){
+        
+        time_provider->set_time(time);
 
         if( int(time*1000) % 1000 == 0 ){
             std::cout << "Time: " << int(time) << std::endl;
         }
 
-        plugin_handler.run(time);
+        plugin_handler.run();
         time += 0.001;
 
         usleep(1000);

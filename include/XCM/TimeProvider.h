@@ -17,6 +17,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
+#ifndef __XBOT_TIME_PROVIDER_H__
+#define __XBOT_TIME_PROVIDER_H__
+
 #include <memory>
 
 namespace XBot {
@@ -65,3 +68,5 @@ private:
 
 
 }
+
+#endif // __XBOT_TIME_PROVIDER_H__
