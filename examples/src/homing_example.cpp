@@ -51,7 +51,7 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file,
     _l_hand_pos = _l_hand_ref = 0.0;
     _close_hand = true;
 
-    _robot->initLog("/tmp/homing_example_log", 100000);
+//     _robot->initLog("/tmp/homing_example_log", 100000);
 
     return true;
 
@@ -76,7 +76,7 @@ void HomingExample::control_loop(double time, double period)
     
 
     _robot->sense();
-    _robot->log(time);
+//     _robot->log(time);
 
    // Go to homing
     if( (time - _first_loop_time) <= _homing_time ){
@@ -118,7 +118,7 @@ void HomingExample::control_loop(double time, double period)
 
 bool HomingExample::close()
 {
-    _robot->flushLog();
+//     _robot->flushLog();
     return true;
 }
 
