@@ -68,7 +68,6 @@ include(MacroOptionalBuild)
 find_package(YCM REQUIRED)
 
 find_package(XBotInterface REQUIRED)
-find_package(XBotLogger REQUIRED)
 find_package(XBotCore-interfaces REQUIRED)
 
 find_package(catkin QUIET COMPONENTS roscpp sensor_msgs std_srvs)
@@ -117,7 +116,6 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
 
 
 target_link_libraries(XCM PUBLIC ${XBotInterface_LIBRARIES}
-                                 ${XBotLogger_LIBRARIES}
                                  ${XBotCore-interfaces_LIBRARIES}
                                  ${COMMUNICATION_INTERFACE_LIBRARIES}
                                  )
