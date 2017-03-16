@@ -25,6 +25,7 @@
 
 #include <XCM/XBotControlPlugin.h>
 #include <XCM/TimeProvider.h>
+#include <XCM/XBotESCUtils.h>
 
 #include <SharedLibraryClassFactory.h>
 #include <SharedLibraryClass.h>
@@ -55,6 +56,10 @@ namespace XBot {
         
         bool init_xddp();
         void run_xddp();
+        
+        void fill_robot_state();
+        
+        void run_communication_handler();
 
         static bool computeAbsolutePath ( const std::string& input_path,
                                           const std::string& midlle_path,
@@ -76,6 +81,13 @@ namespace XBot {
         std::vector<bool> _first_loop;
 
         std::vector<double> _last_time, _time, _period, _elapsed_time;
+        
+        std::map<int, XBot::PublisherRT<XBot::RobotState>> _pub_map;
+        std::map<int, XBot::RobotState> _robot_state_map;
+        
+        XBot::ESCUtils _esc_utils;
+        
+        XBot::MatLogger::Ptr _logger;
 
         RobotInterface::Ptr _robot;
         std::string _path_to_cfg;

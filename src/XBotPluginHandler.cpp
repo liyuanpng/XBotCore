@@ -21,15 +21,66 @@
 
 #include <XBotCore-interfaces/XBotPipes.h>
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#include <unistd.h>
+#include <spawn.h>
+#include <sys/wait.h>
+
+extern char **environ;
+
 namespace XBot {
 
 PluginHandler::PluginHandler(RobotInterface::Ptr robot,  TimeProvider::Ptr time_provider):
     _robot(robot),
     _time_provider(time_provider),
+    _esc_utils(robot),
     _close_was_called(false)
 {
     _path_to_cfg = _robot->getPathToConfig();
+    _logger = XBot::MatLogger::getLogger("/tmp/XBotCore_log");
+    _robot->initLog(_logger, 500000);
 }
+
+void XBot::PluginHandler::run_communication_handler()
+{
+    // NOTE posix_spawn example
+    pid_t pid;
+    std::string communication_handler_path;
+    computeAbsolutePath("CommunicationHandler", "/build/external/XCM/", communication_handler_path);
+    
+    char *argv[] = { const_cast<char *>(communication_handler_path.c_str()), const_cast<char *>(_path_to_cfg.c_str()), NULL };
+//     char *envp[] = { const_cast<char *>((std::string("ROBOTOLOGY_ROOT=") + std::string(std::getenv("ROBOTOLOGY_ROOT"))).c_str()),
+//                      const_cast<char *>((std::string("ROS_MASTER_URI=") + std::string(std::getenv("ROS_MASTER_URI"))).c_str()),
+//                      NULL };
+
+    int status = posix_spawn(&pid, communication_handler_path.c_str(), NULL, NULL, argv, environ);
+    if (status == 0) {
+        printf("Child pid: %i\n", pid);
+//         if (waitpid(pid, &status, 0) != -1) {
+//             printf("Child exited with status %i\n", status);
+//         } else {
+//             perror("waitpid");
+//         }
+    } else {
+        printf("posix_spawn: %s\n", strerror(status));
+    }
+    
+        
+    
+        // NOTE exec example
+//     std::string communication_handler_path;
+//     computeAbsolutePath("CommunicationHandler", "/build/external/XCM/", communication_handler_path);
+//     
+//     char *argv[] = { const_cast<char *>(communication_handler_path.c_str()), const_cast<char *>(_path_to_cfg.c_str()), NULL };
+//     char *envp[] = { NULL };
+//     
+//     execve(communication_handler_path.c_str(), argv, envp);
+
+}
+
 
 
 bool PluginHandler::load_plugins()
@@ -52,6 +103,11 @@ bool PluginHandler::load_plugins()
 
             for(const auto& plugin : _root_cfg["XBotRTPlugins"]["plugins"]){
                 _rtplugin_names.push_back(plugin.as<std::string>());
+            }
+            
+            std::string communication_plugin_name = "XBotCommunicationPlugin";
+            if(std::find(_rtplugin_names.begin(), _rtplugin_names.end(), communication_plugin_name) == _rtplugin_names.end() ) {
+                _rtplugin_names.push_back(communication_plugin_name);
             }
         }
 
@@ -98,6 +154,8 @@ bool PluginHandler::load_plugins()
 
 bool PluginHandler::init_plugins()
 {
+    init_xddp();
+    
     XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
     _plugin_init_success.resize(_rtplugin_vector.size(), false);
     _plugin_command.resize(_rtplugin_vector.size());
@@ -120,26 +178,51 @@ bool PluginHandler::init_plugins()
         _plugin_init_success[i] = true;
         _plugin_command[i].init("xbot_rt_plugin_"+_rtplugin_names[i]+"_switch");
     }
+    
+    // NOTE running CommunicationHandler process from PluginHandler
+    // TBD enable it from a bool in config file
+// // // //     run_communication_handler();
 
     return ret;
 }
 
 bool XBot::PluginHandler::init_xddp()
 {
-
+    for( int id : _robot->getEnabledJointId() ) {
+        XBot::PublisherRT<XBot::RobotState> pub(std::string("Motor_id_") + std::to_string(id));
+        _pub_map[id] = pub;
+    }
 }
 
 
 void XBot::PluginHandler::run_xddp()
 {
-
+    for( auto& pub : _pub_map ) {
+        pub.second.write(_robot_state_map.at(pub.first));
+    }
 }
 
+void XBot::PluginHandler::fill_robot_state()
+{
+    _esc_utils.setRobotStateFromRobotInterface(_robot_state_map);
+}
 
 
 void PluginHandler::run()
 {
 
+    // update robot state
+    _robot->sense();
+
+    // fill robot state
+    fill_robot_state();
+    
+    // log all robot state
+    _robot->log(_logger, _time_provider->get_time());
+    
+    // broadcast robot state over pipes
+    run_xddp();
+    
     XBot::Command cmd;
 
     for( int i = 0; i < _rtplugin_vector.size(); i++){
@@ -158,8 +241,6 @@ void PluginHandler::run()
 
         /* If init was unsuccessful, do not run */
         if(!_plugin_init_success[i]) continue;
-
-
 
         /* STATE STOPPED */
 
@@ -207,6 +288,8 @@ void PluginHandler::close()
     for( const auto& plugin : _rtplugin_vector ){
         (*plugin)->close();
     }
+    
+    _logger->flush();
 }
 
 bool PluginHandler::computeAbsolutePath(const std::string& input_path,
