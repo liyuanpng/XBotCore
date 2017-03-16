@@ -103,30 +103,30 @@ inline int Thread_hook::is_non_periodic() {
 
 inline void * Thread_hook::nrt_th_helper ( void *kls ) {
 
-    try {
+//     try {
         return nrt_thread ( ( Thread_hook_Ptr ) kls );
-    } catch ( std::exception &e ) {
-        DPRINTF ( "In function %s catch ::%s::\n\tThread %s quit\n",
-                  __FUNCTION__, e.what(), ( ( Thread_hook_Ptr ) kls )->name );
-        return 0;
-    }
+//     } catch ( std::exception &e ) {
+//         DPRINTF ( "In function %s catch ::%s::\n\tThread %s quit\n",
+//                   __FUNCTION__, e.what(), ( ( Thread_hook_Ptr ) kls )->name );
+//         return 0;
+//     }
 
 }
 
 inline void * Thread_hook::rt_th_helper ( void *kls )  {
 
-    try {
+//     try {
 
         if ( ( ( Thread_hook_Ptr ) kls )->is_non_periodic() ) {
             return rt_non_periodic_thread ( ( Thread_hook_Ptr ) kls );
         }
         return rt_periodic_thread ( ( Thread_hook_Ptr ) kls );
 
-    } catch ( std::exception &e ) {
-        DPRINTF ( "In function %s catch ::%s::\n\tThread %s quit\n",
-                  __FUNCTION__, e.what(), ( ( Thread_hook_Ptr ) kls )->name );
-        return 0;
-    }
+//     } catch ( std::exception &e ) {
+//         DPRINTF ( "In function %s catch ::%s::\n\tThread %s quit\n",
+//                   __FUNCTION__, e.what(), ( ( Thread_hook_Ptr ) kls )->name );
+//         return 0;
+//     }
 }
 
 
