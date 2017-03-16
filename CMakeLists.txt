@@ -138,7 +138,7 @@ target_link_libraries(DummyMain XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
 add_executable(CommunicationHandler src/XBotCommunicationMain.cpp)
 target_link_libraries(CommunicationHandler XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
 
-
+add_subdirectory(src/XBotPlugin)
 
 ########################################################################
 
