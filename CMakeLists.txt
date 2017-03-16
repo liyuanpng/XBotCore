@@ -28,15 +28,6 @@ endif(COMMAND cmake_policy)
 include(ExternalProject)
 project(XCM)
 
-# Add cmake dir and include custom macros
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-
-set(ENABLE_XENO CACHE BOOL "ON")
-if ( ${ENABLE_XENO} )
-   find_package(Xenomai)
-   find_package(RTnet)
-endif()
-
 # C++ 11
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
@@ -48,6 +39,27 @@ elseif(COMPILER_SUPPORTS_CXX0X)
 else()
     message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
+
+# Add cmake dir and include custom macros
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
+set(ENABLE_XENO CACHE BOOL "ON")
+if ( ${ENABLE_XENO} )
+   find_package(Xenomai)
+   find_package(RTnet)
+endif()
+
+if ( Xenomai_FOUND )
+    set(RT_NRT_SRC
+        src/XBotRT_thread.cpp
+        src/XBotNRT_thread.cpp
+        )
+else()
+    set(RT_NRT_SRC
+        src/XBotNRT_thread.cpp
+        )
+endif()
+
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 include(MacroOptionalBuild)
@@ -97,8 +109,11 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/XBotPluginHandler.cpp
                         src/XBotModuleHandler.cpp
                         src/XBotControlModule.cpp
+                        src/XBotCommunicationHandler.cpp
 			src/XBotXDDP.cpp
-                        ${COMMUNICATION_INTERFACE_SOURCE_FILES})
+                        ${COMMUNICATION_INTERFACE_SOURCE_FILES}
+                        ${RT_NRT_SRC}
+                        )
 
 
 target_link_libraries(XCM PUBLIC ${XBotInterface_LIBRARIES}
@@ -114,12 +129,14 @@ target_include_directories(XCM PUBLIC
                             )
 
 
-
+if ( Xenomai_FOUND )
+    set_xeno_flags(XCM)
+endif()
 
 add_executable(DummyMain src/DummyMain.cpp)
 target_link_libraries(DummyMain XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
 
-add_executable(CommunicationHandler src/XBotCommunicationHandler.cpp)
+add_executable(CommunicationHandler src/XBotCommunicationMain.cpp)
 target_link_libraries(CommunicationHandler XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
 
 
