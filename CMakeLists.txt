@@ -110,6 +110,7 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/XBotControlModule.cpp
                         src/XBotCommunicationHandler.cpp
 			src/XBotXDDP.cpp
+			src/XBotESCUtils.cpp
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES}
                         ${RT_NRT_SRC}
                         )
