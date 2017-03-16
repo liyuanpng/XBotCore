@@ -22,7 +22,6 @@
 #define __X_BOT_XDDP_H__
 
 #include <XBotCore-interfaces/XBotESC.h>
-#include <iit/advr/thread_util.h>
 
 #include <mutex>
 #include <cstring>
@@ -40,12 +39,10 @@ namespace XBot
 
 
 /**
- * @brief XBotCore XDDP component: non-RT thread with ready to use
- *        non-RT XBotCore Interfaces implementation (using XDDP Pipes)
+ * @brief XBotCore XDDP component: ready to use non-RT XBotCore Interfaces implementation (using XDDP Pipes)
  * 
  */
-class XBot::XBotXDDP :  public Thread_hook,
-                        public XBot::IXBotJoint,
+class XBot::XBotXDDP :  public XBot::IXBotJoint,
                         public XBot::IXBotFT
                         
 {
@@ -60,8 +57,9 @@ public:
     std::map<std::string,int> get_ft_sensors_map();
     XBot::XBotCoreModel get_robot_model();
     
-    virtual void th_init(void* );
-    virtual void th_loop(void* );
+    bool init();
+    
+    void update();
     
     // NOTE IXBotJoint getters
     virtual bool get_link_pos(int joint_id, float& link_pos) final;
@@ -160,7 +158,7 @@ private:
     std::map<int,XBot::SubscriberNRT<XBot::RobotState>> fd_read;
     
     /**
-     * @brief fd writing to pipes: we writhe to the robot with XBotCore XDDP pipe
+     * @brief fd writing to pipes: we write to the robot with XBotCore XDDP pipe
      * 
      */
     std::map<int,XBot::PublisherNRT<XBot::RobotState::pdo_tx>> fd_write;
@@ -169,7 +167,7 @@ private:
      * @brief fd reading from pipes: we read the robot F-T XBotCore XDDP pipe
      * 
      */
-    std::map<int,XBot::SubscriberNRT<XBot::RobotFT>> fd_ft_read;
+    std::map<int,XBot::SubscriberNRT<XBot::RobotFT::pdo_rx>> fd_ft_read;
     
     /**
      * @brief fd reading from pipes: we read the robot SDO XBotCore XDDP pipe
@@ -203,6 +201,11 @@ private:
      */
     std::map<int, std::shared_ptr<XBot::sdo_info>> sdo_info;
 
+    /**
+     * @brief RobotState struct to read
+     * 
+     */
+    XBot::RobotState _actual_pdo_motor;
 
     
 
