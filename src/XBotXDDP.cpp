@@ -170,7 +170,7 @@ bool XBot::XBotXDDP::get_ctrl_status_cmd(int joint_id, uint16_t& ctrl_status_cmd
 
 
 
-bool XBot::XBotXDDP::get_link_pos(int joint_id, float& link_pos)
+bool XBot::XBotXDDP::get_link_pos(int joint_id, double& link_pos)
 {
     mutex.at(joint_id)->lock();
     link_pos = pdo_motor.at(joint_id)->RobotStateRX.link_pos;
@@ -178,7 +178,7 @@ bool XBot::XBotXDDP::get_link_pos(int joint_id, float& link_pos)
     return true;
 }
 
-bool XBot::XBotXDDP::get_motor_pos(int joint_id, float& motor_pos)
+bool XBot::XBotXDDP::get_motor_pos(int joint_id, double& motor_pos)
 {
     mutex.at(joint_id)->lock();
     motor_pos = pdo_motor.at(joint_id)->RobotStateRX.motor_pos;
@@ -186,7 +186,7 @@ bool XBot::XBotXDDP::get_motor_pos(int joint_id, float& motor_pos)
     return true;
 }
 
-bool XBot::XBotXDDP::get_link_vel(int joint_id, int16_t& link_vel)
+bool XBot::XBotXDDP::get_link_vel(int joint_id, double& link_vel)
 {
     mutex.at(joint_id)->lock();
     link_vel = pdo_motor.at(joint_id)->RobotStateRX.link_vel;
@@ -194,7 +194,7 @@ bool XBot::XBotXDDP::get_link_vel(int joint_id, int16_t& link_vel)
     return true;
 }
 
-bool XBot::XBotXDDP::get_motor_vel(int joint_id, int16_t& motor_vel)
+bool XBot::XBotXDDP::get_motor_vel(int joint_id, double& motor_vel)
 {
     mutex.at(joint_id)->lock();
     motor_vel = pdo_motor.at(joint_id)->RobotStateRX.motor_vel;
@@ -202,7 +202,7 @@ bool XBot::XBotXDDP::get_motor_vel(int joint_id, int16_t& motor_vel)
     return true;
 }
 
-bool XBot::XBotXDDP::get_torque(int joint_id, float& torque)
+bool XBot::XBotXDDP::get_torque(int joint_id, double& torque)
 {
     mutex.at(joint_id)->lock();
     torque = pdo_motor.at(joint_id)->RobotStateRX.torque;
@@ -210,7 +210,7 @@ bool XBot::XBotXDDP::get_torque(int joint_id, float& torque)
     return true;
 }
 
-bool XBot::XBotXDDP::get_temperature(int joint_id, uint16_t& temperature)
+bool XBot::XBotXDDP::get_temperature(int joint_id, double& temperature)
 {
     mutex.at(joint_id)->lock();
     temperature = pdo_motor.at(joint_id)->RobotStateRX.temperature;
@@ -218,7 +218,7 @@ bool XBot::XBotXDDP::get_temperature(int joint_id, uint16_t& temperature)
     return true;
 }
 
-bool XBot::XBotXDDP::get_fault(int joint_id, uint16_t& fault)
+bool XBot::XBotXDDP::get_fault(int joint_id, double& fault)
 {
     mutex.at(joint_id)->lock();
     fault = pdo_motor.at(joint_id)->RobotStateRX.fault;
@@ -226,7 +226,7 @@ bool XBot::XBotXDDP::get_fault(int joint_id, uint16_t& fault)
     return true;
 }
 
-bool XBot::XBotXDDP::get_rtt(int joint_id, uint16_t& rtt)
+bool XBot::XBotXDDP::get_rtt(int joint_id, double& rtt)
 {
     mutex.at(joint_id)->lock();
     rtt = pdo_motor.at(joint_id)->RobotStateRX.rtt;
@@ -234,7 +234,7 @@ bool XBot::XBotXDDP::get_rtt(int joint_id, uint16_t& rtt)
     return true;
 }
 
-bool XBot::XBotXDDP::get_op_idx_ack(int joint_id, uint16_t& op_idx_ack)
+bool XBot::XBotXDDP::get_op_idx_ack(int joint_id, double& op_idx_ack)
 {
     mutex.at(joint_id)->lock();
     op_idx_ack = pdo_motor.at(joint_id)->RobotStateRX.op_idx_ack;
@@ -242,7 +242,7 @@ bool XBot::XBotXDDP::get_op_idx_ack(int joint_id, uint16_t& op_idx_ack)
     return true;
 }
 
-bool XBot::XBotXDDP::get_aux(int joint_id, float& aux)
+bool XBot::XBotXDDP::get_aux(int joint_id, double& aux)
 {
     mutex.at(joint_id)->lock();
     aux = pdo_motor.at(joint_id)->RobotStateRX.aux;
@@ -250,7 +250,7 @@ bool XBot::XBotXDDP::get_aux(int joint_id, float& aux)
     return true;
 }
 
-bool XBot::XBotXDDP::get_gains(int joint_id, std::vector< uint16_t >& gain_vector)
+bool XBot::XBotXDDP::get_gains(int joint_id, std::vector< double >& gain_vector)
 {
     mutex.at(joint_id)->lock();
     // resize the gain vector
@@ -265,7 +265,7 @@ bool XBot::XBotXDDP::get_gains(int joint_id, std::vector< uint16_t >& gain_vecto
 }
 
 
-bool XBot::XBotXDDP::set_pos_ref(int joint_id, const float& pos_ref)
+bool XBot::XBotXDDP::set_pos_ref(int joint_id, const double& pos_ref)
 {
     mutex.at(joint_id)->lock();
     pdo_motor.at(joint_id)->RobotStateTX.pos_ref = pos_ref;
@@ -274,7 +274,7 @@ bool XBot::XBotXDDP::set_pos_ref(int joint_id, const float& pos_ref)
     return true;
 }
 
-bool XBot::XBotXDDP::set_vel_ref(int joint_id, const int16_t& vel_ref)
+bool XBot::XBotXDDP::set_vel_ref(int joint_id, const double& vel_ref)
 {
     mutex.at(joint_id)->lock();
     pdo_motor.at(joint_id)->RobotStateTX.vel_ref = vel_ref;
@@ -282,7 +282,7 @@ bool XBot::XBotXDDP::set_vel_ref(int joint_id, const int16_t& vel_ref)
     return true;
 }
 
-bool XBot::XBotXDDP::set_tor_ref(int joint_id, const int16_t& tor_ref)
+bool XBot::XBotXDDP::set_tor_ref(int joint_id, const double& tor_ref)
 {
     mutex.at(joint_id)->lock();
     pdo_motor.at(joint_id)->RobotStateTX.tor_ref = tor_ref;
@@ -290,7 +290,7 @@ bool XBot::XBotXDDP::set_tor_ref(int joint_id, const int16_t& tor_ref)
     return true;
 }
 
-bool XBot::XBotXDDP::set_gains(int joint_id, const std::vector< uint16_t >& gains)
+bool XBot::XBotXDDP::set_gains(int joint_id, const std::vector< double >& gains)
 {
     mutex.at(joint_id)->lock();
     if(gains.size() == 5) {
@@ -304,7 +304,7 @@ bool XBot::XBotXDDP::set_gains(int joint_id, const std::vector< uint16_t >& gain
     return true;
 }
 
-bool XBot::XBotXDDP::set_fault_ack(int joint_id, const int16_t& fault_ack)
+bool XBot::XBotXDDP::set_fault_ack(int joint_id, const double& fault_ack)
 {
     mutex.at(joint_id)->lock();
     pdo_motor.at(joint_id)->RobotStateTX.fault_ack = fault_ack;
@@ -312,7 +312,7 @@ bool XBot::XBotXDDP::set_fault_ack(int joint_id, const int16_t& fault_ack)
     return true;
 }
 
-bool XBot::XBotXDDP::set_ts(int joint_id, const uint16_t& ts)
+bool XBot::XBotXDDP::set_ts(int joint_id, const double& ts)
 {
     mutex.at(joint_id)->lock();
     pdo_motor.at(joint_id)->RobotStateTX.ts = ts;
@@ -320,7 +320,7 @@ bool XBot::XBotXDDP::set_ts(int joint_id, const uint16_t& ts)
     return true;
 }
 
-bool XBot::XBotXDDP::set_op_idx_aux(int joint_id, const uint16_t& op_idx_aux)
+bool XBot::XBotXDDP::set_op_idx_aux(int joint_id, const double& op_idx_aux)
 {
     mutex.at(joint_id)->lock();
     pdo_motor.at(joint_id)->RobotStateTX.op_idx_aux = op_idx_aux;
@@ -328,7 +328,7 @@ bool XBot::XBotXDDP::set_op_idx_aux(int joint_id, const uint16_t& op_idx_aux)
     return true;
 }
 
-bool XBot::XBotXDDP::set_aux(int joint_id, const float& aux)
+bool XBot::XBotXDDP::set_aux(int joint_id, const double& aux)
 {
     mutex.at(joint_id)->lock();
     pdo_motor.at(joint_id)->RobotStateTX.aux = aux;
@@ -336,7 +336,7 @@ bool XBot::XBotXDDP::set_aux(int joint_id, const float& aux)
     return true;
 }
 
-bool XBot::XBotXDDP::get_ft(int ft_id, std::vector< float >& ft, int channels)
+bool XBot::XBotXDDP::get_ft(int ft_id, std::vector< double >& ft, int channels)
 {
     mutex.at(ft_id)->lock();
     
@@ -351,7 +351,7 @@ bool XBot::XBotXDDP::get_ft(int ft_id, std::vector< float >& ft, int channels)
     return true;  
 }
 
-bool XBot::XBotXDDP::get_ft_fault(int ft_id, uint16_t& fault)
+bool XBot::XBotXDDP::get_ft_fault(int ft_id, double& fault)
 {
     mutex.at(ft_id)->lock();
     
@@ -365,7 +365,7 @@ bool XBot::XBotXDDP::get_ft_fault(int ft_id, uint16_t& fault)
     return true;  
 }
 
-bool XBot::XBotXDDP::get_ft_rtt(int ft_id, uint16_t& rtt)
+bool XBot::XBotXDDP::get_ft_rtt(int ft_id, double& rtt)
 {
     mutex.at(ft_id)->lock();
     
