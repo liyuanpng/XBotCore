@@ -38,6 +38,8 @@ bool XBot::CommandAdvr::service_callback(XCM::advr_controller_joint_namesRequest
 bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::GenericControlMessage::Type type)
 {
 
+    std::cout << "Initializing CommandAdvr message interface" << std::endl;
+
     YAML::Node root_cfg = YAML::LoadFile(path_to_config_file);
 
     // TBD check if they exist

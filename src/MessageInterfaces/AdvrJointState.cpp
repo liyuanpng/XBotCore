@@ -31,7 +31,7 @@ XBot::AdvrJointState::AdvrJointState():
 bool XBot::AdvrJointState::init(const std::string& path_to_config_file, GenericJointStateMessage::Type type)
 {
 
-    std::cout << "Initializing JointState message interface!" << std::endl;
+    std::cout << "Initializing AdvrJointState message interface!" << std::endl;
 
     YAML::Node root_cfg = YAML::LoadFile(path_to_config_file);
 
@@ -180,9 +180,6 @@ double& XBot::AdvrJointState::motorVelocity(int index)
 
 void XBot::AdvrJointState::publish()
 {
-    std::cout << __PRETTY_FUNCTION__ << " ";
-    for( double q : _msg.link_position ) std::cout << q << " ";
-    std::cout << std::endl;
     _pub.publish(_msg);
 }
 
