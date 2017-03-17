@@ -96,7 +96,7 @@ void XBot::CommunicationHandler::th_init(void*)
     // set thread period - not periodic
     task_period_t t;
     memset(&t, 0, sizeof(t));
-    t.period = {0,1};
+    t.period = {0,3000};
     period.task_time = t.task_time;
     period.period = t.period;
     // set scheduler policy
@@ -141,6 +141,7 @@ void XBot::CommunicationHandler::th_loop(void*)
 
     /* Send received commands to the RT layer */
     _robot->move();
+
 }
 
 XBot::CommunicationHandler::~CommunicationHandler()
