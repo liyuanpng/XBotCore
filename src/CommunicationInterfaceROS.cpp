@@ -94,6 +94,7 @@ void CommunicationInterfaceROS::load_ros_message_interfaces() {
     _receive_commands_ok = _controlmsg_instance->init(_path_to_cfg, GenericControlMessage::Type::Rx);
     if(_receive_commands_ok){
         std::cout << "Receive commands from ROS ok!" << std::endl;
+        _receive_commands_ok = true;
     }
     // save pointer to the control message
     _control_message = &_controlmsg_instance.getContent();
@@ -179,6 +180,20 @@ void CommunicationInterfaceROS::sendRobotState()
     for( int id : _robot->getEnabledJointId() ){
         int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
         _jointstate_message->temperature(joint_state_msg_idx) = _joint_id_map.at(id);
+    }
+
+     _robot->getStiffness(_joint_id_map);
+
+    for( int id : _robot->getEnabledJointId() ){
+        int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
+        _jointstate_message->stiffness(joint_state_msg_idx) = _joint_id_map.at(id);
+    }
+
+     _robot->getDamping(_joint_id_map);
+
+    for( int id : _robot->getEnabledJointId() ){
+        int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
+        _jointstate_message->damping(joint_state_msg_idx) = _joint_id_map.at(id);
     }
 
     _jointstate_message->publish();
