@@ -70,14 +70,40 @@ find_package(YCM REQUIRED)
 find_package(XBotInterface REQUIRED)
 find_package(XBotCore-interfaces REQUIRED)
 
-find_package(catkin QUIET COMPONENTS roscpp sensor_msgs std_srvs)
+find_package(catkin QUIET COMPONENTS roscpp sensor_msgs std_srvs message_generation)
 # find_package(YARP QUIET)
 find_package(kdl_parser REQUIRED)
 
 
 option(BUILD_TESTS "Compile XCM tests" FALSE)
 
+if( ${catkin_FOUND} )
 
+    add_message_files(
+    DIRECTORY msg
+    FILES
+    JointStateAdvr.msg
+    CommandAdvr.msg
+    )
+
+    add_service_files(
+    DIRECTORY srv
+    FILES
+    advr_controller_joint_names.srv
+    )
+
+    generate_messages(
+    DEPENDENCIES
+    std_msgs
+    )
+
+    add_library(AdvrCommandMessage SHARED src/MessageInterfaces/AdvrCommandMessage.cpp)
+    target_link_libraries(AdvrCommandMessage ${catkin_LIBRARIES} ${XBotInterface_LIBRARIES})
+
+    add_library(AdvrJointStateMessage SHARED src/MessageInterfaces/AdvrJointState.cpp)
+    target_link_libraries(AdvrJointStateMessage ${catkin_LIBRARIES} ${XBotInterface_LIBRARIES})
+
+endif()
 
 include_directories(include ${XBotInterface_INCLUDE_DIRS}
                             ${XBotCore-interfaces_INCLUDE_DIRS}
@@ -103,14 +129,16 @@ if(${YARP_FOUND})
     set(COMMUNICATION_INTERFACE_LIBRARIES ${COMMUNICATION_INTERFACE_LIBRARIES} ${YARP_LIBRARIES})
 endif()
 
+message(${COMMUNICATION_INTERFACE_SOURCE_FILES})
+
 add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/XBotControlPlugin.cpp
                         src/XBotPluginHandler.cpp
                         src/XBotModuleHandler.cpp
                         src/XBotControlModule.cpp
                         src/XBotCommunicationHandler.cpp
-			src/XBotXDDP.cpp
-			src/XBotESCUtils.cpp
+                        src/XBotXDDP.cpp
+                        src/XBotESCUtils.cpp
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES}
                         ${RT_NRT_SRC}
                         )
@@ -133,7 +161,7 @@ if ( Xenomai_FOUND )
 endif()
 
 add_executable(DummyMain src/DummyMain.cpp)
-target_link_libraries(DummyMain XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
+target_link_libraries(DummyMain XCM)
 
 add_executable(CommunicationHandler src/XBotCommunicationMain.cpp)
 target_link_libraries(CommunicationHandler XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
@@ -182,6 +210,94 @@ install_basic_package_files(XCM VARS_PREFIX ${VARS_PREFIX}
                                     TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
                                     NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 
+if( ${catkin_FOUND} )
+########################################################################
+
+set(VARS_PREFIX "AdvrCommandMessage")
+
+set(AdvrCommandMessage_MAJOR_VERSION 0)
+set(AdvrCommandMessage_MINOR_VERSION 1)
+set(AdvrCommandMessage_PATCH_VERSION 0)
+set(AdvrCommandMessage_VERSION ${AdvrCommandMessage_MAJOR_VERSION}.${AdvrCommandMessage_MINOR_VERSION}.${AdvrCommandMessage_PATCH_VERSION})
+
+find_package(YCM REQUIRED)
+include(YCMDefaultDirs)
+ycm_default_dirs(${VARS_PREFIX})
+
+target_include_directories(AdvrCommandMessage PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
+                                                "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
+
+set_target_properties(AdvrCommandMessage PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
+                                               SOVERSION ${${VARS_PREFIX}_VERSION})
+
+install(DIRECTORY include/
+        DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"
+        FILES_MATCHING PATTERN "*.h*")
+
+install(TARGETS AdvrCommandMessage
+        EXPORT AdvrCommandMessage
+        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
+        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
+        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
+
+
+
+#enabling it will add all AdvrCommandMessage dependencies as dependencies for third party users
+set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS AdvrCommandMessage)
+
+
+include(InstallBasicPackageFiles)
+install_basic_package_files(AdvrCommandMessage VARS_PREFIX ${VARS_PREFIX}
+                                    VERSION ${${VARS_PREFIX}_VERSION}
+                                    COMPATIBILITY SameMajorVersion
+                                    TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
+                                    NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+
+########################################################################
+
+set(VARS_PREFIX "AdvrJointStateMessage")
+
+set(AdvrJointStateMessage_MAJOR_VERSION 0)
+set(AdvrJointStateMessage_MINOR_VERSION 1)
+set(AdvrJointStateMessage_PATCH_VERSION 0)
+set(AdvrJointStateMessage_VERSION ${AdvrJointStateMessage_MAJOR_VERSION}.${AdvrJointStateMessage_MINOR_VERSION}.${AdvrJointStateMessage_PATCH_VERSION})
+
+find_package(YCM REQUIRED)
+include(YCMDefaultDirs)
+ycm_default_dirs(${VARS_PREFIX})
+
+target_include_directories(AdvrJointStateMessage PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
+                                                "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
+
+set_target_properties(AdvrJointStateMessage PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
+                                               SOVERSION ${${VARS_PREFIX}_VERSION})
+
+install(DIRECTORY include/
+        DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"
+        FILES_MATCHING PATTERN "*.h*")
+
+install(TARGETS AdvrJointStateMessage
+        EXPORT AdvrJointStateMessage
+        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
+        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
+        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
+
+
+
+#enabling it will add all AdvrJointStateMessage dependencies as dependencies for third party users
+set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS AdvrJointStateMessage)
+
+
+include(InstallBasicPackageFiles)
+install_basic_package_files(AdvrJointStateMessage VARS_PREFIX ${VARS_PREFIX}
+                                    VERSION ${${VARS_PREFIX}_VERSION}
+                                    COMPATIBILITY SameMajorVersion
+                                    TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
+                                    NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+
+endif( ${catkin_FOUND} )
+
+
 include(AddUninstallTarget)
 
 # doc
@@ -197,3 +313,4 @@ if(BUILD_TESTS)
   add_custom_target(test_verbose ${CMAKE_CTEST_COMMAND} -V)
   add_subdirectory(tests)
 endif()
+
