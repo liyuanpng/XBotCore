@@ -22,7 +22,7 @@
 
 XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config) : _path_to_config(path_to_config)
 {
-    
+
 }
 
 void XBot::CommunicationHandler::th_init(void*)
@@ -45,7 +45,7 @@ void XBot::CommunicationHandler::th_init(void*)
             for(const auto& plugin : root_cfg["XBotRTPlugins"]["plugins"]){
                 _plugin_names.push_back(plugin.as<std::string>());
             }
-            
+
             std::string communication_plugin_name = "XBotCommunicationPlugin";
             if(std::find(_plugin_names.begin(), _plugin_names.end(), communication_plugin_name) == _plugin_names.end() ) {
                 _plugin_names.push_back(communication_plugin_name);
@@ -53,13 +53,13 @@ void XBot::CommunicationHandler::th_init(void*)
         }
 
     }
-    
+
     for(const std::string& name : _plugin_names) {
         std::string switch_name = "xbot_rt_plugin_" + name + "_switch";
         _switch_names.push_back(switch_name);
         _command_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(switch_name));
     }
-    
+
     _xddp_handler = std::make_shared<XBot::XBotXDDP>(_path_to_config);
     _xddp_handler->init();
 
@@ -70,8 +70,8 @@ void XBot::CommunicationHandler::th_init(void*)
     (*anymap)["XBotFT"] = boost::any(xbot_ft);
 
     _robot = XBot::RobotInterface::getRobot(_path_to_config, anymap, "XBotRT");
-    
-    
+
+
     /* Get a vector of communication interfaces to/from NRT frameworks like ROS, YARP, ... */
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
     std::cout << "USE_ROS_COMMUNICATION_INTERFACE found! " << std::endl;
@@ -83,7 +83,7 @@ void XBot::CommunicationHandler::th_init(void*)
     std::cout << "USE_YARP_COMMUNICATION_INTERFACE found! " << std::endl;
     communication_ifc_vector.push_back( std::make_shared<XBot::YarpCommunicationInterface>(_robot) );
 #endif
-    
+
     /* Advertise switch ports for all plugins on all frameworks */
     for(auto comm_ifc : _communication_ifc_vector){
         for(const std::string& switch_name : _switch_names){
@@ -108,7 +108,7 @@ void XBot::CommunicationHandler::th_init(void*)
     // set scheduler priority and stacksize
     priority = sched_get_priority_max(schedpolicy);
     stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
-    
+
 
 }
 
@@ -123,10 +123,10 @@ void XBot::CommunicationHandler::th_loop(void*)
             }
         }
     }
-    
+
     /* Update XDDP */
      _xddp_handler->update();
-     
+
     /* Read robot state from RT layer and update robot */
     _robot->sense(false);
 
@@ -147,3 +147,4 @@ XBot::CommunicationHandler::~CommunicationHandler()
 {
 
 }
+

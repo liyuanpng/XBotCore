@@ -61,6 +61,8 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file,
 void HomingExample::on_start(double time)
 {
     _first_loop_time = time;
+    _robot->sense();
+    _robot->getJointPosition(_q0);
     std::cout << name << " STARTED!!!" << std::endl;
 }
 
@@ -73,7 +75,7 @@ void HomingExample::on_stop(double time)
 void HomingExample::control_loop(double time, double period)
 {
 
-    
+
 
     _robot->sense();
 //     _robot->log(time);
