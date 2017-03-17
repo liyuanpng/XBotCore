@@ -135,8 +135,8 @@ void XBot::XBotXDDP::update()
         // NOTE the single joint element can only be controlled by either the RT or the N-RT!
 
         // reading from the NRT subscriber pipes to update the RobotStateRX in the pdo_motor buffer
-        fd_read.at(f.first).read(_actual_pdo_motor);
-        (*pdo_motor.at(f.first)).RobotStateRX = _actual_pdo_motor.RobotStateRX;
+        fd_read.at(f.first).read(*pdo_motor.at(f.first));
+//         (*pdo_motor.at(f.first)).RobotStateRX = _actual_pdo_motor.RobotStateRX;
 
 //         std::cout << "ID: " << f.first << " - link_pos :  " << (*pdo_motor.at(f.first)).RobotStateRX.link_pos << std::endl;
 
