@@ -39,6 +39,18 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
     return true;
 }
 
+void XBot::XBotCommunicationPlugin::on_start(double time)
+{
+    std::cout << "XBotCommunicationPlugin STARTED!!!" << std::endl;
+}
+
+void XBot::XBotCommunicationPlugin::on_stop(double time)
+{
+    std::cout << "XBotCommunicationPlugin STOPPED!!!" << std::endl;
+
+}
+
+
 void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
 {
     XBot::JointIdMap pos_ref_map, vel_ref_map, tor_ref_map;
@@ -50,9 +62,9 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
         }
     }
 
-    _robot->setPositionReference(pos_ref_map); 
-    _robot->setVelocityReference(vel_ref_map); 
-    _robot->setEffortReference(tor_ref_map); 
+    _robot->setPositionReference(pos_ref_map);
+    _robot->setVelocityReference(vel_ref_map);
+    _robot->setEffortReference(tor_ref_map);
     _robot->move();
 
 }

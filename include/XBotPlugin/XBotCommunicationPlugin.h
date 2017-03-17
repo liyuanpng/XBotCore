@@ -45,6 +45,10 @@ public:
                                          XBot::SharedMemory::Ptr shared_memory,
                                          RobotInterface::Ptr robot);
 
+    virtual void on_start(double time);
+
+    virtual void on_stop(double time);
+
     virtual bool close();
 
     virtual ~XBotCommunicationPlugin();
