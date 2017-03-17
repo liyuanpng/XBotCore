@@ -40,73 +40,73 @@ namespace XBot
 
 /**
  * @brief XBotCore XDDP component: ready to use non-RT XBotCore Interfaces implementation (using XDDP Pipes)
- * 
+ *
  */
 class XBot::XBotXDDP :  public XBot::IXBotJoint,
                         public XBot::IXBotFT
-                        
+
 {
 public:
-    
+
     typedef std::shared_ptr<XBot::XBotXDDP> Ptr;
-    
+
     XBotXDDP(std::string config_file);
     virtual ~XBotXDDP();
-    
+
     std::map<std::string,std::vector<int> > get_robot_map();
     std::map<std::string,int> get_ft_sensors_map();
     XBot::XBotCoreModel get_robot_model();
-    
+
     bool init();
-    
+
     void update();
-    
+
     // NOTE IXBotJoint getters
     virtual bool get_link_pos(int joint_id, float& link_pos) final;
-    
+
     virtual bool get_motor_pos(int joint_id, float& motor_pos) final;
-    
+
     virtual bool get_link_vel(int joint_id, int16_t& link_vel) final;
-    
+
     virtual bool get_motor_vel(int joint_id, int16_t& motor_vel) final;
-    
+
     virtual bool get_torque(int joint_id, float& torque) final;
-    
+
     virtual bool get_temperature(int joint_id, uint16_t& temperature) final;
-    
+
     virtual bool get_fault(int joint_id, uint16_t& fault) final;
-    
+
     virtual bool get_rtt(int joint_id, uint16_t& rtt) final;
-    
+
     virtual bool get_op_idx_ack(int joint_id, uint16_t& op_idx_ack) final;
-    
+
     virtual bool get_aux(int joint_id, float& aux) final;
-    
+
     virtual bool get_gains(int joint_id, std::vector< uint16_t >& gain_vector) final;
-    
+
     // NOTE IXBotJoint setters
     virtual bool set_pos_ref(int joint_id, const float& pos_ref) final;
-    
+
     virtual bool set_vel_ref(int joint_id, const int16_t& vel_ref) final;
-    
+
     virtual bool set_tor_ref(int joint_id, const int16_t& tor_ref) final;
-    
+
     virtual bool set_gains(int joint_id, const std::vector<uint16_t>& gains) final;
-    
+
     virtual bool set_fault_ack(int joint_id, const int16_t& fault_ack) final;
-    
+
     virtual bool set_ts(int joint_id, const uint16_t& ts) final;
-    
+
     virtual bool set_op_idx_aux(int joint_id, const uint16_t& op_idx_aux) final;
-    
+
     virtual bool set_aux(int joint_id, const float& aux) final;
-    
+
     // NOTE IXBotFT getters
     virtual bool get_ft(int ft_id, std::vector< float >& ft, int channels = 6) final;
     virtual bool get_ft_fault(int ft_id, uint16_t& fault) final;
     virtual bool get_ft_rtt(int ft_id, uint16_t& rtt) final;
-    
-    
+
+
     // TBD do an interface that does it
     bool get_min_pos(int joint_id, float& min_pos);
     bool get_max_pos(int joint_id, float& max_pos);
@@ -114,100 +114,104 @@ public:
 
 
 private:
-        
+
+    static bool computeAbsolutePath (const std::string& input_path,
+                                     const std::string& middle_path,
+                                     std::string& absolute_path);
+
     /**
      * @brief Robot model loaded in XBotCore
-     * 
+     *
      */
     XBotCoreModel model;
-        
+
     /**
      * @brief The complete path the the urdf file to load
-     * 
+     *
      */
     std::string urdf_path;
-    
+
     /**
      * @brief The complete path the the srdf file to load
-     * 
+     *
      */
     std::string srdf_path;
-    
+
     /**
      * @brief Joint id to joint name map configuration file
-     * 
+     *
      */
     std::string joint_map_config;
 
     /**
-     * @brief map between the chain name and the id of the enabled joints in the chain 
-     * 
+     * @brief map between the chain name and the id of the enabled joints in the chain
+     *
      */
     std::map<std::string, std::vector<int>> robot;
-    
+
     /**
-     * @brief ft map 
-     * 
+     * @brief ft map
+     *
      */
     std::map<std::string, int> ft;
-    
+
     /**
      * @brief fd reading from pipes: we read the robot from XBotCore XDDP pipe
-     * 
+     *
      */
     std::map<int,XBot::SubscriberNRT<XBot::RobotState>> fd_read;
-    
+
     /**
      * @brief fd writing to pipes: we write to the robot with XBotCore XDDP pipe
-     * 
+     *
      */
     std::map<int,XBot::PublisherNRT<XBot::RobotState::pdo_tx>> fd_write;
-    
+
     /**
      * @brief fd reading from pipes: we read the robot F-T XBotCore XDDP pipe
-     * 
+     *
      */
     std::map<int,XBot::SubscriberNRT<XBot::RobotFT::pdo_rx>> fd_ft_read;
-    
+
     /**
      * @brief fd reading from pipes: we read the robot SDO XBotCore XDDP pipe
-     * 
+     *
      */
     std::map<int,XBot::SubscriberNRT<XBot::sdo_info>> fd_sdo_read;
-    
+
     /**
      * @brief number of bytes read from pipes
-     * 
+     *
      */
     int n_bytes;
-    
+
     /**
      * @brief mutex
-     * 
+     *
      */
     std::map<int,std::shared_ptr<std::mutex>> mutex;
-    
-    
+
+
     /**
      * @brief PDO Motor map
-     * 
+     *
      */
     std::map<int, std::shared_ptr<XBot::RobotState>> pdo_motor;
-    
-    
+
+
     /**
      * @brief SDO Info map
-     * 
+     *
      */
     std::map<int, std::shared_ptr<XBot::sdo_info>> sdo_info;
 
     /**
      * @brief RobotState struct to read
-     * 
+     *
      */
     XBot::RobotState _actual_pdo_motor;
 
-    
+
 
 };
 

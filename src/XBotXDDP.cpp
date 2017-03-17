@@ -29,16 +29,22 @@ XBot::XBotXDDP::XBotXDDP(std::string config_file)
         DPRINTF("Can not open %s\n", config_file.c_str());
     }
 
-    const YAML::Node& x_bot_core_config = YAML::LoadFile(config_file)["x_bot_core"];
+    const YAML::Node& x_bot_core_config = YAML::LoadFile(config_file)["XBotInterface"];
+
     urdf_path = x_bot_core_config["urdf_path"].as<std::string>();
+    computeAbsolutePath(urdf_path, "/", urdf_path);
+
     srdf_path = x_bot_core_config["srdf_path"].as<std::string>();
-    joint_map_config = x_bot_core_config["joint_map_config"].as<std::string>();
-    
+    computeAbsolutePath(srdf_path, "/", srdf_path);
+
+    joint_map_config = x_bot_core_config["joint_map_path"].as<std::string>();
+    computeAbsolutePath(joint_map_config, "/", joint_map_config);
+
     // initialize the model
     if( !model.init( urdf_path, srdf_path, joint_map_config ) ) {
         DPRINTF("ERROR: model initialization failed, please check the urdf_path and srdf_path in your YAML config file.\n");
     }
-    
+
     // generate the robot
     model.generate_robot();
     // get the robot
@@ -52,16 +58,16 @@ XBot::XBotXDDP::XBotXDDP(std::string config_file)
 
             XBot::SubscriberNRT<XBot::RobotState> subscriber_rx(std::string("Motor_id_") + std::to_string(c.second[i]).c_str());
             fd_read[c.second[i]] = subscriber_rx;
-            
+
             XBot::PublisherNRT<XBot::RobotState::pdo_tx> publisher_tx(std::string("rt_in_Motor_id_") + std::to_string(c.second[i]).c_str());
             fd_write[c.second[i]] = publisher_tx;
 
 //             XBot::SubscriberNRT<XBot::sdo_info> subscriber_sdo(std::string("sdo_Motor_id_") + std::to_string(c.second[i]).c_str());
 //             fd_sdo_read[c.second[i]] = subscriber_sdo;
-          
+
             // initialize the mutex
             mutex[c.second[i]] = std::make_shared<std::mutex>();
-            
+
             // initialize the pdo_motor
             if(fd_read.count(c.second[i])) {
                 XBot::RobotState current_robot_state;
@@ -80,7 +86,7 @@ XBot::XBotXDDP::XBotXDDP(std::string config_file)
 
         }
     }
-    
+
     //ft
     for(auto& ft_j : ft) {
         // initialize all the fd reading for the ft
@@ -118,22 +124,22 @@ bool XBot::XBotXDDP::init()
 }
 
 void XBot::XBotXDDP::update()
-{  
+{
     for( auto& f: fd_read) {
         mutex.at(f.first)->lock();
-        
+
         // write to the NRT publisher to command the RobotStateTX in the pdo_motor buffer
         XBot::RobotState::pdo_tx actual_pdo_tx = pdo_motor.at(f.first)->RobotStateTX;
         fd_write.at(f.first).write(actual_pdo_tx);
-        
+
         // NOTE the single joint element can only be controlled by either the RT or the N-RT!
-        
-        // reading from the NRT subscriber pipes to update the RobotStateRX in the pdo_motor buffer 
+
+        // reading from the NRT subscriber pipes to update the RobotStateRX in the pdo_motor buffer
         fd_read.at(f.first).read(_actual_pdo_motor);
         (*pdo_motor.at(f.first)).RobotStateRX = _actual_pdo_motor.RobotStateRX;
-        
+
 //         std::cout << "ID: " << f.first << " - link_pos :  " << (*pdo_motor.at(f.first)).RobotStateRX.link_pos << std::endl;
-        
+
         mutex.at(f.first)->unlock();
     }
 
@@ -254,7 +260,7 @@ bool XBot::XBotXDDP::get_gains(int joint_id, std::vector< uint16_t >& gain_vecto
 {
     mutex.at(joint_id)->lock();
     // resize the gain vector
-    gain_vector.resize(5);  
+    gain_vector.resize(5);
     gain_vector[0] = pdo_motor.at(joint_id)->RobotStateTX.gain_0;
     gain_vector[1] = pdo_motor.at(joint_id)->RobotStateTX.gain_1;
     gain_vector[2] = pdo_motor.at(joint_id)->RobotStateTX.gain_2;
@@ -339,44 +345,44 @@ bool XBot::XBotXDDP::set_aux(int joint_id, const float& aux)
 bool XBot::XBotXDDP::get_ft(int ft_id, std::vector< float >& ft, int channels)
 {
     mutex.at(ft_id)->lock();
-    
-    XBot::RobotFT::pdo_rx actual_pdo_rx_ft;  
+
+    XBot::RobotFT::pdo_rx actual_pdo_rx_ft;
     fd_ft_read.at(ft_id).read(actual_pdo_rx_ft);
-    
+
     ft.resize(channels);
     std::memcpy(ft.data(), &(actual_pdo_rx_ft.force_X), channels*sizeof(float));
-    
+
     mutex.at(ft_id)->unlock();
-    
-    return true;  
+
+    return true;
 }
 
 bool XBot::XBotXDDP::get_ft_fault(int ft_id, uint16_t& fault)
 {
     mutex.at(ft_id)->lock();
-    
-    XBot::RobotFT::pdo_rx actual_pdo_rx_ft;   
+
+    XBot::RobotFT::pdo_rx actual_pdo_rx_ft;
     fd_ft_read.at(ft_id).read(actual_pdo_rx_ft);
-    
+
     fault = actual_pdo_rx_ft.fault;
-    
+
     mutex.at(ft_id)->unlock();
-    
-    return true;  
+
+    return true;
 }
 
 bool XBot::XBotXDDP::get_ft_rtt(int ft_id, uint16_t& rtt)
 {
     mutex.at(ft_id)->lock();
-    
-    XBot::RobotFT::pdo_rx actual_pdo_rx_ft;    
+
+    XBot::RobotFT::pdo_rx actual_pdo_rx_ft;
     fd_ft_read.at(ft_id).read(actual_pdo_rx_ft);
-    
+
     rtt = actual_pdo_rx_ft.rtt;
-    
+
     mutex.at(ft_id)->unlock();
-    
-    return true;  
+
+    return true;
 }
 
 
@@ -384,4 +390,31 @@ bool XBot::XBotXDDP::get_ft_rtt(int ft_id, uint16_t& rtt)
 XBot::XBotXDDP::~XBotXDDP()
 {
     printf("~XBotXDDP()\n");
+}
+
+bool XBot::XBotXDDP::computeAbsolutePath (  const std::string& input_path,
+                                                 const std::string& middle_path,
+                                                 std::string& absolute_path)
+{
+    // if not an absolute path
+    if(!(input_path.at(0) == '/')) {
+        // if you are working with the Robotology Superbuild
+        const char* env_p = std::getenv("ROBOTOLOGY_ROOT");
+        // check the env, otherwise error
+        if(env_p) {
+            std::string current_path(env_p);
+            // default relative path when working with the superbuild
+            current_path += middle_path;
+            current_path += input_path;
+            absolute_path = current_path;
+            return true;
+        }
+        else {
+            std::cerr << "ERROR in " << __func__ << " : the input path  " << input_path << " is neither an absolute path nor related with the robotology superbuild. Download it!" << std::endl;
+            return false;
+        }
+    }
+    // already an absolute path
+    absolute_path = input_path;
+    return true;
 }
