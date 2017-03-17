@@ -50,7 +50,7 @@ void XBot::PluginHandler::run_communication_handler()
     pid_t pid;
     std::string communication_handler_path;
     computeAbsolutePath("CommunicationHandler", "/build/external/XCM/", communication_handler_path);
-    
+
     char *argv[] = { const_cast<char *>(communication_handler_path.c_str()), const_cast<char *>(_path_to_cfg.c_str()), NULL };
 //     char *envp[] = { const_cast<char *>((std::string("ROBOTOLOGY_ROOT=") + std::string(std::getenv("ROBOTOLOGY_ROOT"))).c_str()),
 //                      const_cast<char *>((std::string("ROS_MASTER_URI=") + std::string(std::getenv("ROS_MASTER_URI"))).c_str()),
@@ -67,16 +67,16 @@ void XBot::PluginHandler::run_communication_handler()
     } else {
         printf("posix_spawn: %s\n", strerror(status));
     }
-    
-        
-    
+
+
+
         // NOTE exec example
 //     std::string communication_handler_path;
 //     computeAbsolutePath("CommunicationHandler", "/build/external/XCM/", communication_handler_path);
-//     
+//
 //     char *argv[] = { const_cast<char *>(communication_handler_path.c_str()), const_cast<char *>(_path_to_cfg.c_str()), NULL };
 //     char *envp[] = { NULL };
-//     
+//
 //     execve(communication_handler_path.c_str(), argv, envp);
 
 }
@@ -104,10 +104,15 @@ bool PluginHandler::load_plugins()
             for(const auto& plugin : _root_cfg["XBotRTPlugins"]["plugins"]){
                 _rtplugin_names.push_back(plugin.as<std::string>());
             }
-            
+
             std::string communication_plugin_name = "XBotCommunicationPlugin";
-            if(std::find(_rtplugin_names.begin(), _rtplugin_names.end(), communication_plugin_name) == _rtplugin_names.end() ) {
+            auto it = std::find(_rtplugin_names.begin(), _rtplugin_names.end(), communication_plugin_name);
+            if( it == _rtplugin_names.end() ) {
                 _rtplugin_names.push_back(communication_plugin_name);
+                _communication_plugin_idx = _rtplugin_names.size() - 1;
+            }
+            else{
+                _communication_plugin_idx = std::distance(_rtplugin_names.begin(), it);
             }
         }
 
@@ -155,7 +160,7 @@ bool PluginHandler::load_plugins()
 bool PluginHandler::init_plugins()
 {
     init_xddp();
-    
+
     XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
     _plugin_init_success.resize(_rtplugin_vector.size(), false);
     _plugin_command.resize(_rtplugin_vector.size());
@@ -178,7 +183,7 @@ bool PluginHandler::init_plugins()
         _plugin_init_success[i] = true;
         _plugin_command[i].init("xbot_rt_plugin_"+_rtplugin_names[i]+"_switch");
     }
-    
+
     // NOTE running CommunicationHandler process from PluginHandler
     // TBD enable it from a bool in config file
 // // // //     run_communication_handler();
@@ -216,13 +221,13 @@ void PluginHandler::run()
 
     // fill robot state
     fill_robot_state();
-    
+
     // log all robot state
     _robot->log(_logger, _time_provider->get_time());
-    
+
     // broadcast robot state over pipes
     run_xddp();
-    
+
     XBot::Command cmd;
 
     for( int i = 0; i < _rtplugin_vector.size(); i++){
@@ -249,7 +254,7 @@ void PluginHandler::run()
             if( _plugin_command[i].read(cmd) ){
 
                 /* If start command has been received, set plugin to RUNNING */
-                if( cmd.str() == "start" ){
+                if( cmd.str() == "start" && plugin_can_start(i) ){
                     (*plugin)->on_start(_time[i]);
                     _plugin_state[i] = "RUNNING";
                 }
@@ -288,7 +293,7 @@ void PluginHandler::close()
     for( const auto& plugin : _rtplugin_vector ){
         (*plugin)->close();
     }
-    
+
     _logger->flush();
 }
 
@@ -322,6 +327,34 @@ bool PluginHandler::computeAbsolutePath(const std::string& input_path,
 PluginHandler::~PluginHandler()
 {
     close();
+}
+
+bool PluginHandler::plugin_can_start(int plugin_idx)
+{
+
+    if( plugin_idx == _communication_plugin_idx ){
+
+        bool can_start = true;
+
+        /* We are asked to run the communication plugin,
+         allow it if and ONLY if all plugins are stopped */
+
+        for(const std::string& plugin_state : _plugin_state){
+            can_start = can_start && ( plugin_state == "STOPPED" );
+        }
+
+        return can_start;
+
+    }
+    else{
+
+        /* We are asked to run a normal plugin. Allow it
+         * only if the communication plugin is not running */
+
+        return _plugin_state[_communication_plugin_idx] == "STOPPED";
+    }
+
+    return false;
 }
 
 

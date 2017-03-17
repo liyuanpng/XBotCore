@@ -35,7 +35,7 @@ namespace XBot {
     class PluginHandler {
 
     public:
-        
+
         typedef std::shared_ptr<PluginHandler> Ptr;
 
         PluginHandler(RobotInterface::Ptr robot, TimeProvider::Ptr time_provider);
@@ -53,20 +53,22 @@ namespace XBot {
     protected:
 
     private:
-        
+
         bool init_xddp();
         void run_xddp();
-        
+
         void fill_robot_state();
-        
+
         void run_communication_handler();
+
+        bool plugin_can_start(int plugin_idx);
 
         static bool computeAbsolutePath ( const std::string& input_path,
                                           const std::string& midlle_path,
                                           std::string& absolute_path ); // TBD do it with UTILS
 
         XBot::TimeProvider::Ptr _time_provider;
-        
+
         YAML::Node _root_cfg;
 
         bool _close_was_called;
@@ -78,15 +80,16 @@ namespace XBot {
         std::vector<bool> _plugin_init_success;
         std::vector<XBot::SubscriberRT<XBot::Command>> _plugin_command;
         std::vector<std::string> _plugin_state;
+        int _communication_plugin_idx;
         std::vector<bool> _first_loop;
 
         std::vector<double> _last_time, _time, _period, _elapsed_time;
-        
+
         std::map<int, XBot::PublisherRT<XBot::RobotState>> _pub_map;
         std::map<int, XBot::RobotState> _robot_state_map;
-        
+
         XBot::ESCUtils _esc_utils;
-        
+
         XBot::MatLogger::Ptr _logger;
 
         RobotInterface::Ptr _robot;
