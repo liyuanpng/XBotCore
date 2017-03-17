@@ -25,6 +25,8 @@
 #include <ros/ros.h>
 #include <std_srvs/SetBool.h>
 #include <boost/bind.hpp>
+#include <RobotInterfaceROS/GenericControlMessage.h>
+#include <RobotInterfaceROS/GenericJointStateMessage.h>
 
 namespace XBot {
 
@@ -47,10 +49,45 @@ private:
 
     bool callback(std_srvs::SetBoolRequest& req, std_srvs::SetBoolResponse& res, const std::string& port_name);
 
+    void load_ros_message_interfaces();
+
+    static bool computeAbsolutePath ( const std::string& input_path,
+                                       const std::string& middle_path,
+                                       std::string& absolute_path );
+
+    bool _send_robot_state_ok, _receive_commands_ok;
+
+    std::string _path_to_cfg;
+
+    JointIdMap _joint_id_map;
+
+    shlibpp::SharedLibraryClass<GenericJointStateMessage> _jointstatemsg_instance;
+    shlibpp::SharedLibraryClassFactory<GenericJointStateMessage> _jointstatemsg_factory;
+    GenericJointStateMessage::Ptr _jointstate_message;
+
+    std::string _jointstate_message_type,
+                _jointstate_message_factory_name,
+                _jointstate_message_class_name,
+                _jointstate_message_path_to_so;
+
+    shlibpp::SharedLibraryClass<GenericControlMessage> _controlmsg_instance;
+    shlibpp::SharedLibraryClassFactory<GenericControlMessage> _controlmsg_factory;
+    GenericControlMessage::Ptr _control_message;
+
+    std::string _control_message_type,
+                _control_message_factory_name,
+                _control_message_class_name,
+                _control_message_path_to_so;
+
+    std::unordered_map<int, int> _jointid_to_command_msg_idx;
+    std::unordered_map<int, int> _jointid_to_jointstate_msg_idx;
+
     std::shared_ptr<ros::NodeHandle> _nh;
 
     std::map<std::string, ros::ServiceServer> _services;
     std::map<std::string, std::string> _msgs;
+
+
 
 };
 
