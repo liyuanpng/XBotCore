@@ -25,40 +25,74 @@
 
 #include <XCM/XBotCommunicationHandler.h>
 
+static sigset_t   signal_mask;  
 volatile sig_atomic_t g_loop_ok = 1;
 
-void sigint_handler(int s){
-    g_loop_ok = 0;
-}
+void *signal_thread (void *arg)
+{
+    int       sig_caught;    /* signal caught       */
+    int       rc;            /* returned code       */
 
+
+    rc = sigwait (&signal_mask, &sig_caught);
+    if (rc != 0) {
+        /* handle error */
+    }
+    switch (sig_caught)
+    {
+    case SIGINT:     /* process SIGINT  */
+        g_loop_ok = 0;
+        break;
+    case SIGTERM:    /* process SIGTERM */
+        g_loop_ok = 0;
+        break;
+    default:         /* should normally not happen */
+        fprintf (stderr, "\nUnexpected signal %d\n", sig_caught);
+        break;
+    }
+}
 
 ////////////////////////////////////////////////////
 // Main
 ////////////////////////////////////////////////////
 
-int main(int argc, char *argv[]) try {
+int main ( int argc, char *argv[] ) try {
+
+    // SIGNAL handling
+    pthread_t  sig_thr_id;
+    int rc;
+
+    sigemptyset (&signal_mask);
+    sigaddset (&signal_mask, SIGINT);
+    sigaddset (&signal_mask, SIGTERM);
+    rc = pthread_sigmask (SIG_BLOCK, &signal_mask, NULL);
+    rc = pthread_create (&sig_thr_id, NULL, signal_thread, NULL);
+    // SIGNAL handling
+
+    
+    int num_iters = 0;
 
     std::map<std::string, Thread_hook*> threads;
-    if ( argc != 2) {
-        printf("Usage: %s config.yaml\n", argv[0]);
+    if ( argc != 2 ) {
+        printf ( "Usage: %s config.yaml\n", argv[0] );
         return 0;
     }
 
-    threads["ch"] = new XBot::CommunicationHandler(argv[1]);
-    threads["ch"]->create(false, 3);
-     
-    /* Register SIGINT handler AFTER FRAMEWORK HAVE BEEN INITILIZED */
-    signal(SIGINT, sigint_handler);
-    int num_iters = 0;
+    threads["ch"] = new XBot::CommunicationHandler ( argv[1] );
+    threads["ch"]->create ( false, 3 );
     
-    while (g_loop_ok) {
+
+
+
+    while ( g_loop_ok ) {
         num_iters++;
-        sleep(1); 
+        sleep ( 1 );
     }
-    
-    std::cout << "main_loop " <<  g_loop_ok << num_iters << std::endl;
-    
+
+    std::cout << "main_loop: exiting after " << num_iters << " seconds. " << std::endl;
+
     for ( auto const& item : threads ) {
+        std::cout << "Trying to stop thread : " << item.first.c_str() << std::endl;
         item.second->stop();
         item.second->join();
         delete item.second;
@@ -69,7 +103,7 @@ int main(int argc, char *argv[]) try {
 
     return 0;
 
-} catch (std::exception& e) {
+} catch ( std::exception& e ) {
 
     std::cout << "Main catch .... " <<  e.what() << std::endl;
 
