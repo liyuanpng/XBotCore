@@ -102,6 +102,10 @@ if( ${catkin_FOUND} )
 
     add_library(AdvrJointStateMessage SHARED src/MessageInterfaces/AdvrJointState.cpp)
     target_link_libraries(AdvrJointStateMessage ${catkin_LIBRARIES} ${XBotInterface_LIBRARIES})
+    
+                                
+    add_dependencies(AdvrCommandMessage XCM_generate_messages_cpp)                           
+    add_dependencies(AdvrJointStateMessage XCM_generate_messages_cpp)
 
 endif()
 
@@ -154,7 +158,6 @@ target_include_directories(XCM PUBLIC
                             ${XBotInterface_INCLUDE_DIRS}
                             ${XBotCore-interfaces_INCLUDE_DIRS}
                             )
-
 
 if ( Xenomai_FOUND )
     set_xeno_flags(XCM)
