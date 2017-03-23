@@ -60,8 +60,24 @@ CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot):
 
     _nh = std::make_shared<ros::NodeHandle>();
 
+    load_robot_state_publisher();
+
     load_ros_message_interfaces();
 }
+
+void CommunicationInterfaceROS::load_robot_state_publisher()
+{
+    KDL::Tree kdl_tree;
+    kdl_parser::treeFromUrdfModel(_robot->getUrdf(), kdl_tree);
+
+    _robot_state_pub = std::make_shared<robot_state_publisher::RobotStatePublisher>(kdl_tree);
+
+    _urdf_param_name = "/xbotcore/" + _robot->getUrdf().getName() + "/robot_description";
+    _tf_prefix = "/xbotcore/" + _robot->getUrdf().getName();
+    _nh->setParam(_urdf_param_name, _robot->getUrdfString());
+
+}
+
 
 void CommunicationInterfaceROS::load_ros_message_interfaces() {
 
@@ -138,6 +154,12 @@ void CommunicationInterfaceROS::load_ros_message_interfaces() {
 }
 void CommunicationInterfaceROS::sendRobotState()
 {
+    _robot->getJointPosition(_joint_name_map);
+    std::map<std::string, double> _joint_name_std_map(_joint_name_map.begin(), _joint_name_map.end());
+
+    _robot_state_pub->publishTransforms(_joint_name_std_map, ros::Time::now(), "");
+    _robot_state_pub->publishFixedTransforms("");
+
     if( !_send_robot_state_ok ) return;
 
     _robot->getJointPosition(_joint_id_map);

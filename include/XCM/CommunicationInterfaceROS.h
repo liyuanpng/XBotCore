@@ -27,6 +27,7 @@
 #include <boost/bind.hpp>
 #include <RobotInterfaceROS/GenericControlMessage.h>
 #include <RobotInterfaceROS/GenericJointStateMessage.h>
+#include <robot_state_publisher/robot_state_publisher.h>
 
 namespace XBot {
 
@@ -51,6 +52,8 @@ private:
 
     void load_ros_message_interfaces();
 
+    void load_robot_state_publisher();
+
     static bool computeAbsolutePath ( const std::string& input_path,
                                        const std::string& middle_path,
                                        std::string& absolute_path );
@@ -60,6 +63,7 @@ private:
     std::string _path_to_cfg;
 
     JointIdMap _joint_id_map;
+    JointNameMap _joint_name_map;
 
     shlibpp::SharedLibraryClass<GenericJointStateMessage> _jointstatemsg_instance;
     shlibpp::SharedLibraryClassFactory<GenericJointStateMessage> _jointstatemsg_factory;
@@ -86,6 +90,10 @@ private:
 
     std::map<std::string, ros::ServiceServer> _services;
     std::map<std::string, std::string> _msgs;
+
+    std::shared_ptr<robot_state_publisher::RobotStatePublisher> _robot_state_pub;
+    std::string _tf_prefix, _urdf_param_name;
+
 
 
 

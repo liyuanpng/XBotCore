@@ -70,7 +70,7 @@ find_package(YCM REQUIRED)
 find_package(XBotInterface REQUIRED)
 find_package(XBotCore-interfaces REQUIRED)
 
-find_package(catkin QUIET COMPONENTS roscpp sensor_msgs std_srvs message_generation)
+find_package(catkin QUIET COMPONENTS roscpp sensor_msgs std_srvs message_generation robot_state_publisher)
 # find_package(YARP QUIET)
 find_package(kdl_parser REQUIRED)
 
@@ -102,9 +102,9 @@ if( ${catkin_FOUND} )
 
     add_library(AdvrJointStateMessage SHARED src/MessageInterfaces/AdvrJointState.cpp)
     target_link_libraries(AdvrJointStateMessage ${catkin_LIBRARIES} ${XBotInterface_LIBRARIES})
-    
-                                
-    add_dependencies(AdvrCommandMessage XCM_generate_messages_cpp)                           
+
+
+    add_dependencies(AdvrCommandMessage XCM_generate_messages_cpp)
     add_dependencies(AdvrJointStateMessage XCM_generate_messages_cpp)
 
 endif()
