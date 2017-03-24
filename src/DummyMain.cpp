@@ -1,17 +1,53 @@
+#include <stdio.h>
+#include <errno.h>
+#include <assert.h>
+#include <signal.h>
+#include <exception>
+
 #include <XCM/XBotPluginHandler.h>
-#include <csignal>
 
-sig_atomic_t g_loop_ok = 1;
+static sigset_t   signal_mask;  
+volatile sig_atomic_t g_loop_ok = 1;
 
-void sigint_handler(int s){
-    g_loop_ok = 0;
+void *signal_thread (void *arg)
+{
+    int       sig_caught;    /* signal caught       */
+    int       rc;            /* returned code       */
+
+
+    rc = sigwait (&signal_mask, &sig_caught);
+    if (rc != 0) {
+        /* handle error */
+    }
+    switch (sig_caught)
+    {
+    case SIGINT:     /* process SIGINT  */
+        g_loop_ok = 0;
+        break;
+    case SIGTERM:    /* process SIGTERM */
+        g_loop_ok = 0;
+        break;
+    default:         /* should normally not happen */
+        fprintf (stderr, "\nUnexpected signal %d\n", sig_caught);
+        break;
+    }
 }
 
 int main(int argc, char **argv){
+    
+    // SIGNAL handling
+    pthread_t  sig_thr_id;
+    int rc;
 
+    sigemptyset (&signal_mask);
+    sigaddset (&signal_mask, SIGINT);
+    sigaddset (&signal_mask, SIGTERM);
+    rc = pthread_sigmask (SIG_BLOCK, &signal_mask, NULL);
+    rc = pthread_create (&sig_thr_id, NULL, signal_thread, NULL);
+    // SIGNAL handling
+
+    
     using namespace XBot;
-
-
 
     std::string path_to_cfg;
 
@@ -33,8 +69,6 @@ int main(int argc, char **argv){
 
 
     RobotInterface::Ptr robot = RobotInterface::getRobot(path_to_cfg, AnyMapPtr(), framework);
-
-    signal(SIGINT, sigint_handler);
 
     
     auto time_provider = std::make_shared<SimpleTimeProvider>();
