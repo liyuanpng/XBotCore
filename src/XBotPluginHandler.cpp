@@ -41,46 +41,9 @@ PluginHandler::PluginHandler(RobotInterface::Ptr robot,  TimeProvider::Ptr time_
 {
     _path_to_cfg = _robot->getPathToConfig();
     _logger = XBot::MatLogger::getLogger("/tmp/XBotCore_log");
+    _console = XBot::ConsoleLogger::getLogger();
     _robot->initLog(_logger, 500000);
 }
-
-void XBot::PluginHandler::run_communication_handler()
-{
-    // NOTE posix_spawn example
-    pid_t pid;
-    std::string communication_handler_path;
-    computeAbsolutePath("CommunicationHandler", "/build/external/XCM/", communication_handler_path);
-
-    char *argv[] = { const_cast<char *>(communication_handler_path.c_str()), const_cast<char *>(_path_to_cfg.c_str()), NULL };
-//     char *envp[] = { const_cast<char *>((std::string("ROBOTOLOGY_ROOT=") + std::string(std::getenv("ROBOTOLOGY_ROOT"))).c_str()),
-//                      const_cast<char *>((std::string("ROS_MASTER_URI=") + std::string(std::getenv("ROS_MASTER_URI"))).c_str()),
-//                      NULL };
-
-    int status = posix_spawn(&pid, communication_handler_path.c_str(), NULL, NULL, argv, environ);
-    if (status == 0) {
-        printf("Child pid: %i\n", pid);
-//         if (waitpid(pid, &status, 0) != -1) {
-//             printf("Child exited with status %i\n", status);
-//         } else {
-//             perror("waitpid");
-//         }
-    } else {
-        printf("posix_spawn: %s\n", strerror(status));
-    }
-
-
-
-        // NOTE exec example
-//     std::string communication_handler_path;
-//     computeAbsolutePath("CommunicationHandler", "/build/external/XCM/", communication_handler_path);
-//
-//     char *argv[] = { const_cast<char *>(communication_handler_path.c_str()), const_cast<char *>(_path_to_cfg.c_str()), NULL };
-//     char *envp[] = { NULL };
-//
-//     execve(communication_handler_path.c_str(), argv, envp);
-
-}
-
 
 
 bool PluginHandler::load_plugins()
@@ -90,13 +53,13 @@ bool PluginHandler::load_plugins()
 
 
     if(!_root_cfg["XBotRTPlugins"]){
-        std::cerr << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node XBotRTPlugins!" << std::endl;
+        _console->error() << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node XBotRTPlugins!" << _console->endl();
         return false;
     }
     else{
 
         if(!_root_cfg["XBotRTPlugins"]["plugins"]){
-            std::cerr << "ERROR in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node plugins!" << std::endl;
+            _console->error() << "ERROR in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node plugins!" << _console->endl();
         return false;
         }
         else{
@@ -134,12 +97,12 @@ bool PluginHandler::load_plugins()
             // NOTE print to celebrate the wizard
             printf("error (%s) : %s\n", shlibpp::Vocab::decode(factory_ptr->getStatus()).c_str(),
                 factory_ptr->getLastNativeError().c_str());
-            std::cerr << "Unable to load plugin " << plugin_name << "!" << std::endl;
+            _console->error() << "Unable to load plugin " << plugin_name << "!" << _console->endl();
             success = false;
             continue;
         }
         else{
-            std::cout << "Found plugin " << plugin_name << "!" << std::endl;
+            _console->info() << "Found plugin " << plugin_name << "!" << _console->endl();
         }
 
         _rtplugin_factory.push_back(factory_ptr);
@@ -157,7 +120,9 @@ bool PluginHandler::load_plugins()
     return success;
 }
 
-bool PluginHandler::init_plugins()
+bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
+                                 std::shared_ptr< IXBotModel > model,
+                                 std::shared_ptr< IXBotFT > ft)
 {
     init_xddp();
 
@@ -170,23 +135,22 @@ bool PluginHandler::init_plugins()
     bool ret = true;
 
     for(int i = 0; i < _rtplugin_vector.size(); i++) {
-        if(!(*_rtplugin_vector[i])->init_control_plugin( _path_to_cfg,
-                                                         shared_memory,
-                                                         _robot)
+        if(!(*_rtplugin_vector[i])->init( _path_to_cfg,
+                                          _rtplugin_names[i],
+                                          shared_memory,
+                                          joint,
+                                          model,
+                                          ft)
              )
         {
-            printf("ERROR: plugin %s - init() failed\n", (*_rtplugin_vector[i])->name.c_str());
+            _console->error() << "ERROR: plugin " << (*_rtplugin_vector[i])->name << " - init() failed" << _console->endl();
             ret = false;
         }
 
-        std::cout << "Plugin " << (*_rtplugin_vector[i])->name << " initialized successfully!" << std::endl;
+        _console->info() << "Plugin " << (*_rtplugin_vector[i])->name << " initialized successfully!" << _console->endl();
         _plugin_init_success[i] = true;
         _plugin_command[i].init("xbot_rt_plugin_"+_rtplugin_names[i]+"_switch");
     }
-
-    // NOTE running CommunicationHandler process from PluginHandler
-    // TBD enable it from a bool in config file
-// // // //     run_communication_handler();
 
     return ret;
 }
@@ -255,6 +219,7 @@ void PluginHandler::run()
 
                 /* If start command has been received, set plugin to RUNNING */
                 if( cmd.str() == "start" && plugin_can_start(i) ){
+                    _console->info() << "Starting plugin : " << (*plugin)->name << _console->endl();
                     (*plugin)->on_start(_time[i]);
                     _plugin_state[i] = "RUNNING";
                 }
@@ -269,6 +234,7 @@ void PluginHandler::run()
 
                 /* If stop command has been received, set plugin to STOPPED */
                 if( cmd.str() == "stop" ){
+                    _console->info() << "Stopping plugin : " << (*plugin)->name << _console->endl();
                     (*plugin)->on_stop(_time[i]);
                     _plugin_state[i] = "STOPPED";
                 }
@@ -315,7 +281,7 @@ bool PluginHandler::computeAbsolutePath(const std::string& input_path,
             return true;
         }
         else {
-            std::cerr << "ERROR in " << __func__ << " : the input path  " << input_path << " is neither an absolute path nor related with the robotology superbuild. Download it!" << std::endl;
+            XBot::ConsoleLogger::getLogger()->error() << "ERROR in " << __func__ << " : the input path  " << input_path << " is neither an absolute path nor related with the robotology superbuild. Download it!" << XBot::ConsoleLogger::getLogger()->endl();
             return false;
         }
     }

@@ -42,7 +42,9 @@ namespace XBot {
 
         bool load_plugins();
 
-        bool init_plugins();
+        bool init_plugins(std::shared_ptr< IXBotJoint> joint  = nullptr,
+                          std::shared_ptr< IXBotModel > model = nullptr,
+                          std::shared_ptr< IXBotFT > ft       = nullptr );
 
         void run();
 
@@ -90,6 +92,7 @@ namespace XBot {
 
         XBot::ESCUtils _esc_utils;
 
+        XBot::ConsoleLogger::Ptr _console;
         XBot::MatLogger::Ptr _logger;
 
         RobotInterface::Ptr _robot;
