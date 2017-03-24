@@ -26,1154 +26,55 @@
 
 #include <XBotCore/XBotCore.h>
 
-XBot::XBotCore::XBotCore(const char* config_yaml) : XBotEcat(config_yaml)
-{
+#include <boost/bind.hpp>
 
-    // XBotCore configuration
-    const YAML::Node& root_cfg =  get_config_YAML_Node();
-    const YAML::Node& x_bot_core_config = root_cfg["x_bot_core"];
-    urdf_path = x_bot_core_config["urdf_path"].as<std::string>();
-    srdf_path = x_bot_core_config["srdf_path"].as<std::string>();
-    joint_map_config = x_bot_core_config["joint_map_config"].as<std::string>();
+XBot::XBotCore::XBotCore(const char* config_yaml) : 
+    XBotEcat(config_yaml), 
+    _path_to_config(config_yaml)
+{
 
 }
 
-XBot::XBotCoreModel XBot::XBotCore::get_robot_model(void)
-{
-    return model;
-}
 
-std::string XBot::XBotCore::get_urdf_path(void)
-{
-    
-    return urdf_path;
-}
-
-std::string XBot::XBotCore::get_srdf_path(void)
-{
-
-    return srdf_path;
-}
-
-std::vector< std::string > XBot::XBotCore::get_chain_names()
-{
-    return model.get_chain_names();
-}
 
 void XBot::XBotCore::control_init(void) 
 {
-    // initialize the model
-    if( !model.init( urdf_path, srdf_path, joint_map_config ) ) {
-        DPRINTF("ERROR: model initialization failed, please check the urdf_path and srdf_path in your YAML config file.\n");
-        return;
-    }
     
-    // generate the robot
-    model.generate_robot();
-    // get the robot
-    robot = model.get_robot();
+    // create robot from config file and any map
+    XBot::AnyMapPtr anymap = std::make_shared<XBot::AnyMap>();
+    std::shared_ptr<XBot::IXBotJoint> xbot_joint(this);
+    std::shared_ptr<XBot::IXBotFT> xbot_ft(this);
+    (*anymap)["XBotJoint"] = boost::any(xbot_joint);
+    (*anymap)["XBotFT"] = boost::any(xbot_ft);
     
-    // call the plugin handler initialization
-    if( !plugin_handler_init() ) {
-        DPRINTF("ERROR: plugin handler initialization failed.\n");
-        return;
-    }
-}
-
-
-int XBot::XBotCore::control_loop(void) {
+    _robot = XBot::RobotInterface::getRobot(_path_to_config, anymap, "XBotRT");
     
-    // call the plugin handler loop
-    return plugin_handler_loop();
-}
-
-///////////////////////////////
-///////////////////////////////
-// ROBOT PROTECTED FUNCTIONS //
-///////////////////////////////
-///////////////////////////////
-
-bool XBot::XBotCore::get_robot_link_pos(std::map< std::string, float >& link_pos)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_link_pos(c.first, link_pos);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::get_robot_link_pos(std::map< int, float >& link_pos)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_link_pos(c.first, link_pos);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::get_robot_motor_pos(std::map< std::string, float >& motor_pos)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_motor_pos(c.first, motor_pos);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::get_robot_motor_pos(std::map< int, float >& motor_pos)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_motor_pos(c.first, motor_pos);
-    }
-    return ret;
-}
-
-
-bool XBot::XBotCore::get_robot_link_vel(std::map< std::string, int16_t >& link_vel)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_link_vel(c.first, link_vel);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::get_robot_link_vel(std::map< int, int16_t >& link_vel)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_link_vel(c.first, link_vel);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::get_robot_motor_vel(std::map< std::string, int16_t >& motor_vel)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_motor_vel(c.first, motor_vel);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::get_robot_motor_vel(std::map< int, int16_t >& motor_vel)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_motor_vel(c.first, motor_vel);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::get_robot_torque(std::map< std::string, float >& torque)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_torque(c.first, torque);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::get_robot_torque(std::map< int, float >& torque)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_torque(c.first, torque);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::get_robot_temperature(std::map< std::string, uint16_t >& temperature)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_temperature(c.first, temperature);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::get_robot_temperature(std::map< int, uint16_t >& temperature)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_temperature(c.first, temperature);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::get_robot_fault(std::map< std::string, uint16_t >& fault)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_fault(c.first, fault);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::get_robot_fault(std::map< int, uint16_t >& fault)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_fault(c.first, fault);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::get_robot_rtt(std::map< std::string, uint16_t >& rtt)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_rtt(c.first, rtt);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::get_robot_rtt(std::map< int, uint16_t >& rtt)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_rtt(c.first, rtt);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::get_robot_op_idx_ack(std::map< std::string, uint16_t >& op_idx_ack)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_op_idx_ack(c.first, op_idx_ack);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::get_robot_op_idx_ack(std::map< int, uint16_t >& op_idx_ack)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_op_idx_ack(c.first, op_idx_ack);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::get_robot_aux(std::map< std::string, float >& aux)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_aux(c.first, aux);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::get_robot_aux(std::map< int, float >& aux)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= get_chain_aux(c.first, aux);
-    }
-    return ret;
-}
-
-
-
-
-bool XBot::XBotCore::set_robot_pos_ref(const std::map< std::string, float >& pos_ref)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= set_chain_pos_ref(c.first, pos_ref);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::set_robot_pos_ref(const std::map< int, float >& pos_ref)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= set_chain_pos_ref(c.first, pos_ref);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::set_robot_vel_ref(const std::map< std::string, int16_t >& vel_ref)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= set_chain_vel_ref(c.first, vel_ref);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::set_robot_vel_ref(const std::map< int, int16_t >& vel_ref)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= set_chain_vel_ref(c.first, vel_ref);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::set_robot_tor_ref(const std::map< std::string, int16_t >& tor_ref)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= set_chain_tor_ref(c.first, tor_ref);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::set_robot_tor_ref(const std::map< int, int16_t >& tor_ref)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= set_chain_tor_ref(c.first, tor_ref);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::set_robot_gains(const std::map< std::string, std::vector< uint16_t > >& gains)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= set_chain_gains(c.first, gains);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::set_robot_gains(const std::map< int, std::vector< uint16_t > >& gains)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= set_chain_gains(c.first, gains);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::set_robot_fault_ack(const std::map< std::string, int16_t >& fault_ack)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= set_chain_fault_ack(c.first, fault_ack);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::set_robot_fault_ack(const std::map< int, int16_t >& fault_ack)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= set_chain_fault_ack(c.first, fault_ack);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::set_robot_ts(const std::map< std::string, uint16_t >& ts)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= set_chain_ts(c.first, ts);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::set_robot_ts(const std::map< int, uint16_t >& ts)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= set_chain_ts(c.first, ts);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::set_robot_op_idx_aux(const std::map< std::string, uint16_t >& op_idx_aux)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= set_chain_op_idx_aux(c.first, op_idx_aux);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::set_robot_op_idx_aux(const std::map< int, uint16_t >& op_idx_aux)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= set_chain_op_idx_aux(c.first, op_idx_aux);
-    }
-    return ret;
-}
-
-
-bool XBot::XBotCore::set_robot_aux(const std::map< std::string, float >& aux)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= set_chain_aux(c.first, aux);
-    }
-    return ret;
-}
-
-bool XBot::XBotCore::set_robot_aux(const std::map< int, float >& aux)
-{
-    bool ret = true;
-    for(auto& c : robot) {
-        ret &= set_chain_aux(c.first, aux);
-    }
-    return ret;
-}
-
-
-
-
-
-
-
-
-
-///////////////////////////////
-///////////////////////////////
-// CHAIN PROTECTED FUNCTIONS //
-///////////////////////////////
-///////////////////////////////
-
-bool XBot::XBotCore::get_chain_link_pos(std::string chain_name, std::map< std::string, float>& link_pos)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        std::string actual_joint_name;
-        for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            link_pos[actual_joint_name] = 0;
-            if( !get_link_pos(actual_chain_enabled_joints[i], link_pos.at(actual_joint_name)))  {
-                DPRINTF("ERROR: get_chain_link_pos() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
+    // create time provider function
+    boost::function<double()> time_func = boost::bind(&XBot::XBotCore::get_time, this);
+    // create time provider
+    auto time_provider = std::make_shared<XBot::TimeProviderFunction<boost::function<double()>>>(time_func);
     
-    DPRINTF("ERROR: get_chain_link_pos() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::get_chain_link_pos(std::string chain_name, std::map< int, float >& link_pos)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        for( int i = 0; i < enabled_joints_num; i++) {
-            link_pos[actual_chain_enabled_joints[i]] = 0;
-            if( !get_link_pos(actual_chain_enabled_joints[i], link_pos.at(actual_chain_enabled_joints[i])))  {
-                DPRINTF("ERROR: get_chain_link_pos() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
+    // create plugin handler
+    _pluginHandler = std::make_shared<XBot::PluginHandler>(_robot, time_provider);
     
-    DPRINTF("ERROR: get_chain_link_pos() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::get_chain_motor_pos(std::string chain_name, std::map< std::string, float >& motor_pos)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        std::string actual_joint_name;
-        for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            motor_pos[actual_joint_name] = 0;
-            if( !get_motor_pos(actual_chain_enabled_joints[i], motor_pos.at(actual_joint_name)))  {
-                DPRINTF("ERROR: get_chain_motor_pos() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
+    //
+    _pluginHandler->load_plugins();
     
-    DPRINTF("ERROR: get_chain_motor_pos() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
+    //
+    _pluginHandler->init_plugins(xbot_joint, xbot_ft);
 }
 
-bool XBot::XBotCore::get_chain_motor_pos(std::string chain_name, std::map< int, float >& motor_pos)
+double XBot::XBotCore::get_time()
 {
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        for( int i = 0; i < enabled_joints_num; i++) {
-            motor_pos[actual_chain_enabled_joints[i]] = 0;
-            if( !get_motor_pos(actual_chain_enabled_joints[i], motor_pos.at(actual_chain_enabled_joints[i])))  {
-                DPRINTF("ERROR: get_chain_motor_pos() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: get_chain_motor_pos() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::get_chain_link_vel(std::string chain_name, std::map< std::string, int16_t >& link_vel)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        std::string actual_joint_name;
-        for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            link_vel[actual_joint_name] = 0;
-            if( !get_link_vel(actual_chain_enabled_joints[i], link_vel.at(actual_joint_name)))  {
-                DPRINTF("ERROR: get_chain_link_vel() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: get_chain_link_vel() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::get_chain_link_vel(std::string chain_name, std::map< int, int16_t >& link_vel)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        for( int i = 0; i < enabled_joints_num; i++) {
-            link_vel[actual_chain_enabled_joints[i]] = 0;
-            if( !get_link_vel(actual_chain_enabled_joints[i], link_vel.at(actual_chain_enabled_joints[i])))  {
-                DPRINTF("ERROR: get_chain_link_vel() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: get_chain_link_vel() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::get_chain_motor_vel(std::string chain_name, std::map< std::string, int16_t >& motor_vel)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        std::string actual_joint_name;
-        for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            motor_vel[actual_joint_name] = 0;
-            if( !get_motor_vel(actual_chain_enabled_joints[i], motor_vel.at(actual_joint_name)))  {
-                DPRINTF("ERROR: get_chain_motor_vel() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: get_chain_motor_vel() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::get_chain_motor_vel(std::string chain_name, std::map< int, int16_t >& motor_vel)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        for( int i = 0; i < enabled_joints_num; i++) {
-            motor_vel[actual_chain_enabled_joints[i]] = 0;
-            if( !get_motor_vel(actual_chain_enabled_joints[i], motor_vel.at(actual_chain_enabled_joints[i])))  {
-                DPRINTF("ERROR: get_chain_motor_vel() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: get_chain_motor_vel() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::get_chain_torque(std::string chain_name, std::map< std::string, float >& torque)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        std::string actual_joint_name;
-        for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            torque[actual_joint_name] = 0;
-            if( !get_torque(actual_chain_enabled_joints[i], torque.at(actual_joint_name)))  {
-                DPRINTF("ERROR: get_chain_torque() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: get_chain_torque() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::get_chain_torque(std::string chain_name, std::map< int, float >& torque)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        for( int i = 0; i < enabled_joints_num; i++) {
-            torque[actual_chain_enabled_joints[i]] = 0;
-            if( !get_torque(actual_chain_enabled_joints[i], torque.at(actual_chain_enabled_joints[i])))  {
-                DPRINTF("ERROR: get_chain_torque() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: get_chain_torque() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::get_chain_temperature(std::string chain_name, std::map< std::string, uint16_t >& temperature)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        std::string actual_joint_name;
-        for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            temperature[actual_joint_name] = 0;
-            if( !get_temperature(actual_chain_enabled_joints[i], temperature.at(actual_joint_name)))  {
-                DPRINTF("ERROR: get_chain_temperature() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: get_chain_temperature() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::get_chain_temperature(std::string chain_name, std::map< int, uint16_t >& temperature)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        for( int i = 0; i < enabled_joints_num; i++) {
-            temperature[actual_chain_enabled_joints[i]] = 0;
-            if( !get_temperature(actual_chain_enabled_joints[i], temperature.at(actual_chain_enabled_joints[i])))  {
-                DPRINTF("ERROR: get_chain_temperature() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: get_chain_temperature() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::get_chain_fault(std::string chain_name, std::map< std::string, uint16_t >& fault)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        std::string actual_joint_name;
-        for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            fault[actual_joint_name] = 0;
-            if( !get_fault(actual_chain_enabled_joints[i], fault.at(actual_joint_name)))  {
-                DPRINTF("ERROR: get_chain_fault() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: get_chain_fault() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::get_chain_fault(std::string chain_name, std::map< int, uint16_t >& fault)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        for( int i = 0; i < enabled_joints_num; i++) {
-            fault[actual_chain_enabled_joints[i]] = 0;
-            if( !get_fault(actual_chain_enabled_joints[i], fault.at(actual_chain_enabled_joints[i])))  {
-                DPRINTF("ERROR: get_chain_fault() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: get_chain_fault() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::get_chain_rtt(std::string chain_name, std::map< std::string, uint16_t >& rtt)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        std::string actual_joint_name;
-        for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            rtt[actual_joint_name] = 0;
-            if( !get_rtt(actual_chain_enabled_joints[i], rtt.at(actual_joint_name)))  {
-                DPRINTF("ERROR: get_chain_rtt() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: get_chain_rtt() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::get_chain_rtt(std::string chain_name, std::map< int, uint16_t >& rtt)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        for( int i = 0; i < enabled_joints_num; i++) {
-            rtt[actual_chain_enabled_joints[i]] = 0;
-            if( !get_rtt(actual_chain_enabled_joints[i], rtt.at(actual_chain_enabled_joints[i])))  {
-                DPRINTF("ERROR: get_chain_rtt() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: get_chain_rtt() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::get_chain_op_idx_ack(std::string chain_name, std::map< std::string, uint16_t >& op_idx_ack)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        std::string actual_joint_name;
-        for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            op_idx_ack[actual_joint_name] = 0;
-            if( !get_op_idx_ack(actual_chain_enabled_joints[i], op_idx_ack.at(actual_joint_name)))  {
-                DPRINTF("ERROR: get_chain_op_idx_ack() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: get_chain_op_idx_ack() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::get_chain_op_idx_ack(std::string chain_name, std::map< int, uint16_t >& op_idx_ack)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        for( int i = 0; i < enabled_joints_num; i++) {
-            op_idx_ack[actual_chain_enabled_joints[i]] = 0;
-            if( !get_op_idx_ack(actual_chain_enabled_joints[i], op_idx_ack.at(actual_chain_enabled_joints[i])))  {
-                DPRINTF("ERROR: get_chain_op_idx_ack() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: get_chain_op_idx_ack() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::get_chain_aux(std::string chain_name, std::map< std::string, float >& aux)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        std::string actual_joint_name;
-        for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            aux[actual_joint_name] = 0;
-            if( !get_aux(actual_chain_enabled_joints[i], aux.at(actual_joint_name)))  {
-                DPRINTF("ERROR: get_chain_aux() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: get_chain_aux() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::get_chain_aux(std::string chain_name, std::map< int, float >& aux)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        for( int i = 0; i < enabled_joints_num; i++) {
-            aux[actual_chain_enabled_joints[i]] = 0;
-            if( !get_aux(actual_chain_enabled_joints[i], aux.at(actual_chain_enabled_joints[i])))  {
-                DPRINTF("ERROR: get_chain_aux() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: get_chain_aux() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
+    return iit::ecat::get_time_ns() / 10e8;
 }
 
 
-
-
-bool XBot::XBotCore::set_chain_pos_ref(std::string chain_name, const std::map< std::string, float >& pos_ref)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        std::string actual_joint_name;
-        for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            if(pos_ref.count(actual_joint_name)) {
-                if( !set_pos_ref(actual_chain_enabled_joints[i], pos_ref.at(actual_joint_name)))  {
-                    DPRINTF("ERROR: set_pos_ref() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: set_chain_pos_ref() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
+int XBot::XBotCore::control_loop(void) 
+{    
+    _pluginHandler->run();
 }
 
-bool XBot::XBotCore::set_chain_pos_ref(std::string chain_name, const std::map< int, float >& pos_ref)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        for( int i = 0; i < enabled_joints_num; i++) {
-            if(pos_ref.count(actual_chain_enabled_joints[i])) {
-                if( !set_pos_ref(actual_chain_enabled_joints[i], pos_ref.at(actual_chain_enabled_joints[i])))  {
-                    DPRINTF("ERROR: set_pos_ref() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: set_chain_pos_ref() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::set_chain_vel_ref(std::string chain_name, const std::map< std::string, int16_t >& vel_ref)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        std::string actual_joint_name;
-        for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            if(vel_ref.count(actual_joint_name)) {
-                if( !set_vel_ref(actual_chain_enabled_joints[i], vel_ref.at(actual_joint_name)))  {
-                    DPRINTF("ERROR: set_vel_ref() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: set_chain_vel_ref() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::set_chain_vel_ref(std::string chain_name, const std::map< int, int16_t >& vel_ref)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        for( int i = 0; i < enabled_joints_num; i++) {
-            if(vel_ref.count(actual_chain_enabled_joints[i])) {
-                if( !set_vel_ref(actual_chain_enabled_joints[i], vel_ref.at(actual_chain_enabled_joints[i])))  {
-                    DPRINTF("ERROR: set_vel_ref() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: set_chain_vel_ref() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::set_chain_tor_ref(std::string chain_name, const std::map< std::string, int16_t >& tor_ref)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        std::string actual_joint_name;
-        for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            if(tor_ref.count(actual_joint_name)) {
-                if( !set_tor_ref(actual_chain_enabled_joints[i], tor_ref.at(actual_joint_name)))  {
-                    DPRINTF("ERROR: set_tor_ref() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: set_chain_tor_ref() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::set_chain_tor_ref(std::string chain_name, const std::map< int, int16_t >& tor_ref)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        for( int i = 0; i < enabled_joints_num; i++) {
-            if(tor_ref.count(actual_chain_enabled_joints[i])) {
-                if( !set_tor_ref(actual_chain_enabled_joints[i], tor_ref.at(actual_chain_enabled_joints[i])))  {
-                    DPRINTF("ERROR: set_tor_ref() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: set_chain_tor_ref() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::set_chain_gains(std::string chain_name, const std::map< std::string, std::vector<uint16_t> >& gains)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        std::string actual_joint_name;
-        for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            if(gains.count(actual_joint_name)) {
-                if( !set_gains(actual_chain_enabled_joints[i], gains.at(actual_joint_name)))  {
-                    DPRINTF("ERROR: set_chain_gains() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: set_chain_pos_ref() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::set_chain_gains(std::string chain_name, const std::map< int, std::vector<uint16_t> >& gains)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        for( int i = 0; i < enabled_joints_num; i++) {
-            if(gains.count(actual_chain_enabled_joints[i])) {
-                if( !set_gains(actual_chain_enabled_joints[i], gains.at(actual_chain_enabled_joints[i])))  {
-                    DPRINTF("ERROR: set_gains() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: set_chain_gains() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::set_chain_fault_ack(std::string chain_name, const std::map< std::string, int16_t >& fault_ack)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        std::string actual_joint_name;
-        for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            if(fault_ack.count(actual_joint_name)) {
-                if( !set_fault_ack(actual_chain_enabled_joints[i], fault_ack.at(actual_joint_name)))  {
-                    DPRINTF("ERROR: set_fault_ack() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: set_chain_fault_ack() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::set_chain_fault_ack(std::string chain_name, const std::map< int, int16_t >& fault_ack)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        for( int i = 0; i < enabled_joints_num; i++) {
-            if(fault_ack.count(actual_chain_enabled_joints[i])) {
-                if( !set_fault_ack(actual_chain_enabled_joints[i], fault_ack.at(actual_chain_enabled_joints[i])))  {
-                    DPRINTF("ERROR: set_fault_ack() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: set_chain_fault_ack() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::set_chain_ts(std::string chain_name, const std::map< std::string, uint16_t >& ts)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        std::string actual_joint_name;
-        for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            if(ts.count(actual_joint_name)) {
-                if( !set_ts(actual_chain_enabled_joints[i], ts.at(actual_joint_name)))  {
-                    DPRINTF("ERROR: set_ts() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: set_chain_ts() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::set_chain_ts(std::string chain_name, const std::map< int, uint16_t >& ts)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        for( int i = 0; i < enabled_joints_num; i++) {
-            if(ts.count(actual_chain_enabled_joints[i])) {
-                if( !set_ts(actual_chain_enabled_joints[i], ts.at(actual_chain_enabled_joints[i])))  {
-                    DPRINTF("ERROR: set_ts() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: set_chain_ts() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::set_chain_op_idx_aux(std::string chain_name, const std::map< std::string, uint16_t >& op_idx_aux)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        std::string actual_joint_name;
-        for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            if(op_idx_aux.count(actual_joint_name)) {
-                if( !set_op_idx_aux(actual_chain_enabled_joints[i], op_idx_aux.at(actual_joint_name)))  {
-                    DPRINTF("ERROR: set_op_idx_aux() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: set_chain_op_idx_aux() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::set_chain_op_idx_aux(std::string chain_name, const std::map< int, uint16_t >& op_idx_aux)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        for( int i = 0; i < enabled_joints_num; i++) {
-            if(op_idx_aux.count(actual_chain_enabled_joints[i])) {
-                if( !set_op_idx_aux(actual_chain_enabled_joints[i], op_idx_aux.at(actual_chain_enabled_joints[i])))  {
-                    DPRINTF("ERROR: set_op_idx_aux() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: set_chain_op_idx_aux() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::set_chain_aux(std::string chain_name, const std::map< std::string, float >& aux)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        std::string actual_joint_name;
-        for( int i = 0; i < enabled_joints_num; i++) {
-            actual_joint_name = model.rid2Joint(actual_chain_enabled_joints[i]);
-            if(aux.count(actual_joint_name)) {
-                if( !set_aux(actual_chain_enabled_joints[i], aux.at(actual_joint_name)))  {
-                    DPRINTF("ERROR: set_aux() on joint %s, that does not exits in the chain %s\n", actual_joint_name.c_str(), chain_name.c_str());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: set_chain_aux() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
-
-bool XBot::XBotCore::set_chain_aux(std::string chain_name, const std::map< int, float >& aux)
-{
-    if( robot.count(chain_name) ) {
-        std::vector<int> actual_chain_enabled_joints = robot.at(chain_name);
-        int enabled_joints_num = actual_chain_enabled_joints.size();
-        for( int i = 0; i < enabled_joints_num; i++) {
-            if(aux.count(actual_chain_enabled_joints[i])) {
-                if( !set_aux(actual_chain_enabled_joints[i], aux.at(actual_chain_enabled_joints[i])))  {
-                    DPRINTF("ERROR: set_aux() on joint %d, that does not exits in the chain %s\n", actual_chain_enabled_joints[i], chain_name.c_str());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    DPRINTF("ERROR: set_chain_aux() on chain %s, that does not exits in the robot\n", chain_name.c_str());
-    return false;
-}
 
 
 ////////////////////////////////////
@@ -1182,13 +83,13 @@ bool XBot::XBotCore::set_chain_aux(std::string chain_name, const std::map< int, 
 ////////////////////////////////////
 ////////////////////////////////////
 
-bool XBot::XBotCore::get_link_pos(int joint_id, float& link_pos)
+bool XBot::XBotCore::get_link_pos(int joint_id, double& link_pos)
 {
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
         // get the data
-        link_pos = motors[rid2Pos(joint_id)]->getRxPDO().link_pos;
+        link_pos = motors[rid2Pos(joint_id)]->getRxPDO().link_pos * _conversion.link_pos;
         return true;
     }
     
@@ -1197,13 +98,13 @@ bool XBot::XBotCore::get_link_pos(int joint_id, float& link_pos)
     return false;   
 }
 
-bool XBot::XBotCore::get_motor_pos(int joint_id, float& motor_pos)
+bool XBot::XBotCore::get_motor_pos(int joint_id, double& motor_pos)
 {
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
         // get the data
-        motor_pos = motors[rid2Pos(joint_id)]->getRxPDO().motor_pos;
+        motor_pos = motors[rid2Pos(joint_id)]->getRxPDO().motor_pos * _conversion.motor_pos;
         return true;
     }
     
@@ -1212,13 +113,13 @@ bool XBot::XBotCore::get_motor_pos(int joint_id, float& motor_pos)
     return false;  
 }
 
-bool XBot::XBotCore::get_link_vel(int joint_id, int16_t& link_vel)
+bool XBot::XBotCore::get_link_vel(int joint_id, double& link_vel)
 {
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
         // get the data
-        link_vel = motors[rid2Pos(joint_id)]->getRxPDO().link_vel;
+        link_vel = motors[rid2Pos(joint_id)]->getRxPDO().link_vel * _conversion.link_vel;
         return true;
     }
     
@@ -1227,13 +128,13 @@ bool XBot::XBotCore::get_link_vel(int joint_id, int16_t& link_vel)
     return false;  
 }
 
-bool XBot::XBotCore::get_motor_vel(int joint_id, int16_t& motor_vel)
+bool XBot::XBotCore::get_motor_vel(int joint_id, double& motor_vel)
 {
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
         // get the data
-        motor_vel = motors[rid2Pos(joint_id)]->getRxPDO().motor_vel;
+        motor_vel = motors[rid2Pos(joint_id)]->getRxPDO().motor_vel * _conversion.motor_vel;
         return true;
     }
     
@@ -1242,13 +143,13 @@ bool XBot::XBotCore::get_motor_vel(int joint_id, int16_t& motor_vel)
     return false;  
 }
 
-bool XBot::XBotCore::get_torque(int joint_id, float& torque)
+bool XBot::XBotCore::get_torque(int joint_id, double& torque)
 {
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
         // get the data
-        torque = motors[rid2Pos(joint_id)]->getRxPDO().torque;
+        torque = motors[rid2Pos(joint_id)]->getRxPDO().torque * _conversion.torque;
         return true;
     }
     
@@ -1257,13 +158,13 @@ bool XBot::XBotCore::get_torque(int joint_id, float& torque)
     return false; 
 }
 
-bool XBot::XBotCore::get_temperature(int joint_id, uint16_t& temperature)
+bool XBot::XBotCore::get_temperature(int joint_id, double& temperature)
 {
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
         // get the data
-        temperature = motors[rid2Pos(joint_id)]->getRxPDO().temperature;
+        temperature = motors[rid2Pos(joint_id)]->getRxPDO().temperature * _conversion.temperature;
         return true;
     }
     
@@ -1272,13 +173,13 @@ bool XBot::XBotCore::get_temperature(int joint_id, uint16_t& temperature)
     return false; 
 }
 
-bool XBot::XBotCore::get_fault(int joint_id, uint16_t& fault)
+bool XBot::XBotCore::get_fault(int joint_id, double& fault)
 {
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
         // get the data
-        fault = motors[rid2Pos(joint_id)]->getRxPDO().fault;
+        fault = motors[rid2Pos(joint_id)]->getRxPDO().fault * _conversion.fault;
         return true;
     }
     
@@ -1287,13 +188,13 @@ bool XBot::XBotCore::get_fault(int joint_id, uint16_t& fault)
     return false; 
 }
 
-bool XBot::XBotCore::get_rtt(int joint_id, uint16_t& rtt)
+bool XBot::XBotCore::get_rtt(int joint_id, double& rtt)
 {
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
         // get the data
-        rtt = motors[rid2Pos(joint_id)]->getRxPDO().rtt;
+        rtt = motors[rid2Pos(joint_id)]->getRxPDO().rtt * _conversion.rtt;
         return true;
     }
     
@@ -1302,13 +203,13 @@ bool XBot::XBotCore::get_rtt(int joint_id, uint16_t& rtt)
     return false;   
 }
 
-bool XBot::XBotCore::get_op_idx_ack(int joint_id, uint16_t& op_idx_ack)
+bool XBot::XBotCore::get_op_idx_ack(int joint_id, double& op_idx_ack)
 {
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
         // get the data
-        op_idx_ack = motors[rid2Pos(joint_id)]->getRxPDO().op_idx_ack;
+        op_idx_ack = motors[rid2Pos(joint_id)]->getRxPDO().op_idx_ack * _conversion.op_idx_ack;
         return true;
     }
     
@@ -1317,13 +218,13 @@ bool XBot::XBotCore::get_op_idx_ack(int joint_id, uint16_t& op_idx_ack)
     return false;   
 }
 
-bool XBot::XBotCore::get_aux(int joint_id, float& aux)
+bool XBot::XBotCore::get_aux(int joint_id, double& aux)
 {
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
         // get the data
-        aux = motors[rid2Pos(joint_id)]->getRxPDO().aux;
+        aux = motors[rid2Pos(joint_id)]->getRxPDO().aux * _conversion.aux;
         return true;
     }
     
@@ -1332,17 +233,17 @@ bool XBot::XBotCore::get_aux(int joint_id, float& aux)
     return false;  
 }
 
-bool XBot::XBotCore::get_gains(int joint_id, std::vector< uint16_t >& gain_vector)
+bool XBot::XBotCore::get_gains(int joint_id, std::vector< double >& gain_vector)
 {
     // resize the gain vector
     gain_vector.resize(5);
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
-        gain_vector[0] = motors[rid2Pos(joint_id)]->getTxPDO().gain_0;
-        gain_vector[1] = motors[rid2Pos(joint_id)]->getTxPDO().gain_1;
-        gain_vector[2] = motors[rid2Pos(joint_id)]->getTxPDO().gain_2;
-        gain_vector[3] = motors[rid2Pos(joint_id)]->getTxPDO().gain_3;
-        gain_vector[4] = motors[rid2Pos(joint_id)]->getTxPDO().gain_4;
+        gain_vector[0] = motors[rid2Pos(joint_id)]->getTxPDO().gain_0 * _conversion.gains;
+        gain_vector[1] = motors[rid2Pos(joint_id)]->getTxPDO().gain_1 * _conversion.gains;
+        gain_vector[2] = motors[rid2Pos(joint_id)]->getTxPDO().gain_2 * _conversion.gains;
+        gain_vector[3] = motors[rid2Pos(joint_id)]->getTxPDO().gain_3 * _conversion.gains;
+        gain_vector[4] = motors[rid2Pos(joint_id)]->getTxPDO().gain_4 * _conversion.gains;
             
         return true;
     }
@@ -1355,13 +256,13 @@ bool XBot::XBotCore::get_gains(int joint_id, std::vector< uint16_t >& gain_vecto
 
 
 
-bool XBot::XBotCore::set_pos_ref(int joint_id, const float& pos_ref)
+bool XBot::XBotCore::set_pos_ref(int joint_id, const double& pos_ref)
 {
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
         // set the data
-        motors[rid2Pos(joint_id)]->set_posRef(pos_ref);
+        motors[rid2Pos(joint_id)]->set_posRef(pos_ref * _conversion.pos_ref);
         return true;
     }
     
@@ -1370,14 +271,14 @@ bool XBot::XBotCore::set_pos_ref(int joint_id, const float& pos_ref)
     return false; 
 }
 
-bool XBot::XBotCore::set_vel_ref(int joint_id, const int16_t& vel_ref)
+bool XBot::XBotCore::set_vel_ref(int joint_id, const double& vel_ref)
 {
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
         // set the data
         last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
-        last_pdo_tx.vel_ref = vel_ref;
+        last_pdo_tx.vel_ref = vel_ref * _conversion.vel_ref;
         motors[rid2Pos(joint_id)]->setTxPDO(last_pdo_tx);
         return true;
     }
@@ -1387,14 +288,14 @@ bool XBot::XBotCore::set_vel_ref(int joint_id, const int16_t& vel_ref)
     return false; 
 }
 
-bool XBot::XBotCore::set_tor_ref(int joint_id, const int16_t& tor_ref)
+bool XBot::XBotCore::set_tor_ref(int joint_id, const double& tor_ref)
 {
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
         // set the data
         last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
-        last_pdo_tx.tor_ref = tor_ref;
+        last_pdo_tx.tor_ref = tor_ref * _conversion.tor_ref;
         motors[rid2Pos(joint_id)]->setTxPDO(last_pdo_tx);
         return true;
     }
@@ -1404,7 +305,7 @@ bool XBot::XBotCore::set_tor_ref(int joint_id, const int16_t& tor_ref)
     return false; 
 }
 
-bool XBot::XBotCore::set_gains(int joint_id, const std::vector<uint16_t>& gains)
+bool XBot::XBotCore::set_gains(int joint_id, const std::vector<double>& gains)
 {
     
     // check if the joint requested exists
@@ -1412,11 +313,11 @@ bool XBot::XBotCore::set_gains(int joint_id, const std::vector<uint16_t>& gains)
         // set the data
         last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
         if(gains.size() == 5) {
-            last_pdo_tx.gain_0 = gains[0];
-            last_pdo_tx.gain_1 = gains[1];
-            last_pdo_tx.gain_2 = gains[2];
-            last_pdo_tx.gain_3 = gains[3];
-            last_pdo_tx.gain_4 = gains[4];
+            last_pdo_tx.gain_0 = gains[0] * _conversion.gains;
+            last_pdo_tx.gain_1 = gains[1] * _conversion.gains;
+            last_pdo_tx.gain_2 = gains[2] * _conversion.gains;
+            last_pdo_tx.gain_3 = gains[3] * _conversion.gains;
+            last_pdo_tx.gain_4 = gains[4] * _conversion.gains;
         }
         
         motors[rid2Pos(joint_id)]->setTxPDO(last_pdo_tx);
@@ -1428,14 +329,14 @@ bool XBot::XBotCore::set_gains(int joint_id, const std::vector<uint16_t>& gains)
     return false; 
 }
  
-bool XBot::XBotCore::set_fault_ack(int joint_id, const int16_t& fault_ack)
+bool XBot::XBotCore::set_fault_ack(int joint_id, const double& fault_ack)
 {
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
         // set the data
         last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
-        last_pdo_tx.fault_ack = fault_ack;
+        last_pdo_tx.fault_ack = fault_ack * _conversion.fault_ack;
         motors[rid2Pos(joint_id)]->setTxPDO(last_pdo_tx);
         return true;
     }
@@ -1445,7 +346,7 @@ bool XBot::XBotCore::set_fault_ack(int joint_id, const int16_t& fault_ack)
     return false; 
 }
 
-bool XBot::XBotCore::set_ts(int joint_id, const uint16_t& ts)
+bool XBot::XBotCore::set_ts(int joint_id, const double& ts)
 {
     
     // check if the joint requested exists
@@ -1462,14 +363,14 @@ bool XBot::XBotCore::set_ts(int joint_id, const uint16_t& ts)
     return false; 
 }
 
-bool XBot::XBotCore::set_op_idx_aux(int joint_id, const uint16_t& op_idx_aux)
+bool XBot::XBotCore::set_op_idx_aux(int joint_id, const double& op_idx_aux)
 {
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
         // set the data
         last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
-        last_pdo_tx.op_idx_aux = op_idx_aux;
+        last_pdo_tx.op_idx_aux = op_idx_aux * _conversion.op_idx_aux;
         motors[rid2Pos(joint_id)]->setTxPDO(last_pdo_tx);
         return true;
     }
@@ -1479,14 +380,14 @@ bool XBot::XBotCore::set_op_idx_aux(int joint_id, const uint16_t& op_idx_aux)
     return false; 
 }
 
-bool XBot::XBotCore::set_aux(int joint_id, const float& aux)
+bool XBot::XBotCore::set_aux(int joint_id, const double& aux)
 {
     
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
         // set the data
         last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
-        last_pdo_tx.aux = aux;
+        last_pdo_tx.aux = aux * _conversion.aux;
         motors[rid2Pos(joint_id)]->setTxPDO(last_pdo_tx);
         return true;
     }
@@ -1496,14 +397,20 @@ bool XBot::XBotCore::set_aux(int joint_id, const float& aux)
     return false; 
 }
 
-bool XBot::XBotCore::get_ft(int ft_id, std::vector< float >& ft, int channels)
+bool XBot::XBotCore::get_ft(int ft_id, std::vector< double >& ft, int channels)
 {
     // check if the joint requested exists
     if( fts.count(rid2Pos(ft_id)) ) {
         // get the data, resize the ft vector and copy only Fx,Fy,Fz and Tx,Ty,Tz
         iit::ecat::advr::Ft6EscPdoTypes::pdo_rx actual_pdo_rx_ft = fts[rid2Pos(ft_id)]->getRxPDO();
         ft.resize(channels);
-        std::memcpy(ft.data(), &(actual_pdo_rx_ft.force_X), channels*sizeof(float));
+        
+        ft[0] = actual_pdo_rx_ft.force_X;
+        ft[1] = actual_pdo_rx_ft.force_Y;
+        ft[2] = actual_pdo_rx_ft.force_Z;
+        ft[3] = actual_pdo_rx_ft.torque_X;
+        ft[4] = actual_pdo_rx_ft.torque_Y;
+        ft[5] = actual_pdo_rx_ft.torque_Z;
         
         return true;
     }
@@ -1514,7 +421,7 @@ bool XBot::XBotCore::get_ft(int ft_id, std::vector< float >& ft, int channels)
 }
 
 
-bool XBot::XBotCore::get_ft_fault(int ft_id, uint16_t& fault)
+bool XBot::XBotCore::get_ft_fault(int ft_id, double& fault)
 {
     // check if the joint requested exists
     if( fts.count(rid2Pos(ft_id)) ) {
@@ -1529,7 +436,7 @@ bool XBot::XBotCore::get_ft_fault(int ft_id, uint16_t& fault)
 }
 
 
-bool XBot::XBotCore::get_ft_rtt(int ft_id, uint16_t& rtt)
+bool XBot::XBotCore::get_ft_rtt(int ft_id, double& rtt)
 {
     // check if the joint requested exists
     if( fts.count(rid2Pos(ft_id)) ) {
@@ -1546,5 +453,8 @@ bool XBot::XBotCore::get_ft_rtt(int ft_id, uint16_t& rtt)
 
 
 XBot::XBotCore::~XBotCore() {
+    
+    _pluginHandler->close();
+    
     printf("~XBotCore()\n");
 }
