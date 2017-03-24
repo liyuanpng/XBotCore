@@ -22,6 +22,9 @@
 
 #include <XCM/XBotControlPlugin.h>
 
+#include <XCM/XBotThread.h>
+#include <XCM/XBotCommunicationHandler.h>
+
 #include <XBotCore-interfaces/XBotESC.h>
 #include <XBotCore-interfaces/XDomainCommunication.h>
 
@@ -63,6 +66,8 @@ private:
     XBot::RobotState::pdo_tx _pdo_tx;
 
     XBot::RobotInterface::Ptr _robot;
+    
+    Thread_hook::Ptr _ch;
 
 };
 

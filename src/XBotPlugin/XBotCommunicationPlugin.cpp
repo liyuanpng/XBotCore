@@ -30,11 +30,17 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
                                                         XBot::SharedMemory::Ptr shared_memory,
                                                         RobotInterface::Ptr robot)
 {
+    // get the robot
     _robot = robot;
 
+    // create a SubscriberRT for each enabled joint in the robot
     for( int id : _robot->getEnabledJointId() ) {
         _sub_map[id] = XBot::SubscriberRT<XBot::RobotState::pdo_tx>(std::string("rt_in_Motor_id_") + std::to_string(id));
     }
+    
+    // create the CommunicationHandler thread
+    _ch = std::make_shared<XBot::CommunicationHandler>(path_to_config_file);
+    _ch->create(false, 3);
 
     return true;
 }
@@ -71,6 +77,10 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
 
 bool XBot::XBotCommunicationPlugin::close(void)
 {
+    // stop communication handler thread
+    _ch->stop();
+    _ch->join();
+    
     return true;
 }
 
