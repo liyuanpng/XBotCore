@@ -43,8 +43,8 @@ namespace XBot {
         bool load_plugins();
 
         bool init_plugins(std::shared_ptr< IXBotJoint> joint  = nullptr,
-                          std::shared_ptr< IXBotModel > model = nullptr,
-                          std::shared_ptr< IXBotFT > ft       = nullptr );
+                          std::shared_ptr< IXBotFT > ft       = nullptr,
+                          std::shared_ptr< IXBotModel > model = nullptr );
 
         void run();
 

@@ -121,8 +121,8 @@ bool PluginHandler::load_plugins()
 }
 
 bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
-                                 std::shared_ptr< IXBotModel > model,
-                                 std::shared_ptr< IXBotFT > ft)
+                                 std::shared_ptr< IXBotFT > ft,
+                                 std::shared_ptr< IXBotModel > model)
 {
     init_xddp();
 
