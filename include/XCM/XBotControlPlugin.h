@@ -41,8 +41,6 @@ public:
                       XBot::SharedMemory::Ptr shared_memory,
                       std::shared_ptr<XBot::IXBotJoint> joint,
                       std::shared_ptr< IXBotModel > model,
-                      std::shared_ptr< IXBotChain > chain,
-                      std::shared_ptr< IXBotRobot > robot,
                       std::shared_ptr< IXBotFT > ft) final;
 
     virtual bool init_control_plugin(std::string path_to_config_file,

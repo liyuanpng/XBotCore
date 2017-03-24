@@ -36,15 +36,11 @@ bool XBotControlPlugin::init(std::string path_to_config_file,
                              XBot::SharedMemory::Ptr shared_memory,
                              std::shared_ptr<XBot::IXBotJoint> joint,
                              std::shared_ptr< IXBotModel > model,
-                             std::shared_ptr< IXBotChain > chain,
-                             std::shared_ptr< IXBotRobot > robot,
                              std::shared_ptr< IXBotFT > ft)
 {
     this->name = name;
     this->set_xbotcore_joint(joint);
     this->set_xbotcore_model(model);
-    this->set_xbotcore_chain(chain);
-    this->set_xbotcore_robot(robot);
     this->set_xbotcore_ft(ft);
 
     AnyMapPtr any_map = std::make_shared<AnyMap>();
