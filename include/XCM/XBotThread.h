@@ -19,6 +19,7 @@
 #include <exception>
 #include <typeinfo>
 #include <iostream>
+#include <memory>
 
 #include <XCM/XBotUtils.h>
 
@@ -57,6 +58,8 @@ inline void tsnorm ( struct timespec *ts ) {
 class Thread_hook {
 
 public:
+    
+    typedef std::shared_ptr<Thread_hook> Ptr;
 
     virtual ~Thread_hook();
 
