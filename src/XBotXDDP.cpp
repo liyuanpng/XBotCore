@@ -89,14 +89,14 @@ XBot::XBotXDDP::XBotXDDP(std::string config_file)
     }
 
     //ft
-    for(auto& ft_j : ft) {
-        // initialize all the fd reading for the ft
-        XBot::SubscriberNRT<XBot::RobotFT::pdo_rx> subscriber_ft(std::string("Ft_id_") + std::to_string(ft_j.second).c_str());
-        fd_ft_read[ft_j.second] = subscriber_ft;
-
-        // initialize the mutex
-        mutex[ft_j.second] = std::make_shared<std::mutex>();
-    }
+//     for(auto& ft_j : ft) {
+//         // initialize all the fd reading for the ft
+//         XBot::SubscriberNRT<XBot::RobotFT::pdo_rx> subscriber_ft(std::string("Ft_id_") + std::to_string(ft_j.second).c_str());
+//         fd_ft_read[ft_j.second] = subscriber_ft;
+// 
+//         // initialize the mutex
+//         mutex[ft_j.second] = std::make_shared<std::mutex>();
+//     }
 
 }
 
