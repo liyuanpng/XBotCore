@@ -136,6 +136,7 @@ private:
     
     XBot::XBotConversion _conversion;
     
+    int _iter = 0;
     
     // NOTE IXBotJoint getters
     virtual bool get_link_pos(int joint_id, double& link_pos) final;

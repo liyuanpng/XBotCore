@@ -72,6 +72,7 @@ double XBot::XBotCore::get_time()
 
 int XBot::XBotCore::control_loop(void) 
 {    
+    _iter++;
     _pluginHandler->run();
 }
 
@@ -455,6 +456,6 @@ bool XBot::XBotCore::get_ft_rtt(int ft_id, double& rtt)
 XBot::XBotCore::~XBotCore() {
     
     _pluginHandler->close();
-    
+    printf("Iteration: %d \n", _iter);
     printf("~XBotCore()\n");
 }
