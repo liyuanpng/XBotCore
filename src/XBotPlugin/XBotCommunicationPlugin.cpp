@@ -39,8 +39,8 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
     }
     
     // create the CommunicationHandler thread
-    _ch = std::make_shared<XBot::CommunicationHandler>(path_to_config_file);
-    _ch->create(false, 3);
+//     _ch = std::make_shared<XBot::CommunicationHandler>(path_to_config_file);
+//     _ch->create(false, 3);
 
     return true;
 }
@@ -78,8 +78,8 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
 bool XBot::XBotCommunicationPlugin::close(void)
 {
     // stop communication handler thread
-    _ch->stop();
-    _ch->join();
+//     _ch->stop();
+//     _ch->join();
     
     return true;
 }
