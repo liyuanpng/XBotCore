@@ -55,7 +55,7 @@ void XBot::CommunicationHandler::th_init(void*)
     }
 
     for(const std::string& name : _plugin_names) {
-        std::string switch_name = "xbot_rt_plugin_" + name + "_switch";
+        std::string switch_name = name + "_switch";
         _switch_names.push_back(switch_name);
         _command_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(switch_name));
     }
