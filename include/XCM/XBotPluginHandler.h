@@ -82,7 +82,6 @@ namespace XBot {
         std::vector<bool> _plugin_init_success;
         std::vector<XBot::SubscriberRT<XBot::Command>> _plugin_command;
         std::vector<std::string> _plugin_state;
-        int _communication_plugin_idx;
         std::vector<bool> _first_loop;
 
         std::vector<double> _last_time, _time, _period, _elapsed_time;
@@ -91,9 +90,9 @@ namespace XBot {
         std::map<int, XBot::RobotState> _robot_state_map;
 
         XBot::ESCUtils _esc_utils;
-
-        XBot::ConsoleLogger::Ptr _console;
-        XBot::MatLogger::Ptr _logger;
+        
+        int _communication_plugin_idx;
+        int _logging_plugin_idx;
 
         RobotInterface::Ptr _robot;
         std::string _path_to_cfg;

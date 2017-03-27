@@ -40,9 +40,6 @@ PluginHandler::PluginHandler(RobotInterface::Ptr robot,  TimeProvider::Ptr time_
     _close_was_called(false)
 {
     _path_to_cfg = _robot->getPathToConfig();
-    _logger = XBot::MatLogger::getLogger("/tmp/XBotCore_log");
-    _console = XBot::ConsoleLogger::getLogger();
-    _robot->initLog(_logger, 500000);
 }
 
 
@@ -53,13 +50,13 @@ bool PluginHandler::load_plugins()
 
 
     if(!_root_cfg["XBotRTPlugins"]){
-        _console->error() << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node XBotRTPlugins!" << _console->endl();
+        std::cout << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node XBotRTPlugins!" << std::endl;
         return false;
     }
     else{
 
         if(!_root_cfg["XBotRTPlugins"]["plugins"]){
-            _console->error() << "ERROR in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node plugins!" << _console->endl();
+            std::cout << "ERROR in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node plugins!" << std::endl;
         return false;
         }
         else{
@@ -68,6 +65,7 @@ bool PluginHandler::load_plugins()
                 _rtplugin_names.push_back(plugin.as<std::string>());
             }
 
+            // loading by default the XBotCommunicationPlugin
             std::string communication_plugin_name = "XBotCommunicationPlugin";
             auto it = std::find(_rtplugin_names.begin(), _rtplugin_names.end(), communication_plugin_name);
             if( it == _rtplugin_names.end() ) {
@@ -76,6 +74,17 @@ bool PluginHandler::load_plugins()
             }
             else{
                 _communication_plugin_idx = std::distance(_rtplugin_names.begin(), it);
+            }
+            
+            // loading by default the XBotLoggingPlugin
+            std::string logging_plugin_name = "XBotLoggingPlugin";
+            it = std::find(_rtplugin_names.begin(), _rtplugin_names.end(), logging_plugin_name);
+            if( it == _rtplugin_names.end() ) {
+                _rtplugin_names.push_back(logging_plugin_name);
+                _logging_plugin_idx = _rtplugin_names.size() - 1;
+            }
+            else{
+                _logging_plugin_idx = std::distance(_rtplugin_names.begin(), it);
             }
         }
 
@@ -97,12 +106,12 @@ bool PluginHandler::load_plugins()
             // NOTE print to celebrate the wizard
             printf("error (%s) : %s\n", shlibpp::Vocab::decode(factory_ptr->getStatus()).c_str(),
                 factory_ptr->getLastNativeError().c_str());
-            _console->error() << "Unable to load plugin " << plugin_name << "!" << _console->endl();
+            std::cout << "Unable to load plugin " << plugin_name << "!" << std::endl;
             success = false;
             continue;
         }
         else{
-            _console->info() << "Found plugin " << plugin_name << "!" << _console->endl();
+            std::cout << "Found plugin " << plugin_name << "!" << std::endl;
         }
 
         _rtplugin_factory.push_back(factory_ptr);
@@ -133,6 +142,9 @@ bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
     _first_loop.resize(_rtplugin_vector.size(), true);
 
     bool ret = true;
+    
+    // NOTE starting by default the logging plugin
+    _plugin_state[_logging_plugin_idx] = "RUNNING";
 
     for(int i = 0; i < _rtplugin_vector.size(); i++) {
         if(!(*_rtplugin_vector[i])->init( _path_to_cfg,
@@ -143,13 +155,13 @@ bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
                                           ft)
              )
         {
-            _console->error() << "ERROR: plugin " << (*_rtplugin_vector[i])->name << " - init() failed" << _console->endl();
+            std::cout << "ERROR: plugin " << (*_rtplugin_vector[i])->name << " - init() failed" << std::endl;
             ret = false;
         }
 
-        _console->info() << "Plugin " << (*_rtplugin_vector[i])->name << " initialized successfully!" << _console->endl();
+        std::cout << "Plugin " << (*_rtplugin_vector[i])->name << " initialized successfully!" << std::endl;
         _plugin_init_success[i] = true;
-        _plugin_command[i].init("xbot_rt_plugin_"+_rtplugin_names[i]+"_switch");
+        _plugin_command[i].init(_rtplugin_names[i]+"_switch");
     }
 
     return ret;
@@ -186,9 +198,6 @@ void PluginHandler::run()
     // fill robot state
     fill_robot_state();
 
-    // log all robot state
-    _robot->log(_logger, _time_provider->get_time());
-
     // broadcast robot state over pipes
     run_xddp();
 
@@ -219,7 +228,7 @@ void PluginHandler::run()
 
                 /* If start command has been received, set plugin to RUNNING */
                 if( cmd.str() == "start" && plugin_can_start(i) ){
-                    _console->info() << "Starting plugin : " << (*plugin)->name << _console->endl();
+                    std::cout << "Starting plugin : " << (*plugin)->name << std::endl;
                     (*plugin)->on_start(_time[i]);
                     _plugin_state[i] = "RUNNING";
                 }
@@ -234,7 +243,7 @@ void PluginHandler::run()
 
                 /* If stop command has been received, set plugin to STOPPED */
                 if( cmd.str() == "stop" ){
-                    _console->info() << "Stopping plugin : " << (*plugin)->name << _console->endl();
+                    std::cout << "Stopping plugin : " << (*plugin)->name << std::endl;
                     (*plugin)->on_stop(_time[i]);
                     _plugin_state[i] = "STOPPED";
                 }
@@ -259,8 +268,6 @@ void PluginHandler::close()
     for( const auto& plugin : _rtplugin_vector ){
         (*plugin)->close();
     }
-
-    _logger->flush();
 }
 
 bool PluginHandler::computeAbsolutePath(const std::string& input_path,
