@@ -93,10 +93,8 @@ add_library(XBotCoreThread SHARED
 # set Xenomain flags if Xenomai is founded
 if ( Xenomai_FOUND )
     set_xeno_flags(${PROJECT_NAME})
-    set_xeno_flags(XBotPluginHandler)
+#     set_xeno_flags(XBotCoreThread)
 endif()
-
-# add_subdirectory(src/XBotPlugin) # leave it here, the main dipends on the compiled plugins
 
 target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
                                       ${XBotCore-interfaces_LIBRARIES}
