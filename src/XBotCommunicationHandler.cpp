@@ -74,7 +74,10 @@ void XBot::CommunicationHandler::th_init(void*)
 //     (*anymap)["XBotFT"] = boost::any(xbot_ft);
 
     _robot = XBot::RobotInterface::getRobot(_path_to_config, anymap, "XBotRT");
-
+    
+    _logger = XBot::MatLogger::getLogger("/tmp/Paolino_log");
+    _robot->initLog(_logger, 500000);
+    
 
     /* Get a vector of communication interfaces to/from NRT frameworks like ROS, YARP, ... */
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
@@ -104,7 +107,7 @@ void XBot::CommunicationHandler::th_init(void*)
     // set thread period - not periodic
     task_period_t t;
     memset(&t, 0, sizeof(t));
-    t.period = {0,3000};
+    t.period = {0,2000};
     period.task_time = t.task_time;
     period.period = t.period;
     // set scheduler policy
@@ -140,6 +143,9 @@ void XBot::CommunicationHandler::th_loop(void*)
 
     /* Read robot state from RT layer and update robot */
     _robot->sense(false);
+    
+    /* Log */
+    _robot->log(_logger, double(XBot::get_time_ns()) / 1e9);
 
     /* Publish robot state to all frameworks */
     for(auto comm_ifc : _communication_ifc_vector){
@@ -157,6 +163,6 @@ void XBot::CommunicationHandler::th_loop(void*)
 
 XBot::CommunicationHandler::~CommunicationHandler()
 {
-
+    _logger->flush();
 }
 

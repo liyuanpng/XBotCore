@@ -70,6 +70,8 @@ private:
 
     std::vector<XBot::CommunicationInterface::Ptr> _communication_ifc_vector;
     XBot::CommunicationInterface::Ptr _master_communication_ifc;
+    
+    XBot::MatLogger::Ptr _logger;
 };
 }
 

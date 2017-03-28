@@ -304,16 +304,22 @@ PluginHandler::~PluginHandler()
 
 bool PluginHandler::plugin_can_start(int plugin_idx)
 {
+    /* Logging plugin can always start */
+    
+    if( plugin_idx == _logging_plugin_idx ){
+        return true;
+    }
 
+    /* We are asked to run the communication plugin,
+    allow it if and ONLY if all plugins are stopped,
+    except for the logging plugin which can always run */
+    
     if( plugin_idx == _communication_plugin_idx ){
 
         bool can_start = true;
 
-        /* We are asked to run the communication plugin,
-         allow it if and ONLY if all plugins are stopped */
-
-        for(const std::string& plugin_state : _plugin_state){
-            can_start = can_start && ( plugin_state == "STOPPED" );
+        for(int i = 0; i < _plugin_state.size(); i++){
+            can_start = can_start && ( _plugin_state[i] == "STOPPED" || i == _logging_plugin_idx );
         }
 
         return can_start;
