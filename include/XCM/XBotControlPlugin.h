@@ -23,6 +23,8 @@
 #include <XBotInterface/RobotInterface.h>
 #include <XBotCore-interfaces/XBotPlugin.h>
 
+#include <XBotCore-interfaces/XDomainCommunication.h>
+
 #define REGISTER_XBOT_PLUGIN(plugin_name, scoped_class_name) SHLIBPP_DEFINE_SHARED_SUBCLASS(plugin_name ## _factory, scoped_class_name, XBot::XBotControlPlugin);
 
 
@@ -57,6 +59,8 @@ protected:
 
     virtual void control_loop(double time, double period) = 0;
 
+    XBot::SubscriberRT<XBot::Command> command;
+    XBot::Command current_command;
 
 private:
 

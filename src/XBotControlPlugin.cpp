@@ -48,6 +48,9 @@ bool XBotControlPlugin::init(std::string path_to_config_file,
     (*any_map)["XBotFT"] = boost::any(ft);
 
     RobotInterface::Ptr robotinterface = RobotInterface::getRobot(path_to_config_file, any_map);
+    
+    // initialize the coomand port
+    command.init(name + "_cmd");
 
     return init_control_plugin(path_to_config_file, shared_memory, robotinterface);
 
@@ -55,7 +58,7 @@ bool XBotControlPlugin::init(std::string path_to_config_file,
 
 void XBotControlPlugin::run(double time, double period)
 {
-
+    
     control_loop(time, period);
 }
 
