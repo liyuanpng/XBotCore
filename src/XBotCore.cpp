@@ -72,6 +72,7 @@ double XBot::XBotCore::get_time()
 
 int XBot::XBotCore::control_loop(void) 
 {    
+//     std::cout << "laurenzi" << std::endl;
     _iter++;
     _pluginHandler->run();
 }
