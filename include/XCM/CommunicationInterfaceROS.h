@@ -29,6 +29,8 @@
 #include <RobotInterfaceROS/GenericJointStateMessage.h>
 #include <robot_state_publisher/robot_state_publisher.h>
 
+#include <XCM/cmd_service.h>
+
 namespace XBot {
 
 class CommunicationInterfaceROS : public CommunicationInterface {
@@ -43,12 +45,16 @@ public:
 
     virtual bool advertiseSwitch(const std::string& port_name);
     virtual bool receiveFromSwitch(const std::string& port_name, std::string& message);
+    
+    virtual bool advertiseCmd(const std::string& port_name);
+    virtual bool receiveFromCmd(const std::string& port_name, std::string& message);  // TBD template message
 
 protected:
 
 private:
 
     bool callback(std_srvs::SetBoolRequest& req, std_srvs::SetBoolResponse& res, const std::string& port_name);
+    bool callback_cmd(XCM::cmd_serviceRequest& req, XCM::cmd_serviceResponse& res, const std::string& port_name);
 
     void load_ros_message_interfaces();
 

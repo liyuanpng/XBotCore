@@ -58,8 +58,11 @@ private:
     std::string _path_to_config;
 
     std::vector<std::string> _plugin_names;
+    
     std::vector<std::string> _switch_names;
+    std::vector<std::string> _command_names;
 
+    std::vector<XBot::PublisherNRT<XBot::Command>> _switch_pub_vector;
     std::vector<XBot::PublisherNRT<XBot::Command>> _command_pub_vector;
 
     XBot::XBotXDDP::Ptr _xddp_handler;

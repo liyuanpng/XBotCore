@@ -57,7 +57,11 @@ void XBot::CommunicationHandler::th_init(void*)
     for(const std::string& name : _plugin_names) {
         std::string switch_name = name + "_switch";
         _switch_names.push_back(switch_name);
-        _command_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(switch_name));
+        _switch_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(switch_name));
+        
+        std::string command_name = name + "_cmd";
+        _command_names.push_back(command_name);
+        _command_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(command_name));
     }
 
     _xddp_handler = std::make_shared<XBot::XBotXDDP>(_path_to_config);
@@ -89,6 +93,10 @@ void XBot::CommunicationHandler::th_init(void*)
         for(const std::string& switch_name : _switch_names){
             comm_ifc->advertiseSwitch(switch_name);
         }
+        
+        for(const std::string& cmd_name : _command_names){
+            comm_ifc->advertiseCmd(cmd_name);
+        }
     }
 
     // set thread name
@@ -119,6 +127,9 @@ void XBot::CommunicationHandler::th_loop(void*)
         for(int i = 0; i < _plugin_names.size(); i++){
             std::string command;
             if( comm_ifc->receiveFromSwitch(_switch_names[i], command) ){
+                _switch_pub_vector[i].write(command);
+            }
+            if( comm_ifc->receiveFromCmd(_command_names[i], command) ){
                 _command_pub_vector[i].write(command);
             }
         }

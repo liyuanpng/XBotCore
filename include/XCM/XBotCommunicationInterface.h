@@ -39,6 +39,9 @@ public:
 
     virtual bool advertiseSwitch(const std::string& port_name) = 0;
     virtual bool receiveFromSwitch(const std::string& port_name, std::string& message) = 0;
+    
+    virtual bool advertiseCmd(const std::string& port_name) = 0;
+    virtual bool receiveFromCmd(const std::string& port_name, std::string& message) = 0;  // TBD template message 
 
 protected:
 

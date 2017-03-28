@@ -31,6 +31,14 @@ bool CommunicationInterfaceROS::callback(std_srvs::SetBoolRequest& req,
     return true;
 }
 
+bool XBot::CommunicationInterfaceROS::callback_cmd(XCM::cmd_serviceRequest& req, 
+                                                   XCM::cmd_serviceResponse& res, 
+                                                   const std::string& port_name)
+{
+    _msgs.at(port_name) = req.cmd;
+    res.success = true;
+    return true;
+}
 
 CommunicationInterfaceROS::CommunicationInterfaceROS():
     CommunicationInterface()
@@ -289,6 +297,26 @@ bool CommunicationInterfaceROS::advertiseSwitch(const std::string& port_name)
     return true;
 }
 
+bool XBot::CommunicationInterfaceROS::advertiseCmd(const std::string& port_name)
+{
+    if( _services.count(port_name) > 0 ){
+        return false;
+    }
+
+    _services[port_name] = _nh->advertiseService<XCM::cmd_serviceRequest, XCM::cmd_serviceResponse>
+                                    (port_name,
+                                     boost::bind(&CommunicationInterfaceROS::callback_cmd,
+                                                 this,
+                                                 _1, _2, port_name)
+                                     );
+    _msgs[port_name] = "";
+
+    std::cout << "Advertised service " << port_name << std::endl;
+
+    return true;
+}
+
+
 bool CommunicationInterfaceROS::receiveFromSwitch(const std::string& port_name, std::string& message)
 {
     ros::spinOnce();
@@ -306,6 +334,25 @@ bool CommunicationInterfaceROS::receiveFromSwitch(const std::string& port_name, 
         return false;
     }
 }
+
+bool XBot::CommunicationInterfaceROS::receiveFromCmd(const std::string& port_name, std::string& message)
+{
+    ros::spinOnce();
+
+    auto it = _msgs.find(port_name);
+
+    if( it == _msgs.end() ) return false;
+
+    message = it->second;
+    if( message != "" ){
+        it->second = "";
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 
 bool CommunicationInterfaceROS::computeAbsolutePath (  const std::string& input_path,
                                                  const std::string& middle_path,

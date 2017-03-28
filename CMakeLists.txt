@@ -90,6 +90,7 @@ if( ${catkin_FOUND} )
     DIRECTORY srv
     FILES
     advr_controller_joint_names.srv
+    cmd_service.srv
     )
 
     generate_messages(
@@ -316,4 +317,3 @@ if(BUILD_TESTS)
   add_custom_target(test_verbose ${CMAKE_CTEST_COMMAND} -V)
   add_subdirectory(tests)
 endif()
-
