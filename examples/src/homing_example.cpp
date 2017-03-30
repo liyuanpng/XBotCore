@@ -37,6 +37,11 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file,
     _robot->getRobotState("home", _q_home);
     _robot->sense();
     _robot->getJointPosition(_q0);
+    _robot->getStiffness(_k0);
+    _robot->getDamping(_d0);
+    _k = _k0;
+    _d = _d0;
+    _q = _q0;
 
 //     if( !_robot->checkJointLimits(_q_home) ) throw;
 
@@ -82,11 +87,19 @@ void HomingExample::control_loop(double time, double period)
 
    // Go to homing
     if( (time - _first_loop_time) <= _homing_time ){
-        _robot->setPositionReference(_q0 + 0.5*(1-std::cos(3.1415*(time - _first_loop_time)/_homing_time))*(_q_home-_q0));
+        _q = _q0 + 0.5*(1-std::cos(3.1415*(time - _first_loop_time)/_homing_time))*(_q_home-_q0);
+        _robot->setPositionReference(_q);
         _robot->move();
         return;
 
     }
+    
+    _k = _k0 / 20;
+    _d = _d0/20;
+    
+    _robot->setStiffness(_k);
+    _robot->setDamping(_d);
+    _robot->move();
 
 //     if(_close_hand) {
 //         _robot->sense();

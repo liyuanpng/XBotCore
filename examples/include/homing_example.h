@@ -48,7 +48,7 @@ namespace XBot {
     private:
 
         RobotInterface::Ptr _robot;
-        Eigen::VectorXd _q0, _q_home;
+        Eigen::VectorXd _q0, _q_home, _q, _k, _d, _k0, _d0;
         double _time, _homing_time, _first_loop_time;
 
         ForceTorqueSensor::ConstPtr _l_arm_ft;
