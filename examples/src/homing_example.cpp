@@ -98,7 +98,7 @@ void HomingExample::control_loop(double time, double period)
     _robot->getPositionReference(_qref);
     _robot->getJointPosition(_q);
     
-    _k = (_qref - _q).array().abs() * 1000;
+    _k = (_qref - _q).array().square() * 1000;
     
     for( int i = 0; i < _k.size(); i++ ){
       _k(i) = _k(i) < 1000 ? _k(i) : 1000;  
