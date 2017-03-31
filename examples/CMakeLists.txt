@@ -50,6 +50,7 @@ include_directories(include)
 ###########
 add_library(IkExample SHARED src/ik_example.cpp)
 add_library(HomingExample SHARED src/homing_example.cpp)
+add_library(IdExample SHARED src/id_example.cpp)
 add_executable(IpcExampleRT src/example_ipc_rt.cpp)
 add_executable(IpcExampleNRT src/example_ipc_nonrt.cpp)
 
@@ -62,6 +63,7 @@ endif()
 ## Link ##
 ##########
 target_link_libraries(IkExample XCM)
+target_link_libraries(IdExample XCM)
 target_link_libraries(HomingExample XCM)
 target_link_libraries(IpcExampleNRT XCM ${RT_LIBRARY})
 target_link_libraries(IpcExampleRT XCM ${RT_LIBRARY})
@@ -71,6 +73,45 @@ target_link_libraries(IpcExampleRT XCM ${RT_LIBRARY})
 ## Install ##
 #############
 
+set(VARS_PREFIX "IdExample")
+
+set(IdExample_MAJOR_VERSION 0)
+set(IdExample_MINOR_VERSION 1)
+set(IdExample_PATCH_VERSION 0)
+set(IdExample_VERSION ${IdExample_MAJOR_VERSION}.${IdExample_MINOR_VERSION}.${IdExample_PATCH_VERSION})
+
+find_package(YCM REQUIRED)
+include(YCMDefaultDirs)
+ycm_default_dirs(${VARS_PREFIX})
+
+target_include_directories(IdExample PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
+                                                "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
+
+set_target_properties(IdExample PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
+                                               SOVERSION ${${VARS_PREFIX}_VERSION})
+
+install(DIRECTORY include/
+        DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"
+        FILES_MATCHING PATTERN "*.h*")
+
+install(TARGETS IdExample
+        EXPORT IdExample
+        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
+        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
+        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
+
+
+
+#enabling it will add all IdExample dependencies as dependencies for third party users
+set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS IdExample)
+
+
+include(InstallBasicPackageFiles)
+install_basic_package_files(IdExample VARS_PREFIX ${VARS_PREFIX}
+                                    VERSION ${${VARS_PREFIX}_VERSION}
+                                    COMPATIBILITY SameMajorVersion
+                                    TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
+                                    NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 
 set(VARS_PREFIX "IkExample")
 
