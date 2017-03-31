@@ -271,6 +271,30 @@ bool XBot::XBotXDDP::get_gains(int joint_id, std::vector< double >& gain_vector)
     return true;
 }
 
+bool XBot::XBotXDDP::get_pos_ref(int joint_id, double& pos_ref)
+{
+    mutex.at(joint_id)->lock();
+    pos_ref = pdo_motor.at(joint_id)->RobotStateTX.pos_ref;
+    mutex.at(joint_id)->unlock();
+    return true;
+}
+
+bool XBot::XBotXDDP::get_vel_ref(int joint_id, double& vel_ref)
+{
+    mutex.at(joint_id)->lock();
+    vel_ref = pdo_motor.at(joint_id)->RobotStateTX.vel_ref;
+    mutex.at(joint_id)->unlock();
+    return true;
+}
+
+bool XBot::XBotXDDP::get_tor_ref(int joint_id, double& tor_ref)
+{
+    mutex.at(joint_id)->lock();
+    tor_ref = pdo_motor.at(joint_id)->RobotStateTX.tor_ref;
+    mutex.at(joint_id)->unlock();
+    return true;
+}
+
 
 bool XBot::XBotXDDP::set_pos_ref(int joint_id, const double& pos_ref)
 {
