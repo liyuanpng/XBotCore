@@ -94,22 +94,8 @@ void HomingExample::control_loop(double time, double period)
         return;
 
     }
-    
-    _robot->getPositionReference(_qref);
-    _robot->getJointPosition(_q);
-    
-    _k = (_qref - _q).array().square() * 1000;
-    
-    for( int i = 0; i < _k.size(); i++ ){
-      _k(i) = _k(i) < 1000 ? _k(i) : 1000;  
-    }
-    
-    _d = _k / 100;
 
-    
-    _robot->setStiffness(_k);
-    _robot->setDamping(_d);
-    _robot->move();
+//     _robot->move();
 
 //     if(_close_hand) {
 //         _robot->sense();
