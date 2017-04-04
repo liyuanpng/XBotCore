@@ -159,7 +159,10 @@ target_include_directories(XCM PUBLIC
                             ${XBotInterface_INCLUDE_DIRS}
                             ${XBotCore-interfaces_INCLUDE_DIRS}
                             )
-
+if(${catkin_FOUND})  
+    add_dependencies(XCM XCM_generate_messages_cpp)
+endif()
+    
 if ( Xenomai_FOUND )
     set_xeno_flags(XCM)
 endif()
