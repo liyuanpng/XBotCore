@@ -6,7 +6,6 @@ set_and_check(XCM_INCLUDEDIR "@PACKAGE_XCM_INCLUDEDIR@")
 include(CMakeFindDependencyMacro)
 find_package(YCM)
 find_dependency(XBotInterface REQUIRED)
-find_dependency(XBotLogger REQUIRED)
 find_package(XBotCore-interfaces REQUIRED)
 
 if(NOT TARGET XCM::XCM)

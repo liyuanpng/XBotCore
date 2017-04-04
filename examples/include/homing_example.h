@@ -23,39 +23,43 @@
 #include <XCM/XBotControlPlugin.h>
 
 namespace XBot {
- 
+
     class HomingExample : public XBotControlPlugin {
-      
+
     public:
-        
+
         HomingExample();
-        
+
         virtual bool init_control_plugin(std::string path_to_config_file,
                                          XBot::SharedMemory::Ptr shared_memory,
                                          RobotInterface::Ptr robot);
-        
+
         virtual bool close();
 
+        virtual void on_start(double time);
+
+        virtual void on_stop(double time);
+
     protected:
-        
-        
+
+
         virtual void control_loop(double time, double period);
-        
+
     private:
-        
+
         RobotInterface::Ptr _robot;
         Eigen::VectorXd _q0, _q_home;
-        double _time, _homing_time;
-        
+        double _time, _homing_time, _first_loop_time;
+
         ForceTorqueSensor::ConstPtr _l_arm_ft;
         Eigen::Matrix<double, 6, 1> _l_arm_wrench;
-        
+
         double _l_hand_pos;
         double _l_hand_ref;
         bool _close_hand;
-        
+
     };
-    
+
 }
 
 #endif // __XCM_EXAMPLES_HOMING_EXAMPLE_H__
