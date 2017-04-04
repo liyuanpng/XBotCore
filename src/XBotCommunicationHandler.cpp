@@ -52,16 +52,40 @@ void XBot::CommunicationHandler::th_init(void*)
             }
         }
 
+        if(!root_cfg["XBotRTPlugins"]["io_plugins"]){
+            std::cerr << "ERROR in " << __func__ << "!XBotRTPlugins node does NOT contain mandatory node io_plugins!" << std::endl;
+        return;
+        }
+        else{
+
+            for(const auto& plugin : root_cfg["XBotRTPlugins"]["io_plugins"]){
+                _io_plugin_names.push_back(plugin.as<std::string>());
+            }
+
+        }
+
     }
 
     for(const std::string& name : _plugin_names) {
         std::string switch_name = name + "_switch";
         _switch_names.push_back(switch_name);
         _switch_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(switch_name));
-        
+
         std::string command_name = name + "_cmd";
         _command_names.push_back(command_name);
         _command_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(command_name));
+    }
+
+    for(const std::string& name : _io_plugin_names) {
+        XBot::IOPluginLoader io_plugin_loader;
+        if(io_plugin_loader.load(name)){
+            _io_plugin_loader.push_back(io_plugin_loader);
+            _io_plugin_ptr.push_back(io_plugin_loader.getPtr());
+            io_plugin_loader.getPtr()->init(_path_to_config);
+        }
+        else{
+            // TBD print error
+        }
     }
 
     _xddp_handler = std::make_shared<XBot::XBotXDDP>(_path_to_config);
@@ -74,10 +98,10 @@ void XBot::CommunicationHandler::th_init(void*)
 //     (*anymap)["XBotFT"] = boost::any(xbot_ft);
 
     _robot = XBot::RobotInterface::getRobot(_path_to_config, anymap, "XBotRT");
-    
+
     _logger = XBot::MatLogger::getLogger("/tmp/Paolino_log");
     _robot->initLog(_logger, 500000);
-    
+
 
     /* Get a vector of communication interfaces to/from NRT frameworks like ROS, YARP, ... */
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
@@ -96,7 +120,7 @@ void XBot::CommunicationHandler::th_init(void*)
         for(const std::string& switch_name : _switch_names){
             comm_ifc->advertiseSwitch(switch_name);
         }
-        
+
         for(const std::string& cmd_name : _command_names){
             comm_ifc->advertiseCmd(cmd_name);
         }
@@ -143,7 +167,7 @@ void XBot::CommunicationHandler::th_loop(void*)
 
     /* Read robot state from RT layer and update robot */
     _robot->sense(false);
-    
+
     /* Log */
     _robot->log(_logger, double(XBot::get_time_ns()) / 1e9);
 
@@ -156,6 +180,11 @@ void XBot::CommunicationHandler::th_loop(void*)
      * i.e. the only one enabled to send commands to the robot */
     _master_communication_ifc->receiveReference(); // this updates robot
 
+    /* Run external plugins */
+    for( XBot::IOPlugin * io_plugin_ptr : _io_plugin_ptr ){
+        if(io_plugin_ptr) io_plugin_ptr->run();
+    }
+
     /* Send received commands to the RT layer */
     _robot->move();
 
@@ -165,4 +194,5 @@ XBot::CommunicationHandler::~CommunicationHandler()
 {
     _logger->flush();
 }
+
 

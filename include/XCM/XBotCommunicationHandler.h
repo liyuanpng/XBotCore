@@ -24,6 +24,7 @@
 
 #include <XCM/XBotCommunicationInterface.h>
 #include <XCM/XBotXDDP.h>
+#include <XCM/IOPlugin.h>
 
 #include <XBotCore-interfaces/XDomainCommunication.h>
 
@@ -53,12 +54,14 @@ protected:
 
 private:
 
-
+    std::vector<std::string> _io_plugin_names;
+    std::vector<IOPlugin*> _io_plugin_ptr;
+    std::vector<IOPluginLoader> _io_plugin_loader;
 
     std::string _path_to_config;
 
     std::vector<std::string> _plugin_names;
-    
+
     std::vector<std::string> _switch_names;
     std::vector<std::string> _command_names;
 
@@ -70,7 +73,7 @@ private:
 
     std::vector<XBot::CommunicationInterface::Ptr> _communication_ifc_vector;
     XBot::CommunicationInterface::Ptr _master_communication_ifc;
-    
+
     XBot::MatLogger::Ptr _logger;
 };
 }
