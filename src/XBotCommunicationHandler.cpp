@@ -76,17 +76,6 @@ void XBot::CommunicationHandler::th_init(void*)
         _command_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(command_name));
     }
 
-    for(const std::string& name : _io_plugin_names) {
-        XBot::IOPluginLoader io_plugin_loader;
-        if(io_plugin_loader.load(name)){
-            _io_plugin_loader.push_back(io_plugin_loader);
-            _io_plugin_ptr.push_back(io_plugin_loader.getPtr());
-            io_plugin_loader.getPtr()->init(_path_to_config);
-        }
-        else{
-            // TBD print error
-        }
-    }
 
     _xddp_handler = std::make_shared<XBot::XBotXDDP>(_path_to_config);
     _xddp_handler->init();
@@ -114,6 +103,19 @@ void XBot::CommunicationHandler::th_init(void*)
     std::cout << "USE_YARP_COMMUNICATION_INTERFACE found! " << std::endl;
     communication_ifc_vector.push_back( std::make_shared<XBot::YarpCommunicationInterface>(_robot) );
 #endif
+
+    /* Load IO plugins */
+    for(const std::string& name : _io_plugin_names) {
+        XBot::IOPluginLoader io_plugin_loader;
+        if(io_plugin_loader.load(name)){
+            _io_plugin_loader.push_back(io_plugin_loader);
+            _io_plugin_ptr.push_back(io_plugin_loader.getPtr());
+            io_plugin_loader.getPtr()->init(_path_to_config);
+        }
+        else{
+            // TBD print error
+        }
+    }
 
     /* Advertise switch ports for all plugins on all frameworks */
     for(auto comm_ifc : _communication_ifc_vector){
