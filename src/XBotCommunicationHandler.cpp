@@ -53,8 +53,7 @@ void XBot::CommunicationHandler::th_init(void*)
         }
 
         if(!root_cfg["XBotRTPlugins"]["io_plugins"]){
-            std::cerr << "ERROR in " << __func__ << "!XBotRTPlugins node does NOT contain mandatory node io_plugins!" << std::endl;
-        return;
+            std::cerr << "WARNING in " << __func__ << "!XBotRTPlugins node does NOT contain mandatory node io_plugins!" << std::endl;
         }
         else{
 
