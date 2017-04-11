@@ -51,7 +51,10 @@ namespace XBot {
         Eigen::VectorXd _q0, _q_home, _qref, _qdotref, _qddotref, _q, _qdot, _k, _d, _k0, _d0, _dq, _tau;
         Eigen::MatrixXd _B;
         double _time, _homing_time, _first_loop_time;
-        
+
+        bool damp_motion;
+
+
 
 
     };
