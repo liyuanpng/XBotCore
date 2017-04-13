@@ -53,6 +53,7 @@ namespace XBot {
         double _time, _homing_time, _first_loop_time;
 
         bool damp_motion;
+        bool torque_ctrl;
 
 
 

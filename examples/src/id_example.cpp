@@ -11,6 +11,8 @@ XBot::IdExample::IdExample()
 bool XBot::IdExample::init_control_plugin(std::string path_to_config_file, XBot::SharedMemory::Ptr shared_memory, XBot::RobotInterface::Ptr robot)
 {
     _robot = robot;
+    _robot->getStiffness(_k0);
+    _robot->getDamping(_d0);
     _robot->model().getJointPosition(_q0);
 
     _model = ModelInterface::getModel(path_to_config_file);
@@ -30,6 +32,7 @@ bool XBot::IdExample::init_control_plugin(std::string path_to_config_file, XBot:
 void XBot::IdExample::on_start(double time)
 {
     damp_motion = false;
+    torque_ctrl = true;
 
     _robot->model().getJointPosition(_q0);
     _dq.setConstant(_robot->model().getJointNum(), 0.2);
@@ -46,9 +49,26 @@ void XBot::IdExample::control_loop(double time, double period)
     static double OMEGA = 2.0 * 3.1415 / PERIOD;
 
     /* If "damp" command is received, start decreasing OMEGA so as to come to a stop */
-    if(command.read(current_command) && current_command.str() == "damp"){
-        damp_motion = true;
-        std::cout << "Damping motion!" << std::endl;
+    if(command.read(current_command)){
+
+        if(current_command.str() == "damp"){
+            damp_motion = true;
+            std::cout << "Damping motion!" << std::endl;
+        }
+
+        if(current_command.str() == "impedance_ctrl"){
+            _robot->setStiffness(_k0);
+            _robot->setDamping(_d0);
+            torque_ctrl = false;
+            std::cout << "impedance_ctrl!" << std::endl;
+        }
+
+        if(current_command.str() == "torque_ctrl"){
+            _robot->setStiffness(_k0*0);
+            _robot->setDamping(_d0*0);
+            torque_ctrl = true;
+            std::cout << "torque_ctrl!" << std::endl;
+        }
     }
 
     if( damp_motion ) OMEGA *= 0.999;
@@ -73,11 +93,12 @@ void XBot::IdExample::control_loop(double time, double period)
     _robot->model().getJointPosition(_q);
     _robot->model().getJointVelocity(_qdot);
 
-    double kp = 50, kd = 5;
+    double kp = 50, kd = 15;
 
     _tau += _B*( kp*(_qref-_q) + kd*(_qdotref-_qdot) );
 
-    
+    if(!torque_ctrl) _tau.setZero(_tau.size());
+
     _model->setJointEffort(_tau);
     _robot->setPositionReference(_qref);
     _robot->setReferenceFrom(*_model, Sync::Effort);
