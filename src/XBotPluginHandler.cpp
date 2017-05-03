@@ -40,6 +40,7 @@ PluginHandler::PluginHandler(RobotInterface::Ptr robot,  TimeProvider::Ptr time_
     _close_was_called(false)
 {
     _path_to_cfg = _robot->getPathToConfig();
+    std::cout << "Plugin Handler is using config file: " << _path_to_cfg << std::endl;
 }
 
 
