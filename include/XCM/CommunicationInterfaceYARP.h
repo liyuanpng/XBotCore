@@ -22,17 +22,21 @@
 #define __XBOT_COMMUNICATION_INTERFACE_YARP_H__
 
 #include <XCM/XBotCommunicationInterface.h>
-
+#include <yarp/dev/DeviceDriver.h>
 
 namespace XBot {
 
-class CommunicationInterfaceYARP : public CommunicationInterface {
+class CommunicationInterfaceYARP : public CommunicationInterface,
+                                   public yarp::dev::DeviceDriver
+{
 
 public:
 
     CommunicationInterfaceYARP();
     CommunicationInterfaceYARP(XBotInterface::Ptr robot);
 
+    // XBot CommunicationInterface 
+    
     virtual void sendRobotState();
     virtual void receiveReference();
 
@@ -41,6 +45,13 @@ public:
     
     virtual bool advertiseCmd(const std::string& port_name);
     virtual bool receiveFromCmd(const std::string& port_name, std::string& message);  // TBD template message
+    
+    
+    // YARP DeviceDriver
+    
+    virtual bool open(yarp::os::Searchable &par);
+    virtual bool close();
+    
 
 protected:
 
