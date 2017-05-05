@@ -146,6 +146,7 @@ std::string& XBot::AdvrJointState::aux_name()
 void XBot::AdvrJointState::callback(XCM::JointStateAdvrConstPtr msg)
 {
     _msg = *msg;
+    _msg_received = true;
 }
 
 double& XBot::AdvrJointState::damping(int index)
