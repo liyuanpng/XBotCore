@@ -62,11 +62,16 @@ protected:
 
 private:
 
+    XBot::JointIdMap _pos_ref_map, _vel_ref_map, _tor_ref_map;
+    Eigen::VectorXd _q0, _qref;
+
+    double _start_time;
+
     std::map<int, XBot::SubscriberRT<XBot::RobotState::pdo_tx>> _sub_map;
     XBot::RobotState::pdo_tx _pdo_tx;
 
     XBot::RobotInterface::Ptr _robot;
-    
+
     Thread_hook::Ptr _ch;
 
 };
