@@ -198,9 +198,16 @@ endif()
 add_executable(DummyMain src/DummyMain.cpp)
 target_link_libraries(DummyMain XCM)
 
+install(TARGETS DummyMain
+        EXPORT  DummyMain 
+        RUNTIME DESTINATION bin)
+
 add_executable(CommunicationHandler src/XBotCommunicationMain.cpp)
 target_link_libraries(CommunicationHandler XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
 
+install(TARGETS CommunicationHandler
+        EXPORT  CommunicationHandler 
+        RUNTIME DESTINATION bin)
 
 add_subdirectory(src/XBotPlugin)
 
