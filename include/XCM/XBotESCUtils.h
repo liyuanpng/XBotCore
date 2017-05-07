@@ -46,7 +46,7 @@ private:
     XBot::RobotInterface::Ptr _robot;
     XBot::JointIdMap _joint_map;
     
-    Eigen::Matrix<double, 6, 1> _wrench;
+    KDL::Wrench _wrench;
     
 
 };

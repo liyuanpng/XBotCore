@@ -174,6 +174,8 @@ bool XBot::PluginHandler::init_xddp()
     for( int id : _robot->getEnabledJointId() ) {
         XBot::PublisherRT<XBot::RobotState> pub(std::string("Motor_id_") + std::to_string(id));
         _motor_pub_map[id] = pub;
+        // NOTE preallocate memory beacause of XENOMAI
+        _robot_state_map[id] = XBot::RobotState();
     }
     
     // FT
