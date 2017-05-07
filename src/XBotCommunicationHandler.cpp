@@ -83,24 +83,32 @@ void XBot::CommunicationHandler::th_init(void*)
     std::shared_ptr<XBot::IXBotJoint> xbot_joint = _xddp_handler;
     std::shared_ptr<XBot::IXBotFT> xbot_ft = _xddp_handler;
     (*anymap)["XBotJoint"] = boost::any(xbot_joint);
-//     (*anymap)["XBotFT"] = boost::any(xbot_ft);
+    (*anymap)["XBotFT"] = boost::any(xbot_ft);
 
     _robot = XBot::RobotInterface::getRobot(_path_to_config, anymap, "XBotRT");
 
     _logger = XBot::MatLogger::getLogger("/tmp/Paolino_log");
     _robot->initLog(_logger, 500000);
+    
+    // update robot
+    _robot->sense();
 
 
     /* Get a vector of communication interfaces to/from NRT frameworks like ROS, YARP, ... */
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
     std::cout << "USE_ROS_COMMUNICATION_INTERFACE found! " << std::endl;
-    _master_communication_ifc = std::make_shared<XBot::CommunicationInterfaceROS>(_robot);  // TBD specify the MASTER who can send TX data
-    _communication_ifc_vector.push_back( _master_communication_ifc );
+    _ros_communication = std::make_shared<XBot::CommunicationInterfaceROS>(_robot);
+    _communication_ifc_vector.push_back( _ros_communication );
+    
+//     _master_communication_ifc = _ros_communication  // TBD specify the MASTER who can send TX data
 #endif
 
 #ifdef USE_YARP_COMMUNICATION_INTERFACE
     std::cout << "USE_YARP_COMMUNICATION_INTERFACE found! " << std::endl;
-    communication_ifc_vector.push_back( std::make_shared<XBot::YarpCommunicationInterface>(_robot) );
+    _yarp_communication = std::make_shared<XBot::CommunicationInterfaceYARP>(_robot);
+    _communication_ifc_vector.push_back( _yarp_communication );
+    
+    _master_communication_ifc = _yarp_communication;  // TBD specify the MASTER who can send TX data
 #endif
 
     /* Load IO plugins */
@@ -132,7 +140,7 @@ void XBot::CommunicationHandler::th_init(void*)
     // set thread period - not periodic
     task_period_t t;
     memset(&t, 0, sizeof(t));
-    t.period = {0,2000};
+    t.period = {0,5000};
     period.task_time = t.task_time;
     period.period = t.period;
     // set scheduler policy
@@ -151,7 +159,7 @@ void XBot::CommunicationHandler::th_init(void*)
 void XBot::CommunicationHandler::th_loop(void*)
 {
     /* Receive commands on switch ports */
-    for(auto comm_ifc : _communication_ifc_vector){
+    for(auto comm_ifc : _communication_ifc_vector) {
         for(int i = 0; i < _plugin_names.size(); i++){
             std::string command;
             if( comm_ifc->receiveFromSwitch(_switch_names[i], command) ){

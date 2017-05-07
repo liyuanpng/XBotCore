@@ -8,6 +8,8 @@ find_package(YCM)
 find_dependency(XBotInterface REQUIRED)
 find_package(XBotCore-interfaces REQUIRED)
 
+find_package(YARP QUIET)
+
 if(NOT TARGET XCM::XCM)
   include("${CMAKE_CURRENT_LIST_DIR}/XCMTargets.cmake")
 endif()

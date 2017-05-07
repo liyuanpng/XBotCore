@@ -86,7 +86,7 @@ protected:
     // pthread attribute
     int             schedpolicy;
     int             priority;
-    int             stacksize;
+    int             stacksize = 0;
 
     friend void * rt_periodic_thread ( Thread_hook_Ptr );
     friend void * rt_non_periodic_thread ( Thread_hook_Ptr );

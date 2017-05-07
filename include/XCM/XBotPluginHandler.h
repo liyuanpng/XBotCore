@@ -86,8 +86,11 @@ namespace XBot {
 
         std::vector<double> _last_time, _time, _period, _elapsed_time;
 
-        std::map<int, XBot::PublisherRT<XBot::RobotState>> _pub_map;
+        std::map<int, XBot::PublisherRT<XBot::RobotState>> _motor_pub_map;
         std::map<int, XBot::RobotState> _robot_state_map;
+        
+        std::map<int, XBot::PublisherRT<XBot::RobotFT::pdo_rx>> _ft_pub_map;
+        std::map<int, XBot::RobotFT::pdo_rx> _ft_state_map;
 
         XBot::ESCUtils _esc_utils;
         

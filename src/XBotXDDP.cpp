@@ -89,14 +89,14 @@ XBot::XBotXDDP::XBotXDDP(std::string config_file)
     }
 
     //ft
-//     for(auto& ft_j : ft) {
-//         // initialize all the fd reading for the ft
-//         XBot::SubscriberNRT<XBot::RobotFT::pdo_rx> subscriber_ft(std::string("Ft_id_") + std::to_string(ft_j.second).c_str());
-//         fd_ft_read[ft_j.second] = subscriber_ft;
-// 
-//         // initialize the mutex
-//         mutex[ft_j.second] = std::make_shared<std::mutex>();
-//     }
+    for(auto& ft_j : ft) {
+        // initialize all the fd reading for the ft
+        XBot::SubscriberNRT<XBot::RobotFT::pdo_rx> subscriber_ft(std::string("Ft_id_") + std::to_string(ft_j.second).c_str());
+        fd_ft_read[ft_j.second] = subscriber_ft;
+
+        // initialize the mutex
+        mutex[ft_j.second] = std::make_shared<std::mutex>();
+    }
 
 }
 
@@ -126,6 +126,7 @@ bool XBot::XBotXDDP::init()
 
 void XBot::XBotXDDP::update()
 {
+    // Motor
     for( auto& f: fd_read) {
         mutex.at(f.first)->lock();
 
@@ -137,13 +138,9 @@ void XBot::XBotXDDP::update()
 
         // reading from the NRT subscriber pipes to update the RobotStateRX in the pdo_motor buffer
         fd_read.at(f.first).read(*pdo_motor.at(f.first));
-//         (*pdo_motor.at(f.first)).RobotStateRX = _actual_pdo_motor.RobotStateRX;
-
-//         std::cout << "ID: " << f.first << " - link_pos :  " << (*pdo_motor.at(f.first)).RobotStateRX.link_pos << std::endl;
 
         mutex.at(f.first)->unlock();
     }
-
 }
 
 bool XBot::XBotXDDP::get_min_pos(int joint_id, float& min_pos)
@@ -375,7 +372,7 @@ bool XBot::XBotXDDP::get_ft(int ft_id, std::vector< double >& ft, int channels)
     fd_ft_read.at(ft_id).read(actual_pdo_rx_ft);
 
     ft.resize(channels);
-    std::memcpy(ft.data(), &(actual_pdo_rx_ft.force_X), channels*sizeof(float));
+    std::memcpy(ft.data(), &(actual_pdo_rx_ft.force_X), channels*sizeof(double));
 
     mutex.at(ft_id)->unlock();
 

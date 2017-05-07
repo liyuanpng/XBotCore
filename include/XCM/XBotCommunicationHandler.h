@@ -34,7 +34,7 @@
 #endif
 
 #ifdef USE_YARP_COMMUNICATION_INTERFACE
-#include <XCM/CommunicationInterfaceYARP.h>
+#include <XCM/XBotYARP/CommunicationInterfaceYARP.h>
 #endif
 
 namespace XBot
@@ -73,6 +73,14 @@ private:
 
     std::vector<XBot::CommunicationInterface::Ptr> _communication_ifc_vector;
     XBot::CommunicationInterface::Ptr _master_communication_ifc;
+    
+#ifdef USE_ROS_COMMUNICATION_INTERFACE
+    XBot::CommunicationInterfaceROS::Ptr _ros_communication;
+#endif
+    
+#ifdef USE_YARP_COMMUNICATION_INTERFACE
+    XBot::CommunicationInterfaceYARP::Ptr _yarp_communication;
+#endif
 
     XBot::MatLogger::Ptr _logger;
 };

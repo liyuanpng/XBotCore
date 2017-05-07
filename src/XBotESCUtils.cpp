@@ -108,3 +108,19 @@ bool XBot::ESCUtils::setRobotStateFromRobotInterface(std::map< int, XBot::RobotS
     }
 }
 
+bool XBot::ESCUtils::setRobotFTFromRobotInterface(std::map< int, XBot::RobotFT::pdo_rx >& ft)
+{
+    for( const auto& pair : _robot->getForceTorque() ){
+        int id = pair.second->getSensorId();
+        _robot->getForceTorque(id)->getWrench(_wrench);
+        ft[id].force_X  = _wrench(0);
+        ft[id].force_Y  = _wrench(1);
+        ft[id].force_Z  = _wrench(2);
+        ft[id].torque_X = _wrench(3);
+        ft[id].torque_Y = _wrench(4);
+        ft[id].torque_Z = _wrench(5);
+    }
+
+}
+
+
