@@ -77,11 +77,6 @@ include_directories(include ${XBotCore-interfaces_INCLUDE_DIRS}
 add_executable(${PROJECT_NAME}
     src/XBotMain.cpp
 )
-# 
-# # exe
-# # add_executable(XBotYARP
-# #     src/XBotYARPMain.cpp
-# # )
 
 # lib
 add_library(XBotCoreThread SHARED
