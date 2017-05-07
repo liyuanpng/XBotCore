@@ -88,7 +88,7 @@ void XBot::CommunicationHandler::th_init(void*)
     _robot = XBot::RobotInterface::getRobot(_path_to_config, anymap, "XBotRT");
 
     _logger = XBot::MatLogger::getLogger("/tmp/Paolino_log");
-    _robot->initLog(_logger, 500000);
+    _robot->initLog(_logger, 100000);
     
     // update robot
     _robot->sense();

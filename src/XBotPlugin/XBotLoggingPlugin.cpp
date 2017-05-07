@@ -36,7 +36,7 @@ bool XBot::XBotLoggingPlugin::init_control_plugin(std::string path_to_config_fil
     
     // initialize logger
     _logger = XBot::MatLogger::getLogger("/tmp/XBotCore_log");
-    _robot->initLog(_logger, 500000);
+    _robot->initLog(_logger, 100000);
 
     return true;
 }
