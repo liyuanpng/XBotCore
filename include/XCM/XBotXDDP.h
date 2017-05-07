@@ -23,7 +23,7 @@
 
 #include <XBotCore-interfaces/XBotESC.h>
 
-#include <mutex>
+// #include <mutex>
 #include <cstring>
 
 #include <XBotCore-interfaces/IXBotJoint.h>
@@ -191,11 +191,11 @@ private:
      */
     int n_bytes;
     
-    /**
-     * @brief mutex
-     * 
-     */
-    std::map<int,std::shared_ptr<std::mutex>> mutex;
+//     /**
+//      * @brief mutex
+//      * 
+//      */
+//     std::map<int,std::shared_ptr<std::mutex>> mutex;
     
     
     /**

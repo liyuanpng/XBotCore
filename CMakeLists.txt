@@ -33,7 +33,7 @@ include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
 check_cxx_compiler_flag("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 if(COMPILER_SUPPORTS_CXX11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++11")
 elseif(COMPILER_SUPPORTS_CXX0X)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 else()
@@ -73,7 +73,6 @@ find_package(XBotCore-interfaces REQUIRED)
 find_package(catkin QUIET COMPONENTS roscpp sensor_msgs std_srvs message_generation robot_state_publisher)
 find_package(YARP QUIET)
 find_package(kdl_parser REQUIRED)
-
 
 option(BUILD_TESTS "Compile XCM tests" FALSE)
 
@@ -186,14 +185,10 @@ target_link_libraries(XCM PUBLIC ${XBotInterface_LIBRARIES}
                                  )
 
 
-target_include_directories(XCM PUBLIC
+target_include_directories( XCM PUBLIC
                             ${XBotInterface_INCLUDE_DIRS}
                             ${XBotCore-interfaces_INCLUDE_DIRS}
                             )
-
-if ( Xenomai_FOUND )
-    set_xeno_flags(XCM)
-endif()
 
 add_executable(DummyMain src/DummyMain.cpp)
 target_link_libraries(DummyMain XCM)
@@ -208,6 +203,12 @@ target_link_libraries(CommunicationHandler XCM ${COMMUNICATION_INTERFACE_LIBRARI
 install(TARGETS CommunicationHandler
         EXPORT  CommunicationHandler 
         RUNTIME DESTINATION bin)
+        
+        
+if ( Xenomai_FOUND )
+    set_xeno_flags(XCM)
+endif()
+
 
 add_subdirectory(src/XBotPlugin)
 

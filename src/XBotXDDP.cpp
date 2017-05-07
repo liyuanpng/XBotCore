@@ -66,7 +66,7 @@ XBot::XBotXDDP::XBotXDDP(std::string config_file)
 //             fd_sdo_read[c.second[i]] = subscriber_sdo;
 
             // initialize the mutex
-            mutex[c.second[i]] = std::make_shared<std::mutex>();
+//             mutex[c.second[i]] = std::make_shared<std::mutex>();
 
             // initialize the pdo_motor
             if(fd_read.count(c.second[i])) {
@@ -95,7 +95,7 @@ XBot::XBotXDDP::XBotXDDP(std::string config_file)
         fd_ft_read[ft_j.second] = subscriber_ft;
 
         // initialize the mutex
-        mutex[ft_j.second] = std::make_shared<std::mutex>();
+//         mutex[ft_j.second] = std::make_shared<std::mutex>();
     }
 
 }
@@ -128,7 +128,6 @@ void XBot::XBotXDDP::update()
 {
     // Motor
     for( auto& f: fd_read) {
-        mutex.at(f.first)->lock();
 
         // write to the NRT publisher to command the RobotStateTX in the pdo_motor buffer
         XBot::RobotState::pdo_tx actual_pdo_tx = pdo_motor.at(f.first)->RobotStateTX;
@@ -139,7 +138,6 @@ void XBot::XBotXDDP::update()
         // reading from the NRT subscriber pipes to update the RobotStateRX in the pdo_motor buffer
         fd_read.at(f.first).read(*pdo_motor.at(f.first));
 
-        mutex.at(f.first)->unlock();
     }
 }
 
@@ -176,87 +174,66 @@ bool XBot::XBotXDDP::get_ctrl_status_cmd(int joint_id, uint16_t& ctrl_status_cmd
 
 bool XBot::XBotXDDP::get_link_pos(int joint_id, double& link_pos)
 {
-    mutex.at(joint_id)->lock();
     link_pos = pdo_motor.at(joint_id)->RobotStateRX.link_pos;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::get_motor_pos(int joint_id, double& motor_pos)
 {
-    mutex.at(joint_id)->lock();
     motor_pos = pdo_motor.at(joint_id)->RobotStateRX.motor_pos;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::get_link_vel(int joint_id, double& link_vel)
 {
-    mutex.at(joint_id)->lock();
     link_vel = pdo_motor.at(joint_id)->RobotStateRX.link_vel;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::get_motor_vel(int joint_id, double& motor_vel)
 {
-    mutex.at(joint_id)->lock();
     motor_vel = pdo_motor.at(joint_id)->RobotStateRX.motor_vel;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::get_torque(int joint_id, double& torque)
 {
-    mutex.at(joint_id)->lock();
     torque = pdo_motor.at(joint_id)->RobotStateRX.torque;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::get_temperature(int joint_id, double& temperature)
 {
-    mutex.at(joint_id)->lock();
     temperature = pdo_motor.at(joint_id)->RobotStateRX.temperature;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::get_fault(int joint_id, double& fault)
 {
-    mutex.at(joint_id)->lock();
     fault = pdo_motor.at(joint_id)->RobotStateRX.fault;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::get_rtt(int joint_id, double& rtt)
 {
-    mutex.at(joint_id)->lock();
     rtt = pdo_motor.at(joint_id)->RobotStateRX.rtt;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::get_op_idx_ack(int joint_id, double& op_idx_ack)
 {
-    mutex.at(joint_id)->lock();
     op_idx_ack = pdo_motor.at(joint_id)->RobotStateRX.op_idx_ack;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::get_aux(int joint_id, double& aux)
 {
-    mutex.at(joint_id)->lock();
     aux = pdo_motor.at(joint_id)->RobotStateRX.aux;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::get_gains(int joint_id, std::vector< double >& gain_vector)
 {
-    mutex.at(joint_id)->lock();
     // resize the gain vector
     gain_vector.resize(5);
     gain_vector[0] = pdo_motor.at(joint_id)->RobotStateTX.gain_0;
@@ -264,63 +241,49 @@ bool XBot::XBotXDDP::get_gains(int joint_id, std::vector< double >& gain_vector)
     gain_vector[2] = pdo_motor.at(joint_id)->RobotStateTX.gain_2;
     gain_vector[3] = pdo_motor.at(joint_id)->RobotStateTX.gain_3;
     gain_vector[4] = pdo_motor.at(joint_id)->RobotStateTX.gain_4;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::get_pos_ref(int joint_id, double& pos_ref)
 {
-    mutex.at(joint_id)->lock();
     pos_ref = pdo_motor.at(joint_id)->RobotStateTX.pos_ref;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::get_vel_ref(int joint_id, double& vel_ref)
 {
-    mutex.at(joint_id)->lock();
     vel_ref = pdo_motor.at(joint_id)->RobotStateTX.vel_ref;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::get_tor_ref(int joint_id, double& tor_ref)
 {
-    mutex.at(joint_id)->lock();
     tor_ref = pdo_motor.at(joint_id)->RobotStateTX.tor_ref;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 
 bool XBot::XBotXDDP::set_pos_ref(int joint_id, const double& pos_ref)
 {
-    mutex.at(joint_id)->lock();
     pdo_motor.at(joint_id)->RobotStateTX.pos_ref = pos_ref;
     //DPRINTF("joint : %d - set pos ref : %f\n", joint_id, pdo_motor.at(joint_id)->RobotStateTX.pos_ref);
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::set_vel_ref(int joint_id, const double& vel_ref)
 {
-    mutex.at(joint_id)->lock();
     pdo_motor.at(joint_id)->RobotStateTX.vel_ref = vel_ref;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::set_tor_ref(int joint_id, const double& tor_ref)
 {
-    mutex.at(joint_id)->lock();
     pdo_motor.at(joint_id)->RobotStateTX.tor_ref = tor_ref;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::set_gains(int joint_id, const std::vector< double >& gains)
 {
-    mutex.at(joint_id)->lock();
     if(gains.size() == 5) {
         pdo_motor.at(joint_id)->RobotStateTX.gain_0 = gains[0];
         pdo_motor.at(joint_id)->RobotStateTX.gain_1 = gains[1];
@@ -328,45 +291,35 @@ bool XBot::XBotXDDP::set_gains(int joint_id, const std::vector< double >& gains)
         pdo_motor.at(joint_id)->RobotStateTX.gain_3 = gains[3];
         pdo_motor.at(joint_id)->RobotStateTX.gain_4 = gains[4];
     }
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::set_fault_ack(int joint_id, const double& fault_ack)
 {
-    mutex.at(joint_id)->lock();
     pdo_motor.at(joint_id)->RobotStateTX.fault_ack = fault_ack;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::set_ts(int joint_id, const double& ts)
 {
-    mutex.at(joint_id)->lock();
     pdo_motor.at(joint_id)->RobotStateTX.ts = ts;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::set_op_idx_aux(int joint_id, const double& op_idx_aux)
 {
-    mutex.at(joint_id)->lock();
     pdo_motor.at(joint_id)->RobotStateTX.op_idx_aux = op_idx_aux;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::set_aux(int joint_id, const double& aux)
 {
-    mutex.at(joint_id)->lock();
     pdo_motor.at(joint_id)->RobotStateTX.aux = aux;
-    mutex.at(joint_id)->unlock();
     return true;
 }
 
 bool XBot::XBotXDDP::get_ft(int ft_id, std::vector< double >& ft, int channels)
 {
-    mutex.at(ft_id)->lock();
 
     XBot::RobotFT::pdo_rx actual_pdo_rx_ft;
     fd_ft_read.at(ft_id).read(actual_pdo_rx_ft);
@@ -374,35 +327,25 @@ bool XBot::XBotXDDP::get_ft(int ft_id, std::vector< double >& ft, int channels)
     ft.resize(channels);
     std::memcpy(ft.data(), &(actual_pdo_rx_ft.force_X), channels*sizeof(double));
 
-    mutex.at(ft_id)->unlock();
-
     return true;
 }
 
 bool XBot::XBotXDDP::get_ft_fault(int ft_id, double& fault)
 {
-    mutex.at(ft_id)->lock();
-
     XBot::RobotFT::pdo_rx actual_pdo_rx_ft;
     fd_ft_read.at(ft_id).read(actual_pdo_rx_ft);
 
     fault = actual_pdo_rx_ft.fault;
-
-    mutex.at(ft_id)->unlock();
 
     return true;
 }
 
 bool XBot::XBotXDDP::get_ft_rtt(int ft_id, double& rtt)
 {
-    mutex.at(ft_id)->lock();
-
     XBot::RobotFT::pdo_rx actual_pdo_rx_ft;
     fd_ft_read.at(ft_id).read(actual_pdo_rx_ft);
 
     rtt = actual_pdo_rx_ft.rtt;
-
-    mutex.at(ft_id)->unlock();
 
     return true;
 }
@@ -415,8 +358,8 @@ XBot::XBotXDDP::~XBotXDDP()
 }
 
 bool XBot::XBotXDDP::computeAbsolutePath (  const std::string& input_path,
-                                                 const std::string& middle_path,
-                                                 std::string& absolute_path)
+                                            const std::string& middle_path,
+                                            std::string& absolute_path)
 {
     // if not an absolute path
     if(!(input_path.at(0) == '/')) {
