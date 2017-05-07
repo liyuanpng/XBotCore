@@ -37,12 +37,16 @@ public:
     bool setReferenceFromRobotStateTX( const std::map<int, XBot::RobotState::pdo_tx>& pdo_tx );
     bool setRobotStateFromRobotInterface( std::map<int, XBot::RobotState>& pdo );
     
+    bool setRobotFTFromRobotInterface( std::map<int, XBot::RobotFT::pdo_rx>& ft );
+    
 protected:
     
 private:
     
     XBot::RobotInterface::Ptr _robot;
     XBot::JointIdMap _joint_map;
+    
+    Eigen::Matrix<double, 6, 1> _wrench;
     
 
 };

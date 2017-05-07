@@ -113,7 +113,7 @@ public:
     virtual bool get_ft_rtt(int ft_id, double& rtt) final;
     
     
-    // TBD do an interface that does it
+    // TBD do an interface that does it NOTE now looks like useless to me
     bool get_min_pos(int joint_id, float& min_pos);
     bool get_max_pos(int joint_id, float& max_pos);
     bool get_ctrl_status_cmd(int joint_id, uint16_t& ctrl_status_cmd);

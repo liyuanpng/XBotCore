@@ -170,23 +170,40 @@ bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
 
 bool XBot::PluginHandler::init_xddp()
 {
+    // Motor
     for( int id : _robot->getEnabledJointId() ) {
         XBot::PublisherRT<XBot::RobotState> pub(std::string("Motor_id_") + std::to_string(id));
-        _pub_map[id] = pub;
+        _motor_pub_map[id] = pub;
+    }
+    
+    // FT
+    for( const auto& ft : _robot->getForceTorque() ) {
+        int id = ft.second->getSensorId();
+        XBot::PublisherRT<XBot::RobotFT::pdo_rx> pub(std::string("Ft_id_") + std::to_string(id));
+        _ft_pub_map[id] = pub;
     }
 }
 
 
 void XBot::PluginHandler::run_xddp()
 {
-    for( auto& pub : _pub_map ) {
-        pub.second.write(_robot_state_map.at(pub.first));
+    // Motor
+    for( auto& pub_motor : _motor_pub_map ) {
+        pub_motor.second.write(_robot_state_map.at(pub_motor.first));
     }
+    
+    // FT 
+    for( auto& pub_ft : _ft_pub_map ) {
+        pub_ft.second.write(_ft_state_map.at(pub_ft.first));
+    }
+    
+    
 }
 
 void XBot::PluginHandler::fill_robot_state()
 {
     _esc_utils.setRobotStateFromRobotInterface(_robot_state_map);
+    _esc_utils.setRobotFTFromRobotInterface(_ft_state_map);
 }
 
 
