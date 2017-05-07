@@ -71,7 +71,7 @@ find_package(XBotInterface REQUIRED)
 find_package(XBotCore-interfaces REQUIRED)
 
 find_package(catkin QUIET COMPONENTS roscpp sensor_msgs std_srvs message_generation robot_state_publisher)
-# find_package(YARP QUIET)
+find_package(YARP QUIET)
 find_package(kdl_parser REQUIRED)
 
 
@@ -129,9 +129,40 @@ if(${catkin_FOUND})
 endif()
 
 if(${YARP_FOUND})
+    
     add_definitions(-DUSE_YARP_COMMUNICATION_INTERFACE)
-    set(COMMUNICATION_INTERFACE_SOURCE_FILES ${COMMUNICATION_INTERFACE_SOURCE_FILES} src/CommunicationInterfaceYARP.cpp)
+    
+    list(APPEND CMAKE_MODULE_PATH ${YARP_MODULE_PATH})
+    
+    # YARP plugin configuration
+    include(YarpPlugin)
+    include(YarpInstallationHelpers)
+
+    set(YARP_FORCE_DYNAMIC_PLUGINS TRUE CACHE INTERNAL "XBotYarp is always built with dynamic plugins")
+    yarp_configure_external_installation(XBotYarp WITH_PLUGINS)
+
+    # add the RPATH support
+    include(AddInstallRPATHSupport)
+
+    add_install_rpath_support(LIB_DIRS "${CMAKE_INSTALL_FULL_LIBDIR}"                                        # Libraries
+                              BIN_DIRS "${CMAKE_INSTALL_FULL_BINDIR}"                                        # Binaries
+                                       "${CMAKE_INSTALL_PREFIX}/${XBOTYARP_DYNAMIC_PLUGINS_INSTALL_DIR}"     # Plugins
+                              USE_LINK_PATH)
+
+    # Prepare a plugin library called "XBotYarp".
+    YARP_BEGIN_PLUGIN_LIBRARY(XBotYarp)
+
+    add_subdirectory(src/XBotYARP/XBotMotionControl)
+    add_subdirectory(src/XBotYARP/XBotFT)
+
+    YARP_END_PLUGIN_LIBRARY(XBotYarp)
+    
+    set(COMMUNICATION_INTERFACE_SOURCE_FILES ${COMMUNICATION_INTERFACE_SOURCE_FILES} src/XBotYARP/CommunicationInterfaceYARP.cpp)
     set(COMMUNICATION_INTERFACE_LIBRARIES ${COMMUNICATION_INTERFACE_LIBRARIES} ${YARP_LIBRARIES})
+    
+    message(${YARP_LIBRARIES})
+    
+    
 endif()
 
 message(${COMMUNICATION_INTERFACE_SOURCE_FILES})
@@ -169,6 +200,7 @@ target_link_libraries(DummyMain XCM)
 
 add_executable(CommunicationHandler src/XBotCommunicationMain.cpp)
 target_link_libraries(CommunicationHandler XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
+
 
 add_subdirectory(src/XBotPlugin)
 
