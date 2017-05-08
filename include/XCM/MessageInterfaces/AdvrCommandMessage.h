@@ -59,7 +59,7 @@ namespace XBot {
         ros::ServiceServer _joint_names_srv;
         XCM::advr_controller_joint_namesResponse _joint_names_res;
 
-        std::map<std::string, int> _idx_map;
+        std::unordered_map<std::string, int> _idx_map;
 
 
     };
