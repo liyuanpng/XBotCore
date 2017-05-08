@@ -89,7 +89,7 @@ void XBot::CommunicationHandler::th_init(void*)
 
     _logger = XBot::MatLogger::getLogger("/tmp/Paolino_log");
     _robot->initLog(_logger, 100000);
-    
+
     // update robot
     _robot->sense();
 
@@ -99,15 +99,15 @@ void XBot::CommunicationHandler::th_init(void*)
     std::cout << "USE_ROS_COMMUNICATION_INTERFACE found! " << std::endl;
     _ros_communication = std::make_shared<XBot::CommunicationInterfaceROS>(_robot);
     _communication_ifc_vector.push_back( _ros_communication );
-    
-//     _master_communication_ifc = _ros_communication  // TBD specify the MASTER who can send TX data
+
+    _master_communication_ifc = _ros_communication;  // TBD specify the MASTER who can send TX data
 #endif
 
 #ifdef USE_YARP_COMMUNICATION_INTERFACE
     std::cout << "USE_YARP_COMMUNICATION_INTERFACE found! " << std::endl;
     _yarp_communication = std::make_shared<XBot::CommunicationInterfaceYARP>(_robot);
     _communication_ifc_vector.push_back( _yarp_communication );
-    
+
     _master_communication_ifc = _yarp_communication;  // TBD specify the MASTER who can send TX data
 #endif
 
