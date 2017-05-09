@@ -52,6 +52,9 @@ public:
     virtual bool advertiseCmd(const std::string& port_name);
     virtual bool receiveFromCmd(const std::string& port_name, std::string& message);  // TBD template message
     
+    virtual bool advertiseMasterCommunicationInterface();
+    virtual bool receiveMasterCommunicationInterface(std::string& framework_name);
+    
     virtual ~CommunicationInterfaceYARP() { std::cerr << "~CommunicationInterfaceYARP()" << std::endl; }
 
 protected:

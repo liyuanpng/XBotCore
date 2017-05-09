@@ -20,9 +20,10 @@
 #include <XCM/XBotCommunicationHandler.h>
 
 
-XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config) : _path_to_config(path_to_config)
+XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config) : 
+    _path_to_config(path_to_config),
+    _master_communication_ifc(nullptr)
 {
-
 }
 
 void XBot::CommunicationHandler::th_init(void*)
@@ -37,8 +38,8 @@ void XBot::CommunicationHandler::th_init(void*)
     else{
 
         if(!root_cfg["XBotRTPlugins"]["plugins"]){
-            std::cerr << "ERROR in " << __func__ << "!XBotRTPlugins node does NOT contain mandatory node plugins!" << std::endl;
-        return;
+            std::cerr << "ERROR in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node plugins!" << std::endl;
+            return;
         }
         else{
 
@@ -53,7 +54,7 @@ void XBot::CommunicationHandler::th_init(void*)
         }
 
         if(!root_cfg["XBotRTPlugins"]["io_plugins"]){
-            std::cerr << "WARNING in " << __func__ << "!XBotRTPlugins node does NOT contain mandatory node io_plugins!" << std::endl;
+            std::cerr << "WARNING in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node io_plugins!" << std::endl;
         }
         else{
 
@@ -62,9 +63,23 @@ void XBot::CommunicationHandler::th_init(void*)
             }
 
         }
-
     }
-
+    
+    if(!root_cfg["MasterCommunicationInterface"]) {
+        std::cerr << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node MasterCommunicationInterface!" << std::endl;
+    }
+    else {
+        if(!root_cfg["MasterCommunicationInterface"]["framework_name"]){
+            std::cerr << "ERROR in " << __func__ << "! framework_name node does NOT contain mandatory node plugins!" << std::endl;
+            return;
+        }
+        else{
+            _master_communication_interface_name = root_cfg["MasterCommunicationInterface"]["framework_name"].as<std::string>();
+        }
+    }
+    
+    
+    int plugin_idx = 0;
     for(const std::string& name : _plugin_names) {
         std::string switch_name = name + "_switch";
         _switch_names.push_back(switch_name);
@@ -73,6 +88,10 @@ void XBot::CommunicationHandler::th_init(void*)
         std::string command_name = name + "_cmd";
         _command_names.push_back(command_name);
         _command_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(command_name));
+        
+        // save XBotCommunicationPlugin index
+        xbot_communication_idx = plugin_idx;
+        plugin_idx++;
     }
 
 
@@ -99,17 +118,34 @@ void XBot::CommunicationHandler::th_init(void*)
     std::cout << "USE_ROS_COMMUNICATION_INTERFACE found! " << std::endl;
     _ros_communication = std::make_shared<XBot::CommunicationInterfaceROS>(_robot);
     _communication_ifc_vector.push_back( _ros_communication );
-
-    _master_communication_ifc = _ros_communication;  // TBD specify the MASTER who can send TX data
+    
+    if ( _master_communication_interface_name == "ROS" || 
+         _master_communication_interface_name == "ros"
+    ) {
+        _master_communication_ifc = _ros_communication;
+    }
+    
 #endif
 
 #ifdef USE_YARP_COMMUNICATION_INTERFACE
     std::cout << "USE_YARP_COMMUNICATION_INTERFACE found! " << std::endl;
     _yarp_communication = std::make_shared<XBot::CommunicationInterfaceYARP>(_robot);
     _communication_ifc_vector.push_back( _yarp_communication );
-
-    _master_communication_ifc = _yarp_communication;  // TBD specify the MASTER who can send TX data
+    
+    if ( _master_communication_interface_name == "YARP" || 
+         _master_communication_interface_name == "yarp"
+    ) {
+        _master_communication_ifc = _yarp_communication;
+    }
+    
 #endif
+    
+    // check on master communication interface
+    if( _master_communication_ifc == nullptr ) {
+        std::cerr << "ERROR in " << __func__ << "! Master Communication Interface specified in the config file but "
+                                             << "not matching with the current NRT frameworks installed in the system" << std::endl;
+        return;
+    }
 
     /* Load IO plugins */
     for(const std::string& name : _io_plugin_names) {
@@ -124,8 +160,12 @@ void XBot::CommunicationHandler::th_init(void*)
         }
     }
 
-    /* Advertise switch ports for all plugins on all frameworks */
+    /* Advertise switch/cmd ports for all plugins on all frameworks */
     for(auto comm_ifc : _communication_ifc_vector){
+        
+        /* Advertise swtich port for Master Communication Interface */
+        comm_ifc->advertiseMasterCommunicationInterface();
+            
         for(const std::string& switch_name : _switch_names){
             comm_ifc->advertiseSwitch(switch_name);
         }
@@ -158,6 +198,52 @@ void XBot::CommunicationHandler::th_init(void*)
 
 void XBot::CommunicationHandler::th_loop(void*)
 {
+    /* Receive Master Communication Interface to switch NRT framework at runtime */ 
+    
+    for(auto comm_ifc : _communication_ifc_vector) {
+
+        std::string master;
+
+        if( comm_ifc->receiveMasterCommunicationInterface(master) ) {
+                        
+            if ( master == "ROS" || 
+                 master == "ros"
+            ) {
+                std::cout << "Switching to ROS Master Communication Interface" << std::endl;
+                
+#ifdef USE_ROS_COMMUNICATION_INTERFACE              
+                _master_communication_ifc = _ros_communication; 
+                // HACK restarting XBotCommunicationPlugin
+                std::string cmd = "stop";
+                _switch_pub_vector[xbot_communication_idx].write(cmd);
+                sleep(1);
+                cmd = "start";
+                _switch_pub_vector[xbot_communication_idx].write(cmd);
+#else
+                std::cerr << "ERROR: ROS Master Communication Interface not compiled" << std::endl;                
+#endif    
+            }
+
+            else if ( master == "YARP" || 
+                      master == "yarp"
+            ) {
+                std::cout << "Switching to YARP Master Communication Interface" << std::endl;
+
+#ifdef USE_YARP_COMMUNICATION_INTERFACE             
+                _master_communication_ifc = _yarp_communication;
+                // HACK restarting XBotCommunicationPlugin
+                std::string cmd = "stop";
+                _switch_pub_vector[xbot_communication_idx].write(cmd);
+                sleep(1);
+                cmd = "start";
+                _switch_pub_vector[xbot_communication_idx].write(cmd);
+#else
+                std::cerr << "ERROR: YARP Master Communication Interface not compiled" << std::endl;                
+#endif  
+            }
+        }
+    }
+    
     /* Receive commands on switch ports */
     for(auto comm_ifc : _communication_ifc_vector) {
         for(int i = 0; i < _plugin_names.size(); i++){

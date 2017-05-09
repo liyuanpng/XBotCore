@@ -40,6 +40,16 @@ bool XBot::CommunicationInterfaceROS::callback_cmd(XCM::cmd_serviceRequest& req,
     return true;
 }
 
+bool XBot::CommunicationInterfaceROS::callback_master_communication_iface(XCM::cmd_serviceRequest& req, 
+                                                                          XCM::cmd_serviceResponse& res, 
+                                                                          const std::string& port_name)
+{
+    _msgs.at(port_name) = req.cmd;
+    res.success = true;
+    return true;
+}
+
+
 CommunicationInterfaceROS::CommunicationInterfaceROS():
     CommunicationInterface()
 {
@@ -317,6 +327,25 @@ bool XBot::CommunicationInterfaceROS::advertiseCmd(const std::string& port_name)
 }
 
 
+bool XBot::CommunicationInterfaceROS::advertiseMasterCommunicationInterface()
+{
+    // NOTE default port name for MasterCommunicationInterface
+    
+    _services[_master_communication_interface_port] = _nh->advertiseService<XCM::cmd_serviceRequest, XCM::cmd_serviceResponse>
+                                        (_master_communication_interface_port,
+                                         boost::bind(&CommunicationInterfaceROS::callback_master_communication_iface,
+                                                     this,
+                                                     _1, _2, _master_communication_interface_port)
+                                         );
+    _msgs[_master_communication_interface_port] = "";
+
+    std::cout << "Advertised service " << _master_communication_interface_port << std::endl;
+
+    return true;
+}
+
+
+
 bool CommunicationInterfaceROS::receiveFromSwitch(const std::string& port_name, std::string& message)
 {
     ros::spinOnce();
@@ -352,6 +381,25 @@ bool XBot::CommunicationInterfaceROS::receiveFromCmd(const std::string& port_nam
         return false;
     }
 }
+
+bool XBot::CommunicationInterfaceROS::receiveMasterCommunicationInterface(std::string& framework_name)
+{
+    ros::spinOnce();
+
+    auto it = _msgs.find(_master_communication_interface_port);
+
+    if( it == _msgs.end() ) return false;
+
+    framework_name = it->second;
+    if( framework_name != "" ) {
+        it->second = "";
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 
 
 bool CommunicationInterfaceROS::computeAbsolutePath (  const std::string& input_path,
