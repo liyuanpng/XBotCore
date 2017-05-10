@@ -6,7 +6,7 @@ if [ $# -ne 1 ]; then
 fi
 
 # SVN HACK thanks to gituhb (from master)
-svn export https://github.com/robotology-playground/GYM/trunk/skeleton/skeleton > /dev/null 
+svn export https://gitlab.advrcloud.iit.it/advr_humanoids/XCM/tree/skeleton/skeleton > /dev/null 
 mv control/* . && rm -rf control
 
 # find and replace 
