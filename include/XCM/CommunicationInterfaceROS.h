@@ -45,7 +45,7 @@ public:
 
     virtual bool advertiseSwitch(const std::string& port_name);
     virtual bool receiveFromSwitch(const std::string& port_name, std::string& message);
-    
+
     virtual bool advertiseCmd(const std::string& port_name);
     virtual bool receiveFromCmd(const std::string& port_name, std::string& message);  // TBD template message
 
@@ -100,6 +100,8 @@ private:
     std::shared_ptr<robot_state_publisher::RobotStatePublisher> _robot_state_pub;
     std::string _tf_prefix, _urdf_param_name;
 
+    std::map<int, ros::Publisher> _imu_pub_map;
+    std::map<int, ros::Publisher> _ft_pub_map;
 
 
 
