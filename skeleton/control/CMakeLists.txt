@@ -21,7 +21,7 @@
 cmake_minimum_required(VERSION 3.5.1)
 
 # XBot RT Plugin
-project(_MODULE_PREFIX_)
+project(_MODULE_PREFIX__rt_plugin)
 
 # C++11
 include(CheckCXXCompilerFlag)
@@ -37,9 +37,16 @@ endif()
 
 # Add cmake dir and include custom macros
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+include(MacroYCMInstallLibrary)
 
 # find required packages
 find_package(XCM REQUIRED)
+
+# XENOMAI
+set(ENABLE_XENO CACHE BOOL "ON")
+if ( ${ENABLE_XENO} )
+   find_package(Xenomai)
+endif()
 
 # include
 include_directories(include
@@ -48,7 +55,7 @@ include_directories(include
 
 # lib
 add_library(${PROJECT_NAME} SHARED
-    src/_MODULE_PREFIX_Plugin.cpp
+    src/_MODULE_PREFIX__rt_plugin.cpp
 )
 
 # set Xenomain flags if Xenomai is found

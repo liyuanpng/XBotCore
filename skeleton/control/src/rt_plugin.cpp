@@ -17,14 +17,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#include <_MODULE_PREFIX_Plugin.h>
+#include <_MODULE_PREFIX__rt_plugin.h>
 
-/* Specify that the class MiscPlugins::Homing is a Xbot RT plugin with name "Homing" */
-REGISTER_XBOT_PLUGIN(_MODULE_PREFIX_Plugin, MiscPlugins::Homing)
+/* Specify that the class XBotPlugin::_MODULE_PREFIX__rt_plugin is a XBot RT plugin with name "_MODULE_PREFIX__rt_plugin" */
+REGISTER_XBOT_PLUGIN(_MODULE_PREFIX__rt_plugin, XBotPlugin::_MODULE_PREFIX__rt_plugin)
 
 namespace XBotPlugin {
 
-bool Homing::init_control_plugin(std::string path_to_config_file,
+bool _MODULE_PREFIX__rt_plugin::init_control_plugin(std::string path_to_config_file,
                                  XBot::SharedMemory::Ptr shared_memory,
                                  XBot::RobotInterface::Ptr robot)
 {
@@ -41,7 +41,7 @@ bool Homing::init_control_plugin(std::string path_to_config_file,
 
 }
 
-void Homing::on_start(double time)
+void _MODULE_PREFIX__rt_plugin::on_start(double time)
 {
     /* This function is called on plugin start, i.e. when the start command
      * is sent over the plugin switch port (e.g. 'rosservice call /Homing_switch true').
@@ -52,7 +52,7 @@ void Homing::on_start(double time)
     _robot->getMotorPosition(_q0);
 }
 
-void Homing::on_stop(double time)
+void _MODULE_PREFIX__rt_plugin::on_stop(double time)
 {
     /* This function is called on plugin stop, i.e. when the stop command
      * is sent over the plugin switch port (e.g. 'rosservice call /Homing_switch false').
@@ -61,7 +61,7 @@ void Homing::on_stop(double time)
 }
 
 
-void Homing::control_loop(double time, double period)
+void _MODULE_PREFIX__rt_plugin::control_loop(double time, double period)
 {
     /* This function is called on every control loop from when the plugin is start until
      * it is stopped.
@@ -70,7 +70,7 @@ void Homing::control_loop(double time, double period)
 
 }
 
-bool Homing::close()
+bool _MODULE_PREFIX__rt_plugin::close()
 {
     return true;
 }

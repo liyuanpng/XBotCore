@@ -22,11 +22,14 @@
 
 #include <XCM/XBotControlPlugin.h>
 
+
+namespace XBotPlugin {
+    
 /**
  * @brief _MODULE_PREFIX_ XBot RT Plugin
  * 
  **/
-class _MODULE_PREFIX_Plugin : public XBot::XBotControlPlugin
+class _MODULE_PREFIX__rt_plugin : public XBot::XBotControlPlugin
 {
 
 public:
@@ -52,5 +55,7 @@ private:
     Eigen::VectorXd _q0;
     
 };
+
+}
 
 #endif // _MODULE_PREFIX__PLUGIN_H_
