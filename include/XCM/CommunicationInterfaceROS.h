@@ -48,6 +48,9 @@ public:
 
     virtual bool advertiseCmd(const std::string& port_name);
     virtual bool receiveFromCmd(const std::string& port_name, std::string& message);  // TBD template message
+    
+    virtual bool advertiseMasterCommunicationInterface();
+    virtual bool receiveMasterCommunicationInterface(std::string& framework_name);
 
 protected:
 
@@ -55,6 +58,7 @@ private:
 
     bool callback(std_srvs::SetBoolRequest& req, std_srvs::SetBoolResponse& res, const std::string& port_name);
     bool callback_cmd(XCM::cmd_serviceRequest& req, XCM::cmd_serviceResponse& res, const std::string& port_name);
+    bool callback_master_communication_iface(XCM::cmd_serviceRequest& req, XCM::cmd_serviceResponse& res, const std::string& port_name);
 
     void load_ros_message_interfaces();
 

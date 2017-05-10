@@ -159,6 +159,12 @@ bool CommunicationInterfaceYARP::advertiseCmd(const std::string& port_name)
     return false;
 }
 
+bool CommunicationInterfaceYARP::advertiseMasterCommunicationInterface()
+{
+    return false;
+}
+
+
 bool CommunicationInterfaceYARP::receiveFromSwitch(const std::string& port_name, std::string& message)
 {
     return false;
@@ -168,6 +174,12 @@ bool CommunicationInterfaceYARP::receiveFromCmd(const std::string& port_name, st
 {
     return false;
 }
+
+bool CommunicationInterfaceYARP::receiveMasterCommunicationInterface(std::string& framework_name)
+{
+    return false;
+}
+
 
 void CommunicationInterfaceYARP::sendRobotState()
 {

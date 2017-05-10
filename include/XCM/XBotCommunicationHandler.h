@@ -59,6 +59,9 @@ private:
     std::vector<IOPluginLoader> _io_plugin_loader;
 
     std::string _path_to_config;
+    
+    std::string _master_communication_interface_name;
+    int xbot_communication_idx;
 
     std::vector<std::string> _plugin_names;
 
