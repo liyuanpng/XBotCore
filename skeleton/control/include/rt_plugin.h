@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2017 IIT-ADVR
- * Author: 
- * email:  
+ * Author:
+ * email:
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -24,10 +24,10 @@
 
 
 namespace XBotPlugin {
-    
+
 /**
  * @brief _MODULE_PREFIX_ XBot RT Plugin
- * 
+ *
  **/
 class _MODULE_PREFIX__rt_plugin : public XBot::XBotControlPlugin
 {
@@ -51,9 +51,13 @@ protected:
 private:
 
     XBot::RobotInterface::Ptr _robot;
-    
+
+    double _start_time;
+
     Eigen::VectorXd _q0;
-    
+
+    XBot::MatLogger::Ptr _logger;
+
 };
 
 }

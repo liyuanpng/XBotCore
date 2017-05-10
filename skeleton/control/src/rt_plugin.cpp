@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2017 IIT-ADVR
- * Author: 
- * email: 
+ * Author:
+ * email:
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -36,6 +36,12 @@ bool _MODULE_PREFIX__rt_plugin::init_control_plugin(std::string path_to_config_f
     /* Save robot to a private member. */
     _robot = robot;
 
+    /* Initialize a logger which saves to the specified file. Remember that
+     * the current date/time is always appended to the provided filename,
+     * so that logs do not overwrite each other. */
+    
+    _logger = XBot::MatLogger::getLogger("/tmp/_MODULE_PREFIX__rt_plugin_log");
+
     return true;
 
 
@@ -44,20 +50,23 @@ bool _MODULE_PREFIX__rt_plugin::init_control_plugin(std::string path_to_config_f
 void _MODULE_PREFIX__rt_plugin::on_start(double time)
 {
     /* This function is called on plugin start, i.e. when the start command
-     * is sent over the plugin switch port (e.g. 'rosservice call /Homing_switch true').
+     * is sent over the plugin switch port (e.g. 'rosservice call /_MODULE_PREFIX__rt_plugin_switch true').
      * Since this function is called within the real-time loop, you should not perform
-     * operations that are not rt-sage. */
+     * operations that are not rt-safe. */
 
-    /* Save the robot starting config to a variable */
+    /* Save the plugin starting time to a class member */
     _robot->getMotorPosition(_q0);
+
+    /* Save the robot starting config to a class member */
+    _start_time = time;
 }
 
 void _MODULE_PREFIX__rt_plugin::on_stop(double time)
 {
     /* This function is called on plugin stop, i.e. when the stop command
-     * is sent over the plugin switch port (e.g. 'rosservice call /Homing_switch false').
+     * is sent over the plugin switch port (e.g. 'rosservice call /_MODULE_PREFIX__rt_plugin_switch false').
      * Since this function is called within the real-time loop, you should not perform
-     * operations that are not rt-sage. */
+     * operations that are not rt-safe. */
 }
 
 
@@ -66,12 +75,18 @@ void _MODULE_PREFIX__rt_plugin::control_loop(double time, double period)
     /* This function is called on every control loop from when the plugin is start until
      * it is stopped.
      * Since this function is called within the real-time loop, you should not perform
-     * operations that are not rt-sage. */
+     * operations that are not rt-safe. */
 
 }
 
 bool _MODULE_PREFIX__rt_plugin::close()
 {
+    /* This function is called exactly once, at the end of the experiment.
+     * It can be used to do some clean-up, or to save logging data to disk. */
+
+    /* Save logged data to disk */
+    _logger->flush();
+
     return true;
 }
 
