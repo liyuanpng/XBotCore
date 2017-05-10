@@ -359,3 +359,6 @@ if(BUILD_TESTS)
   add_custom_target(test_verbose ${CMAKE_CTEST_COMMAND} -V)
   add_subdirectory(tests)
 endif()
+
+# install script to generate XBot RT Plugin skeleton
+INSTALL(PROGRAMS scripts/generate_XBot_RT_Plugin.sh DESTINATION bin)
