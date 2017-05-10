@@ -250,14 +250,15 @@ bool XBot::dev::XBotMotionControl::setPositionDirectMode()
 
 bool XBot::dev::XBotMotionControl::getAxisName(int axis, yarp::os::ConstString& name)
 {
-    // TBD easy 
+    name = _robot->getChainMap().at(chain_name)->getJointName(axis);
     return true;
 }
 
 bool XBot::dev::XBotMotionControl::getJointType(int axis, yarp::dev::JointTypeEnum& type)
 {
-    // TBD get the array from the robot_model
-    return false;
+    // HACK TBD get the array from the robot_model
+    type = yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_REVOLUTE;
+    return true;
 }
 
 
@@ -731,7 +732,8 @@ bool XBot::dev::XBotMotionControl::getMotorTorqueParams(int j, MotorTorqueParame
 
 bool XBot::dev::XBotMotionControl::getRefTorque(int j, double* t)
 {
-    return false;
+    *t = _robot->getChainMap().at(chain_name)->getEffortReference(j);
+    return true;
 }
 
 bool XBot::dev::XBotMotionControl::getRefTorques(double* t)
@@ -756,7 +758,8 @@ bool XBot::dev::XBotMotionControl::setMotorTorqueParams(int j, const MotorTorque
 
 bool XBot::dev::XBotMotionControl::setRefTorque(int j, double t)
 {
-    return false;
+    _robot->getChainMap().at(chain_name)->setEffortReference(j, t);
+    return true;
 }
 
 bool XBot::dev::XBotMotionControl::setRefTorques(const int n_joint, const int* joints, const double* t)
