@@ -25,8 +25,8 @@ REGISTER_XBOT_PLUGIN(_MODULE_PREFIX__rt_plugin, XBotPlugin::_MODULE_PREFIX__rt_p
 namespace XBotPlugin {
 
 bool _MODULE_PREFIX__rt_plugin::init_control_plugin(std::string path_to_config_file,
-                                 XBot::SharedMemory::Ptr shared_memory,
-                                 XBot::RobotInterface::Ptr robot)
+                                                    XBot::SharedMemory::Ptr shared_memory,
+                                                    XBot::RobotInterface::Ptr robot)
 {
     /* This function is called outside the real time loop, so we can
      * allocate memory on the heap, print stuff, ...
