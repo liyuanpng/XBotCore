@@ -21,9 +21,19 @@
 
 #include <XCM/XBotUtils.h>
 
-XBot::ESCUtils::ESCUtils(XBot::RobotInterface::Ptr robot) : 
+XBot::ESCUtils::ESCUtils(XBot::RobotInterface::Ptr robot) :
     _robot(robot)
 {
+    _robot->getJointPosition(_q);
+    _robot->getMotorPosition(_mq);
+    _robot->getJointVelocity(_qdot);
+    _robot->getMotorVelocity(_mqdot);
+    _robot->getJointEffort(_tau);
+    _robot->getStiffness(_k);
+    _robot->getDamping(_d);
+    _robot->getPositionReference(_qref);
+    _robot->getVelocityReference(_qdotref);
+    _robot->getEffortReference(_tauref);
 }
 
 bool XBot::ESCUtils::setReferenceFromRobotStateTX(const std::map< int, XBot::RobotState::pdo_tx >& pdo_tx)
@@ -32,12 +42,12 @@ bool XBot::ESCUtils::setReferenceFromRobotStateTX(const std::map< int, XBot::Rob
         _joint_map[pair.first] = pair.second.pos_ref;
     }
     _robot->setPositionReference(_joint_map);
-    
+
     for( const auto& pair : pdo_tx ){
         _joint_map[pair.first] = pair.second.vel_ref;
     }
     _robot->setVelocityReference(_joint_map);
-    
+
     for( const auto& pair : pdo_tx ){
         _joint_map[pair.first] = pair.second.tor_ref;
     }
@@ -47,55 +57,85 @@ bool XBot::ESCUtils::setReferenceFromRobotStateTX(const std::map< int, XBot::Rob
 bool XBot::ESCUtils::setRobotStateFromRobotInterface(std::map< int, XBot::RobotState >& pdo)
 {
 
-    _robot->getJointPosition(_joint_map);
-    for( const auto& pair : _joint_map ){
-        pdo[pair.first].RobotStateRX.link_pos = _joint_map.at(pair.first);
+    _robot->getJointPosition(_q);
+    _robot->getMotorPosition(_mq);
+    _robot->getJointVelocity(_qdot);
+    _robot->getMotorVelocity(_mqdot);
+    _robot->getJointEffort(_tau);
+    _robot->getStiffness(_k);
+    _robot->getDamping(_d);
+    _robot->getPositionReference(_qref);
+    _robot->getVelocityReference(_qdotref);
+    _robot->getEffortReference(_tauref);
+
+    for(int i = 0; i < _robot->getJointNum(); i++){
+        const auto& joint_ids = _robot->getEnabledJointId();
+        auto& robot_state = pdo[joint_ids[i]];
+
+        robot_state.RobotStateRX.link_pos = _q[i];
+        robot_state.RobotStateRX.motor_pos = _mq[i];
+        robot_state.RobotStateRX.link_vel = _qdot[i];
+        robot_state.RobotStateRX.motor_vel = _mqdot[i];
+        robot_state.RobotStateRX.torque = _tau[i];
+
+        robot_state.RobotStateTX.gain_0 = _k[i];
+        robot_state.RobotStateTX.gain_1 = _d[i];
+        robot_state.RobotStateTX.pos_ref = _qref[i];
+        robot_state.RobotStateTX.vel_ref = _qdotref[i];
+        robot_state.RobotStateTX.tor_ref = _tauref[i];
+
     }
-    
-    _robot->getMotorPosition(_joint_map);
-    for( const auto& pair : _joint_map ){
-        pdo[pair.first].RobotStateRX.motor_pos = _joint_map.at(pair.first);
-    }
-    
-    _robot->getJointVelocity(_joint_map);
-    for( const auto& pair : _joint_map ){
-        pdo[pair.first].RobotStateRX.link_vel = _joint_map.at(pair.first);
-    }
-    
-    _robot->getMotorVelocity(_joint_map);
-    for( const auto& pair : _joint_map ){
-        pdo[pair.first].RobotStateRX.motor_vel = _joint_map.at(pair.first);
-    }
-    
-    _robot->getJointEffort(_joint_map);
-    for( const auto& pair : _joint_map ){
-        pdo[pair.first].RobotStateRX.torque = _joint_map.at(pair.first);
-    }
-    
-    _robot->getPositionReference(_joint_map);
-    for( const auto& pair : _joint_map ){
-        pdo[pair.first].RobotStateTX.pos_ref = _joint_map.at(pair.first);
-    }
-    
-    _robot->getVelocityReference(_joint_map);
-    for( const auto& pair : _joint_map ){
-        pdo[pair.first].RobotStateTX.vel_ref = _joint_map.at(pair.first);
-    }
-    
-    _robot->getEffortReference(_joint_map);
-    for( const auto& pair : _joint_map ){
-        pdo[pair.first].RobotStateTX.tor_ref = _joint_map.at(pair.first);
-    }
-    
-    _robot->getStiffness(_joint_map);
-    for( const auto& pair : _joint_map ){
-        pdo[pair.first].RobotStateTX.gain_0 = _joint_map.at(pair.first);
-    }
-    
-    _robot->getDamping(_joint_map);
-    for( const auto& pair : _joint_map ){
-        pdo[pair.first].RobotStateTX.gain_1 = _joint_map.at(pair.first);
-    }
+
+
+//     _robot->getJointPosition(_joint_map);
+//     for( const auto& pair : _joint_map ){
+//         pdo[pair.first].RobotStateRX.link_pos = _joint_map.at(pair.first);
+//     }
+//
+//     _robot->getMotorPosition(_joint_map);
+//     for( const auto& pair : _joint_map ){
+//         pdo[pair.first].RobotStateRX.motor_pos = _joint_map.at(pair.first);
+//     }
+//
+//     _robot->getJointVelocity(_joint_map);
+//     for( const auto& pair : _joint_map ){
+//         pdo[pair.first].RobotStateRX.link_vel = _joint_map.at(pair.first);
+//     }
+//
+//     _robot->getMotorVelocity(_joint_map);
+//     for( const auto& pair : _joint_map ){
+//         pdo[pair.first].RobotStateRX.motor_vel = _joint_map.at(pair.first);
+//     }
+//
+//     _robot->getJointEffort(_joint_map);
+//     for( const auto& pair : _joint_map ){
+//         pdo[pair.first].RobotStateRX.torque = _joint_map.at(pair.first);
+//     }
+//
+//     _robot->getPositionReference(_joint_map);
+//     for( const auto& pair : _joint_map ){
+//         pdo[pair.first].RobotStateTX.pos_ref = _joint_map.at(pair.first);
+//     }
+//
+//     _robot->getVelocityReference(_joint_map);
+//     for( const auto& pair : _joint_map ){
+//         pdo[pair.first].RobotStateTX.vel_ref = _joint_map.at(pair.first);
+//     }
+//
+//     _robot->getEffortReference(_joint_map);
+//     for( const auto& pair : _joint_map ){
+//         pdo[pair.first].RobotStateTX.tor_ref = _joint_map.at(pair.first);
+//     }
+//
+//     _robot->getStiffness(_joint_map);
+//     for( const auto& pair : _joint_map ){
+//         pdo[pair.first].RobotStateTX.gain_0 = _joint_map.at(pair.first);
+//     }
+//
+//     _robot->getDamping(_joint_map);
+//     for( const auto& pair : _joint_map ){
+//         pdo[pair.first].RobotStateTX.gain_1 = _joint_map.at(pair.first);
+//     }
 }
 
 bool XBot::ESCUtils::setRobotFTFromRobotInterface(std::map< int, XBot::RobotFT::pdo_rx >& ft)
