@@ -180,6 +180,11 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         ${RT_NRT_SRC}
                         )
 
+if(${catkin_FOUND})
+    add_dependencies(XCM AdvrJointStateMessage)
+    add_dependencies(XCM AdvrCommandMessage)
+endif()
+
 
 target_link_libraries(XCM PUBLIC ${XBotInterface_LIBRARIES}
                                  ${XBotCore-interfaces_LIBRARIES}
