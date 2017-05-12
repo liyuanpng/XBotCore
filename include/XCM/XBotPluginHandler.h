@@ -44,6 +44,7 @@ namespace XBot {
 
         bool init_plugins(std::shared_ptr< IXBotJoint> joint  = nullptr,
                           std::shared_ptr< IXBotFT > ft       = nullptr,
+                          std::shared_ptr< IXBotIMU > imu     = nullptr,
                           std::shared_ptr< IXBotModel > model = nullptr );
 
         void run();
@@ -91,6 +92,9 @@ namespace XBot {
         
         std::map<int, XBot::PublisherRT<XBot::RobotFT::pdo_rx>> _ft_pub_map;
         std::map<int, XBot::RobotFT::pdo_rx> _ft_state_map;
+        
+        std::map<int, XBot::PublisherRT<XBot::RobotIMU::pdo_rx>> _imu_pub_map;
+        std::map<int, XBot::RobotIMU::pdo_rx> _imu_state_map;
 
         XBot::ESCUtils _esc_utils;
         

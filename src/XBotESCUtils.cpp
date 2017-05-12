@@ -85,57 +85,6 @@ bool XBot::ESCUtils::setRobotStateFromRobotInterface(std::map< int, XBot::RobotS
         robot_state.RobotStateTX.tor_ref = _tauref[i];
 
     }
-
-
-//     _robot->getJointPosition(_joint_map);
-//     for( const auto& pair : _joint_map ){
-//         pdo[pair.first].RobotStateRX.link_pos = _joint_map.at(pair.first);
-//     }
-//
-//     _robot->getMotorPosition(_joint_map);
-//     for( const auto& pair : _joint_map ){
-//         pdo[pair.first].RobotStateRX.motor_pos = _joint_map.at(pair.first);
-//     }
-//
-//     _robot->getJointVelocity(_joint_map);
-//     for( const auto& pair : _joint_map ){
-//         pdo[pair.first].RobotStateRX.link_vel = _joint_map.at(pair.first);
-//     }
-//
-//     _robot->getMotorVelocity(_joint_map);
-//     for( const auto& pair : _joint_map ){
-//         pdo[pair.first].RobotStateRX.motor_vel = _joint_map.at(pair.first);
-//     }
-//
-//     _robot->getJointEffort(_joint_map);
-//     for( const auto& pair : _joint_map ){
-//         pdo[pair.first].RobotStateRX.torque = _joint_map.at(pair.first);
-//     }
-//
-//     _robot->getPositionReference(_joint_map);
-//     for( const auto& pair : _joint_map ){
-//         pdo[pair.first].RobotStateTX.pos_ref = _joint_map.at(pair.first);
-//     }
-//
-//     _robot->getVelocityReference(_joint_map);
-//     for( const auto& pair : _joint_map ){
-//         pdo[pair.first].RobotStateTX.vel_ref = _joint_map.at(pair.first);
-//     }
-//
-//     _robot->getEffortReference(_joint_map);
-//     for( const auto& pair : _joint_map ){
-//         pdo[pair.first].RobotStateTX.tor_ref = _joint_map.at(pair.first);
-//     }
-//
-//     _robot->getStiffness(_joint_map);
-//     for( const auto& pair : _joint_map ){
-//         pdo[pair.first].RobotStateTX.gain_0 = _joint_map.at(pair.first);
-//     }
-//
-//     _robot->getDamping(_joint_map);
-//     for( const auto& pair : _joint_map ){
-//         pdo[pair.first].RobotStateTX.gain_1 = _joint_map.at(pair.first);
-//     }
 }
 
 bool XBot::ESCUtils::setRobotFTFromRobotInterface(std::map< int, XBot::RobotFT::pdo_rx >& ft)
@@ -151,6 +100,27 @@ bool XBot::ESCUtils::setRobotFTFromRobotInterface(std::map< int, XBot::RobotFT::
         ft[id].torque_Z = _wrench(5);
     }
 
+}
+
+bool XBot::ESCUtils::setRobotIMUFromRobotInterface(std::map< int, XBot::RobotIMU::pdo_rx >& imu)
+{
+    for( const auto& pair : _robot->getImu() ){
+            int id = pair.second->getSensorId();
+            pair.second->getImuData(_orientation, _lin_acc, _ang_vel); 
+            
+            imu[id].quat_X  = _orientation.x();
+            imu[id].quat_Y  = _orientation.y();
+            imu[id].quat_Z  = _orientation.z();
+            imu[id].quat_W  = _orientation.w();
+            
+            imu[id].lin_acc_X = _lin_acc(0);
+            imu[id].lin_acc_Y = _lin_acc(1);
+            imu[id].lin_acc_Z = _lin_acc(2);
+            
+            imu[id].ang_vel_X = _ang_vel(0);
+            imu[id].ang_vel_Y = _ang_vel(1);
+            imu[id].ang_vel_Z = _ang_vel(2);
+        }
 }
 
 

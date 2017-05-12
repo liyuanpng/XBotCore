@@ -132,6 +132,7 @@ bool PluginHandler::load_plugins()
 
 bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
                                  std::shared_ptr< IXBotFT > ft,
+                                 std::shared_ptr< IXBotIMU > imu,
                                  std::shared_ptr< IXBotModel > model)
 {
     init_xddp();
@@ -153,7 +154,8 @@ bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
                                           shared_memory,
                                           joint,
                                           model,
-                                          ft)
+                                          ft,
+                                          imu)
              )
         {
             std::cout << "ERROR: plugin " << (*_rtplugin_vector[i])->name << " - init() failed" << std::endl;
@@ -184,6 +186,13 @@ bool XBot::PluginHandler::init_xddp()
         XBot::PublisherRT<XBot::RobotFT::pdo_rx> pub(std::string("Ft_id_") + std::to_string(id));
         _ft_pub_map[id] = pub;
     }
+    
+    // IMU
+    for( const auto& imu : _robot->getImu() ) {
+        int id = imu.second->getSensorId();
+        XBot::PublisherRT<XBot::RobotIMU::pdo_rx> pub(std::string("Imu_id_") + std::to_string(id));
+        _imu_pub_map[id] = pub;
+    }
 }
 
 
@@ -199,6 +208,11 @@ void XBot::PluginHandler::run_xddp()
         pub_ft.second.write(_ft_state_map.at(pub_ft.first));
     }
     
+    // IMU 
+    for( auto& pub_imu : _imu_pub_map ) {
+        pub_imu.second.write(_imu_state_map.at(pub_imu.first));
+    }
+    
     
 }
 
@@ -206,6 +220,7 @@ void XBot::PluginHandler::fill_robot_state()
 {
     _esc_utils.setRobotStateFromRobotInterface(_robot_state_map);
     _esc_utils.setRobotFTFromRobotInterface(_ft_state_map);
+    _esc_utils.setRobotIMUFromRobotInterface(_imu_state_map);
 }
 
 

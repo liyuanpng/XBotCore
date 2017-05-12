@@ -101,8 +101,11 @@ void XBot::CommunicationHandler::th_init(void*)
     XBot::AnyMapPtr anymap = std::make_shared<XBot::AnyMap>();
     std::shared_ptr<XBot::IXBotJoint> xbot_joint = _xddp_handler;
     std::shared_ptr<XBot::IXBotFT> xbot_ft = _xddp_handler;
+    std::shared_ptr<XBot::IXBotIMU> xbot_imu = _xddp_handler;
+    
     (*anymap)["XBotJoint"] = boost::any(xbot_joint);
     (*anymap)["XBotFT"] = boost::any(xbot_ft);
+    (*anymap)["XBotIMU"] = boost::any(xbot_imu);
 
     _robot = XBot::RobotInterface::getRobot(_path_to_config, anymap, "XBotRT");
 

@@ -28,6 +28,8 @@
 
 #include <XBotCore-interfaces/IXBotJoint.h>
 #include <XBotCore-interfaces/IXBotFT.h>
+#include <XBotCore-interfaces/IXBotIMU.h>
+
 #include <XBotCore-interfaces/XDomainCommunication.h>
 
 #include <XBotCoreModel.h>
@@ -43,7 +45,8 @@ namespace XBot
  * 
  */
 class XBot::XBotXDDP :  public XBot::IXBotJoint,
-                        public XBot::IXBotFT
+                        public XBot::IXBotFT,
+                        public XBot::IXBotIMU
                         
 {
 public:
@@ -112,6 +115,11 @@ public:
     virtual bool get_ft_fault(int ft_id, double& fault) final;
     virtual bool get_ft_rtt(int ft_id, double& rtt) final;
     
+    // NOTE IXBotIMU getters
+    virtual bool get_imu(int imu_id, std::vector< double >& lin_acc, std::vector< double >& ang_vel, std::vector< double >& quaternion);
+    virtual bool get_imu_fault(int imu_id, double& fault);
+    virtual bool get_imu_rtt(int imu_id, double& rtt);
+    
     
     // TBD do an interface that does it NOTE now looks like useless to me
     bool get_min_pos(int joint_id, float& min_pos);
@@ -162,6 +170,12 @@ private:
     std::map<std::string, int> ft;
     
     /**
+     * @brief imu map 
+     * 
+     */
+    std::map<std::string, int> imu;
+    
+    /**
      * @brief fd reading from pipes: we read the robot from XBotCore XDDP pipe
      * 
      */
@@ -178,6 +192,12 @@ private:
      * 
      */
     std::map<int,XBot::SubscriberNRT<XBot::RobotFT::pdo_rx>> fd_ft_read;
+    
+    /**
+     * @brief fd reading from pipes: we read the robot IMU XBotCore XDDP pipe
+     * 
+     */
+    std::map<int,XBot::SubscriberNRT<XBot::RobotIMU::pdo_rx>> fd_imu_read;
     
     /**
      * @brief fd reading from pipes: we read the robot SDO XBotCore XDDP pipe
