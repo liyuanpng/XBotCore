@@ -44,8 +44,11 @@ void XBot::XBotCore::control_init(void)
     XBot::AnyMapPtr anymap = std::make_shared<XBot::AnyMap>();
     std::shared_ptr<XBot::IXBotJoint> xbot_joint(this);
     std::shared_ptr<XBot::IXBotFT> xbot_ft(this);
+    std::shared_ptr<XBot::IXBotIMU> xbot_imu(this);
+    
     (*anymap)["XBotJoint"] = boost::any(xbot_joint);
     (*anymap)["XBotFT"] = boost::any(xbot_ft);
+    (*anymap)["XBotIMU"] = boost::any(xbot_imu);
     
     _robot = XBot::RobotInterface::getRobot(_path_to_config, anymap, "XBotRT");
     
@@ -61,7 +64,7 @@ void XBot::XBotCore::control_init(void)
     _pluginHandler->load_plugins();
     
     //
-    _pluginHandler->init_plugins(xbot_joint, xbot_ft);
+    _pluginHandler->init_plugins(xbot_joint, xbot_ft, xbot_imu);
 }
 
 double XBot::XBotCore::get_time()
@@ -452,6 +455,67 @@ bool XBot::XBotCore::get_ft_rtt(int ft_id, double& rtt)
     return false;   
 }
 
+bool XBot::XBotCore::get_imu(int imu_id, 
+                             std::vector< double >& lin_acc, 
+                             std::vector< double >& ang_vel, 
+                             std::vector< double >& quaternion)
+{
+    // check if the joint requested exists
+    if( imus.count(rid2Pos(imu_id)) ) {
+        // get the data
+        iit::ecat::advr::ImuEscPdoTypes::pdo_rx actual_pdo_rx_imu = imus[rid2Pos(imu_id)]->getRxPDO();
+        
+        quaternion.resize(4);
+        quaternion[0] = actual_pdo_rx_imu.x_quat;
+        quaternion[1] = actual_pdo_rx_imu.y_quat;
+        quaternion[2] = actual_pdo_rx_imu.z_quat;
+        quaternion[3] = actual_pdo_rx_imu.w_quat;
+        
+        lin_acc.resize(3);
+        lin_acc[0] = actual_pdo_rx_imu.x_acc;
+        lin_acc[1] = actual_pdo_rx_imu.y_acc;
+        lin_acc[2] = actual_pdo_rx_imu.z_acc;
+        
+        ang_vel.resize(3);
+        ang_vel[0] = actual_pdo_rx_imu.x_rate;
+        ang_vel[1] = actual_pdo_rx_imu.y_rate;
+        ang_vel[2] = actual_pdo_rx_imu.z_rate;
+        
+        return true;
+    }
+    
+    // we don't touch the value that you passed
+    DPRINTF("Trying to get_imu() on ft with imu_id : %d that does not exists\n", imu_id);
+    return false;   
+}
+
+bool XBot::XBotCore::get_imu_fault(int imu_id, double& fault)
+{
+    // check if the joint requested exists
+    if( imus.count(rid2Pos(imu_id)) ) {
+        // get the data
+        fault = imus[rid2Pos(imu_id)]->getRxPDO().fault;
+        return true;
+    }
+    
+    // we don't touch the value that you passed
+    DPRINTF("Trying to get_imu_fault() on ft with imu_id : %d that does not exists\n", imu_id);
+    return false; 
+}
+
+bool XBot::XBotCore::get_imu_rtt(int imu_id, double& rtt)
+{
+    // check if the joint requested exists
+    if( imus.count(rid2Pos(imu_id)) ) {
+        // get the data
+        rtt = imus[rid2Pos(imu_id)]->getRxPDO().rtt;
+        return true;
+    }
+    
+    // we don't touch the value that you passed
+    DPRINTF("Trying to get_imu_rtt() on ft with imu_id : %d that does not exists\n", imu_id);
+    return false; 
+}
 
 
 XBot::XBotCore::~XBotCore() {

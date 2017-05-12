@@ -79,7 +79,8 @@ struct XBot::XBotConversion {
  */
 class XBot::XBotCore : public   XBot::XBotEcat,
                        public   XBot::IXBotJoint,
-                       public   XBot::IXBotFT
+                       public   XBot::IXBotFT,
+                       public   XBot::IXBotIMU
                         
 {
 public:
@@ -107,6 +108,11 @@ public:
     virtual bool get_ft(int ft_id, std::vector< double >& ft, int channels = 6) final;
     virtual bool get_ft_fault(int ft_id, double& fault) final;
     virtual bool get_ft_rtt(int ft_id, double& rtt) final;
+    
+    // NOTE IXBotIMU getters
+    virtual bool get_imu(int imu_id, std::vector< double >& lin_acc, std::vector< double >& ang_vel, std::vector< double >& quaternion);
+    virtual bool get_imu_fault(int imu_id, double& fault);
+    virtual bool get_imu_rtt(int imu_id, double& rtt);
 
     
     double get_time();
