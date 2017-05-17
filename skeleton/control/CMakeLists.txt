@@ -21,7 +21,7 @@
 cmake_minimum_required(VERSION 3.5.1)
 
 # XBot RT Plugin
-project(_MODULE_PREFIX__rt_plugin)
+project(_MODULE_PREFIX_)
 
 # C++11
 include(CheckCXXCompilerFlag)
@@ -55,7 +55,7 @@ include_directories(include
 
 # lib
 add_library(${PROJECT_NAME} SHARED
-    src/_MODULE_PREFIX__rt_plugin.cpp
+    src/_MODULE_PREFIX_.cpp
 )
 
 # set Xenomain flags if Xenomai is found
