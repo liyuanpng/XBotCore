@@ -42,8 +42,8 @@ bool XBot::CommunicationInterfaceROS::callback_cmd(XCM::cmd_serviceRequest& req,
     return true;
 }
 
-bool XBot::CommunicationInterfaceROS::callback_master_communication_iface(XCM::cmd_serviceRequest& req, 
-                                                                          XCM::cmd_serviceResponse& res, 
+bool XBot::CommunicationInterfaceROS::callback_master_communication_iface(XCM::cmd_serviceRequest& req,
+                                                                          XCM::cmd_serviceResponse& res,
                                                                           const std::string& port_name)
 {
     _msgs.at(port_name) = req.cmd;
@@ -286,6 +286,7 @@ void CommunicationInterfaceROS::sendRobotState()
         msg.orientation.z = q.z();
 
         msg.header.stamp = ros::Time::now();
+        msg.header.frame_id = pair.first;
 
         _imu_pub_map.at(imuptr->getSensorId()).publish(msg);
 
@@ -311,6 +312,7 @@ void CommunicationInterfaceROS::sendRobotState()
         msg.wrench.torque.z = w(5);
 
         msg.header.stamp = ros::Time::now();
+        msg.header.frame_id = pair.first;
 
         _ft_pub_map.at(ftptr->getSensorId()).publish(msg);
 
@@ -408,7 +410,7 @@ bool XBot::CommunicationInterfaceROS::advertiseCmd(const std::string& port_name)
 bool XBot::CommunicationInterfaceROS::advertiseMasterCommunicationInterface()
 {
     // NOTE default port name for MasterCommunicationInterface
-    
+
     _services[_master_communication_interface_port] = _nh->advertiseService<XCM::cmd_serviceRequest, XCM::cmd_serviceResponse>
                                         (_master_communication_interface_port,
                                          boost::bind(&CommunicationInterfaceROS::callback_master_communication_iface,
