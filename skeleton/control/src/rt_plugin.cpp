@@ -19,12 +19,12 @@
 
 #include <_MODULE_PREFIX__rt_plugin.h>
 
-/* Specify that the class XBotPlugin::_MODULE_PREFIX__rt_plugin is a XBot RT plugin with name "_MODULE_PREFIX__rt_plugin" */
-REGISTER_XBOT_PLUGIN(_MODULE_PREFIX__rt_plugin, XBotPlugin::_MODULE_PREFIX__rt_plugin)
+/* Specify that the class XBotPlugin::_MODULE_PREFIX_ is a XBot RT plugin with name "_MODULE_PREFIX_" */
+REGISTER_XBOT_PLUGIN(_MODULE_PREFIX_, XBotPlugin::_MODULE_PREFIX_)
 
 namespace XBotPlugin {
 
-bool _MODULE_PREFIX__rt_plugin::init_control_plugin(std::string path_to_config_file,
+bool _MODULE_PREFIX_::init_control_plugin(std::string path_to_config_file,
                                                     XBot::SharedMemory::Ptr shared_memory,
                                                     XBot::RobotInterface::Ptr robot)
 {
@@ -40,17 +40,17 @@ bool _MODULE_PREFIX__rt_plugin::init_control_plugin(std::string path_to_config_f
      * the current date/time is always appended to the provided filename,
      * so that logs do not overwrite each other. */
     
-    _logger = XBot::MatLogger::getLogger("/tmp/_MODULE_PREFIX__rt_plugin_log");
+    _logger = XBot::MatLogger::getLogger("/tmp/_MODULE_PREFIX__log");
 
     return true;
 
 
 }
 
-void _MODULE_PREFIX__rt_plugin::on_start(double time)
+void _MODULE_PREFIX_::on_start(double time)
 {
     /* This function is called on plugin start, i.e. when the start command
-     * is sent over the plugin switch port (e.g. 'rosservice call /_MODULE_PREFIX__rt_plugin_switch true').
+     * is sent over the plugin switch port (e.g. 'rosservice call /_MODULE_PREFIX__switch true').
      * Since this function is called within the real-time loop, you should not perform
      * operations that are not rt-safe. */
 
@@ -61,16 +61,16 @@ void _MODULE_PREFIX__rt_plugin::on_start(double time)
     _start_time = time;
 }
 
-void _MODULE_PREFIX__rt_plugin::on_stop(double time)
+void _MODULE_PREFIX_::on_stop(double time)
 {
     /* This function is called on plugin stop, i.e. when the stop command
-     * is sent over the plugin switch port (e.g. 'rosservice call /_MODULE_PREFIX__rt_plugin_switch false').
+     * is sent over the plugin switch port (e.g. 'rosservice call /_MODULE_PREFIX__switch false').
      * Since this function is called within the real-time loop, you should not perform
      * operations that are not rt-safe. */
 }
 
 
-void _MODULE_PREFIX__rt_plugin::control_loop(double time, double period)
+void _MODULE_PREFIX_::control_loop(double time, double period)
 {
     /* This function is called on every control loop from when the plugin is start until
      * it is stopped.
@@ -79,7 +79,7 @@ void _MODULE_PREFIX__rt_plugin::control_loop(double time, double period)
 
 }
 
-bool _MODULE_PREFIX__rt_plugin::close()
+bool _MODULE_PREFIX_::close()
 {
     /* This function is called exactly once, at the end of the experiment.
      * It can be used to do some clean-up, or to save logging data to disk. */

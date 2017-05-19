@@ -21,7 +21,7 @@
 cmake_minimum_required(VERSION 3.5.1)
 
 # XBot RT Plugin
-project(_MODULE_PREFIX__rt_plugin)
+project(_MODULE_PREFIX_)
 
 # C++11
 include(CheckCXXCompilerFlag)

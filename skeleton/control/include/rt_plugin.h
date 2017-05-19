@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#ifndef _MODULE_PREFIX__PLUGIN_H_
+#ifndef _MODULE_PREFIX__H_
 #define _MODULE_PREFIX__PLUGIN_H_
 
 #include <XCM/XBotControlPlugin.h>
@@ -29,7 +29,7 @@ namespace XBotPlugin {
  * @brief _MODULE_PREFIX_ XBot RT Plugin
  *
  **/
-class _MODULE_PREFIX__rt_plugin : public XBot::XBotControlPlugin
+class _MODULE_PREFIX_ : public XBot::XBotControlPlugin
 {
 
 public:
