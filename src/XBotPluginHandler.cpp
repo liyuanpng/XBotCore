@@ -150,21 +150,46 @@ bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
     _plugin_state[_logging_plugin_idx] = "RUNNING";
 
     for(int i = 0; i < _rtplugin_vector.size(); i++) {
-        if(!(*_rtplugin_vector[i])->init( _path_to_cfg,
-                                          _rtplugin_names[i],
-                                          shared_memory,
-                                          joint,
-                                          model,
-                                          ft,
-                                          imu)
-             )
-        {
-            std::cout << "ERROR: plugin " << (*_rtplugin_vector[i])->name << " - init() failed" << std::endl;
-            ret = false;
+
+        bool plugin_init_success = false;
+
+        try{
+            /* Try to init the current plugin */
+            plugin_init_success = (*_rtplugin_vector[i])->init( _path_to_cfg,
+                                                                _rtplugin_names[i],
+                                                                shared_memory,
+                                                                joint,
+                                                                model,
+                                                                ft,
+                                                                imu);
+
+            /* Handle return value if init() was performed cleanly */
+            if(!plugin_init_success){
+                std::cout << "ERROR: plugin " << (*_rtplugin_vector[i])->name << " - init() failed. Plugin init() returned false!" << std::endl;
+                ret = false;
+
+            }
+            else{
+                std::cout << "Plugin " << (*_rtplugin_vector[i])->name << " initialized successfully!" << std::endl;
+            }
         }
 
-        std::cout << "Plugin " << (*_rtplugin_vector[i])->name << " initialized successfully!" << std::endl;
-        _plugin_init_success[i] = true;
+        /* Handle exceptions inheriting from std::exception */
+        catch(std::exception& e){
+            std::cerr << "ERROR: plugin " << (*_rtplugin_vector[i])->name << " - init() failed.\n An exception was thrown: " << e.what() << std::endl;
+            ret = false;
+            plugin_init_success = false;
+        }
+
+        /* Handle all other exceptions */
+        catch(...){
+            std::cerr << "ERROR: plugin " << (*_rtplugin_vector[i])->name << " - init() failed.\n An exception was thrown!" << std::endl;
+            ret = false;
+            plugin_init_success = false;
+        }
+
+
+        _plugin_init_success[i] = plugin_init_success;
         _plugin_command[i].init(_rtplugin_names[i]+"_switch");
         _plugin_status[i].init(_rtplugin_names[i]+"_status");
     }
