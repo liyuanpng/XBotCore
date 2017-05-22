@@ -76,7 +76,7 @@ bool PluginHandler::load_plugins()
             else{
                 _communication_plugin_idx = std::distance(_rtplugin_names.begin(), it);
             }
-            
+
             // loading by default the XBotLoggingPlugin
             std::string logging_plugin_name = "XBotLoggingPlugin";
             it = std::find(_rtplugin_names.begin(), _rtplugin_names.end(), logging_plugin_name);
@@ -140,11 +140,12 @@ bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
     XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
     _plugin_init_success.resize(_rtplugin_vector.size(), false);
     _plugin_command.resize(_rtplugin_vector.size());
+    _plugin_status.resize(_rtplugin_vector.size());
     _plugin_state.resize(_rtplugin_vector.size(), "STOPPED");
     _first_loop.resize(_rtplugin_vector.size(), true);
 
     bool ret = true;
-    
+
     // NOTE starting by default the logging plugin
     _plugin_state[_logging_plugin_idx] = "RUNNING";
 
@@ -165,6 +166,7 @@ bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
         std::cout << "Plugin " << (*_rtplugin_vector[i])->name << " initialized successfully!" << std::endl;
         _plugin_init_success[i] = true;
         _plugin_command[i].init(_rtplugin_names[i]+"_switch");
+        _plugin_status[i].init(_rtplugin_names[i]+"_status");
     }
 
     return ret;
@@ -179,14 +181,14 @@ bool XBot::PluginHandler::init_xddp()
         // NOTE preallocate memory beacause of XENOMAI
         _robot_state_map[id] = XBot::RobotState();
     }
-    
+
     // FT
     for( const auto& ft : _robot->getForceTorque() ) {
         int id = ft.second->getSensorId();
         XBot::PublisherRT<XBot::RobotFT::pdo_rx> pub(std::string("Ft_id_") + std::to_string(id));
         _ft_pub_map[id] = pub;
     }
-    
+
     // IMU
     for( const auto& imu : _robot->getImu() ) {
         int id = imu.second->getSensorId();
@@ -202,18 +204,18 @@ void XBot::PluginHandler::run_xddp()
     for( auto& pub_motor : _motor_pub_map ) {
         pub_motor.second.write(_robot_state_map.at(pub_motor.first));
     }
-    
-    // FT 
+
+    // FT
     for( auto& pub_ft : _ft_pub_map ) {
         pub_ft.second.write(_ft_state_map.at(pub_ft.first));
     }
-    
-    // IMU 
+
+    // IMU
     for( auto& pub_imu : _imu_pub_map ) {
         pub_imu.second.write(_imu_state_map.at(pub_imu.first));
     }
-    
-    
+
+
 }
 
 void XBot::PluginHandler::fill_robot_state()
@@ -259,6 +261,8 @@ void PluginHandler::run()
 
         if( _plugin_state[i] == "STOPPED" ){
 
+            _plugin_status[i].write(XBot::Command("STOPPED"));
+
             if( _plugin_command[i].read(cmd) ){
 
                 /* If start command has been received, set plugin to RUNNING */
@@ -273,6 +277,8 @@ void PluginHandler::run()
         /* STATE RUNNING */
 
         if( _plugin_state[i] == "RUNNING" ){
+
+            _plugin_status[i].write(XBot::Command("RUNNING"));
 
             if( _plugin_command[i].read(cmd) ){
 
@@ -340,7 +346,7 @@ PluginHandler::~PluginHandler()
 bool PluginHandler::plugin_can_start(int plugin_idx)
 {
     /* Logging plugin can always start */
-    
+
     if( plugin_idx == _logging_plugin_idx ){
         return true;
     }
@@ -348,7 +354,7 @@ bool PluginHandler::plugin_can_start(int plugin_idx)
     /* We are asked to run the communication plugin,
     allow it if and ONLY if all plugins are stopped,
     except for the logging plugin which can always run */
-    
+
     if( plugin_idx == _communication_plugin_idx ){
 
         bool can_start = true;

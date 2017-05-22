@@ -59,7 +59,7 @@ private:
     std::vector<IOPluginLoader> _io_plugin_loader;
 
     std::string _path_to_config;
-    
+
     std::string _master_communication_interface_name;
     int xbot_communication_idx;
 
@@ -70,17 +70,18 @@ private:
 
     std::vector<XBot::PublisherNRT<XBot::Command>> _switch_pub_vector;
     std::vector<XBot::PublisherNRT<XBot::Command>> _command_pub_vector;
+    std::vector<XBot::SubscriberNRT<XBot::Command>> _status_sub_vector;
 
     XBot::XBotXDDP::Ptr _xddp_handler;
     XBot::RobotInterface::Ptr _robot;
 
     std::vector<XBot::CommunicationInterface::Ptr> _communication_ifc_vector;
     XBot::CommunicationInterface::Ptr _master_communication_ifc;
-    
+
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
     XBot::CommunicationInterfaceROS::Ptr _ros_communication;
 #endif
-    
+
 #ifdef USE_YARP_COMMUNICATION_INTERFACE
     XBot::CommunicationInterfaceYARP::Ptr _yarp_communication;
 #endif

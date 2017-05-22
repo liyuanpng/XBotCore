@@ -82,6 +82,7 @@ namespace XBot {
         std::vector<std::shared_ptr<shlibpp::SharedLibraryClass<XBot::XBotControlPlugin>>> _rtplugin_vector;
         std::vector<bool> _plugin_init_success;
         std::vector<XBot::SubscriberRT<XBot::Command>> _plugin_command;
+        std::vector<XBot::PublisherRT<XBot::Command>> _plugin_status;
         std::vector<std::string> _plugin_state;
         std::vector<bool> _first_loop;
 
@@ -89,15 +90,15 @@ namespace XBot {
 
         std::map<int, XBot::PublisherRT<XBot::RobotState>> _motor_pub_map;
         std::map<int, XBot::RobotState> _robot_state_map;
-        
+
         std::map<int, XBot::PublisherRT<XBot::RobotFT::pdo_rx>> _ft_pub_map;
         std::map<int, XBot::RobotFT::pdo_rx> _ft_state_map;
-        
+
         std::map<int, XBot::PublisherRT<XBot::RobotIMU::pdo_rx>> _imu_pub_map;
         std::map<int, XBot::RobotIMU::pdo_rx> _imu_state_map;
 
         XBot::ESCUtils _esc_utils;
-        
+
         int _communication_plugin_idx;
         int _logging_plugin_idx;
 
