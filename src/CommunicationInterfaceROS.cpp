@@ -71,8 +71,9 @@ CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot):
     _path_to_cfg(robot->getPathToConfig())
 {
     int argc = 1;
-    char *arg = "dummy_arg";
-    char** argv = &arg;
+    const char *arg = "dummy_arg";
+    char * argg = const_cast<char *>(arg);
+    char** argv = &argg;
 
     if(!ros::isInitialized()){
         ros::init(argc, argv, "ros_communication_interface");
@@ -386,6 +387,45 @@ bool CommunicationInterfaceROS::advertiseSwitch(const std::string& port_name)
 
     return true;
 }
+
+void XBot::CommunicationInterfaceROS::advertiseStatus(const std::string& plugin_name)
+{
+    if( _status_services.count(plugin_name) > 0 ){
+        return;
+    }
+
+    std::cout << "Advertised status port for plugin " << plugin_name << std::endl;
+
+    _status_services[plugin_name] = _nh->advertiseService<XCM::status_serviceRequest, XCM::status_serviceResponse>
+                                                (plugin_name + "_status",
+                                                 boost::bind(&CommunicationInterfaceROS::callback_status,
+                                                             this,
+                                                             _1, _2,
+                                                             plugin_name)
+                                                );
+
+    _plugin_status_map[plugin_name] = "";
+
+}
+
+bool XBot::CommunicationInterfaceROS::callback_status(XCM::status_serviceRequest& req, XCM::status_serviceResponse& res, const std::string& plugin_name)
+{
+    res.status = _plugin_status_map.at(plugin_name);
+    return true;
+}
+
+bool XBot::CommunicationInterfaceROS::setPluginStatus(const std::string& plugin_name, const std::string& status)
+{
+    auto it = _plugin_status_map.find(plugin_name);
+    if( it == _plugin_status_map.end() ){
+        return false;
+    }
+
+    it->second = status;
+    return true;
+}
+
+
 
 bool XBot::CommunicationInterfaceROS::advertiseCmd(const std::string& port_name)
 {
