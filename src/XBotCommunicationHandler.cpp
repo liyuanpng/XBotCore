@@ -103,10 +103,12 @@ void XBot::CommunicationHandler::th_init(void*)
     std::shared_ptr<XBot::IXBotJoint> xbot_joint = _xddp_handler;
     std::shared_ptr<XBot::IXBotFT> xbot_ft = _xddp_handler;
     std::shared_ptr<XBot::IXBotIMU> xbot_imu = _xddp_handler;
+    bool enable_ref_read = true;
 
     (*anymap)["XBotJoint"] = boost::any(xbot_joint);
     (*anymap)["XBotFT"] = boost::any(xbot_ft);
     (*anymap)["XBotIMU"] = boost::any(xbot_imu);
+    (*anymap)["EnableReferenceReading"] = boost::any(enable_ref_read);
 
     _robot = XBot::RobotInterface::getRobot(_path_to_config, anymap, "XBotRT");
 
