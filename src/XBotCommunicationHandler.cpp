@@ -20,7 +20,7 @@
 #include <XCM/XBotCommunicationHandler.h>
 
 
-XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config) : 
+XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config) :
     _path_to_config(path_to_config),
     _master_communication_ifc(nullptr)
 {
@@ -64,7 +64,7 @@ void XBot::CommunicationHandler::th_init(void*)
 
         }
     }
-    
+
     if(!root_cfg["MasterCommunicationInterface"]) {
         std::cerr << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node MasterCommunicationInterface!" << std::endl;
     }
@@ -77,8 +77,8 @@ void XBot::CommunicationHandler::th_init(void*)
             _master_communication_interface_name = root_cfg["MasterCommunicationInterface"]["framework_name"].as<std::string>();
         }
     }
-    
-    
+
+
     int plugin_idx = 0;
     for(const std::string& name : _plugin_names) {
         std::string switch_name = name + "_switch";
@@ -88,7 +88,8 @@ void XBot::CommunicationHandler::th_init(void*)
         std::string command_name = name + "_cmd";
         _command_names.push_back(command_name);
         _command_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(command_name));
-        
+
+        _status_sub_vector.push_back(XBot::SubscriberNRT<XBot::Command>(name + "_status"));
         // save XBotCommunicationPlugin index
         xbot_communication_idx = plugin_idx;
         plugin_idx++;
@@ -102,10 +103,12 @@ void XBot::CommunicationHandler::th_init(void*)
     std::shared_ptr<XBot::IXBotJoint> xbot_joint = _xddp_handler;
     std::shared_ptr<XBot::IXBotFT> xbot_ft = _xddp_handler;
     std::shared_ptr<XBot::IXBotIMU> xbot_imu = _xddp_handler;
-    
+    bool enable_ref_read = true;
+
     (*anymap)["XBotJoint"] = boost::any(xbot_joint);
     (*anymap)["XBotFT"] = boost::any(xbot_ft);
     (*anymap)["XBotIMU"] = boost::any(xbot_imu);
+    (*anymap)["EnableReferenceReading"] = boost::any(enable_ref_read);
 
     _robot = XBot::RobotInterface::getRobot(_path_to_config, anymap, "XBotRT");
 
@@ -121,28 +124,28 @@ void XBot::CommunicationHandler::th_init(void*)
     std::cout << "USE_ROS_COMMUNICATION_INTERFACE found! " << std::endl;
     _ros_communication = std::make_shared<XBot::CommunicationInterfaceROS>(_robot);
     _communication_ifc_vector.push_back( _ros_communication );
-    
-    if ( _master_communication_interface_name == "ROS" || 
+
+    if ( _master_communication_interface_name == "ROS" ||
          _master_communication_interface_name == "ros"
     ) {
         _master_communication_ifc = _ros_communication;
     }
-    
+
 #endif
 
 #ifdef USE_YARP_COMMUNICATION_INTERFACE
     std::cout << "USE_YARP_COMMUNICATION_INTERFACE found! " << std::endl;
     _yarp_communication = std::make_shared<XBot::CommunicationInterfaceYARP>(_robot);
     _communication_ifc_vector.push_back( _yarp_communication );
-    
-    if ( _master_communication_interface_name == "YARP" || 
+
+    if ( _master_communication_interface_name == "YARP" ||
          _master_communication_interface_name == "yarp"
     ) {
         _master_communication_ifc = _yarp_communication;
     }
-    
+
 #endif
-    
+
     // check on master communication interface
     if( _master_communication_ifc == nullptr ) {
         std::cerr << "ERROR in " << __func__ << "! Master Communication Interface specified in the config file but "
@@ -165,16 +168,20 @@ void XBot::CommunicationHandler::th_init(void*)
 
     /* Advertise switch/cmd ports for all plugins on all frameworks */
     for(auto comm_ifc : _communication_ifc_vector){
-        
+
         /* Advertise swtich port for Master Communication Interface */
         comm_ifc->advertiseMasterCommunicationInterface();
-            
+
         for(const std::string& switch_name : _switch_names){
             comm_ifc->advertiseSwitch(switch_name);
         }
 
         for(const std::string& cmd_name : _command_names){
             comm_ifc->advertiseCmd(cmd_name);
+        }
+
+        for(const std::string& pl_name : _plugin_names){
+            comm_ifc->advertiseStatus(pl_name);
         }
     }
 
@@ -201,21 +208,21 @@ void XBot::CommunicationHandler::th_init(void*)
 
 void XBot::CommunicationHandler::th_loop(void*)
 {
-    /* Receive Master Communication Interface to switch NRT framework at runtime */ 
-    
+    /* Receive Master Communication Interface to switch NRT framework at runtime */
+
     for(auto comm_ifc : _communication_ifc_vector) {
 
         std::string master;
 
         if( comm_ifc->receiveMasterCommunicationInterface(master) ) {
-                        
-            if ( master == "ROS" || 
+
+            if ( master == "ROS" ||
                  master == "ros"
             ) {
                 std::cout << "Switching to ROS Master Communication Interface" << std::endl;
-                
-#ifdef USE_ROS_COMMUNICATION_INTERFACE              
-                _master_communication_ifc = _ros_communication; 
+
+#ifdef USE_ROS_COMMUNICATION_INTERFACE
+                _master_communication_ifc = _ros_communication;
                 // HACK restarting XBotCommunicationPlugin
                 std::string cmd = "stop";
                 _switch_pub_vector[xbot_communication_idx].write(cmd);
@@ -223,16 +230,16 @@ void XBot::CommunicationHandler::th_loop(void*)
                 cmd = "start";
                 _switch_pub_vector[xbot_communication_idx].write(cmd);
 #else
-                std::cerr << "ERROR: ROS Master Communication Interface not compiled" << std::endl;                
-#endif    
+                std::cerr << "ERROR: ROS Master Communication Interface not compiled" << std::endl;
+#endif
             }
 
-            else if ( master == "YARP" || 
+            else if ( master == "YARP" ||
                       master == "yarp"
             ) {
                 std::cout << "Switching to YARP Master Communication Interface" << std::endl;
 
-#ifdef USE_YARP_COMMUNICATION_INTERFACE             
+#ifdef USE_YARP_COMMUNICATION_INTERFACE
                 _master_communication_ifc = _yarp_communication;
                 // HACK restarting XBotCommunicationPlugin
                 std::string cmd = "stop";
@@ -241,12 +248,12 @@ void XBot::CommunicationHandler::th_loop(void*)
                 cmd = "start";
                 _switch_pub_vector[xbot_communication_idx].write(cmd);
 #else
-                std::cerr << "ERROR: YARP Master Communication Interface not compiled" << std::endl;                
-#endif  
+                std::cerr << "ERROR: YARP Master Communication Interface not compiled" << std::endl;
+#endif
             }
         }
     }
-    
+
     /* Receive commands on switch ports */
     for(auto comm_ifc : _communication_ifc_vector) {
         for(int i = 0; i < _plugin_names.size(); i++){
@@ -256,6 +263,11 @@ void XBot::CommunicationHandler::th_loop(void*)
             }
             if( comm_ifc->receiveFromCmd(_command_names[i], command) ){
                 _command_pub_vector[i].write(command);
+            }
+
+            XBot::Command status;
+            if( _status_sub_vector[i].read(status) ){
+                comm_ifc->setPluginStatus(_plugin_names[i], status.str());
             }
         }
     }

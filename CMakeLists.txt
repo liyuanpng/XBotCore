@@ -90,6 +90,7 @@ if( ${catkin_FOUND} )
     FILES
     advr_controller_joint_names.srv
     cmd_service.srv
+    status_service.srv
     )
 
     generate_messages(
@@ -130,11 +131,11 @@ if(${catkin_FOUND})
 endif()
 
 if(${YARP_FOUND} AND ${ENABLE_YARP})
-    
+
     add_definitions(-DUSE_YARP_COMMUNICATION_INTERFACE)
-    
+
     list(APPEND CMAKE_MODULE_PATH ${YARP_MODULE_PATH})
-    
+
     # YARP plugin configuration
     include(YarpPlugin)
     include(YarpInstallationHelpers)
@@ -157,13 +158,13 @@ if(${YARP_FOUND} AND ${ENABLE_YARP})
     add_subdirectory(src/XBotYARP/XBotFT)
 
     YARP_END_PLUGIN_LIBRARY(XBotYarp)
-    
+
     set(COMMUNICATION_INTERFACE_SOURCE_FILES ${COMMUNICATION_INTERFACE_SOURCE_FILES} src/XBotYARP/CommunicationInterfaceYARP.cpp)
     set(COMMUNICATION_INTERFACE_LIBRARIES ${COMMUNICATION_INTERFACE_LIBRARIES} ${YARP_LIBRARIES})
-    
+
     message(${YARP_LIBRARIES})
-    
-    
+
+
 endif()
 
 message(${COMMUNICATION_INTERFACE_SOURCE_FILES})
@@ -201,17 +202,17 @@ add_executable(DummyMain src/DummyMain.cpp)
 target_link_libraries(DummyMain XCM)
 
 install(TARGETS DummyMain
-        EXPORT  DummyMain 
+        EXPORT  DummyMain
         RUNTIME DESTINATION bin)
 
 add_executable(CommunicationHandler src/XBotCommunicationMain.cpp)
 target_link_libraries(CommunicationHandler XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
 
 install(TARGETS CommunicationHandler
-        EXPORT  CommunicationHandler 
+        EXPORT  CommunicationHandler
         RUNTIME DESTINATION bin)
-        
-        
+
+
 if ( Xenomai_FOUND )
     set_xeno_flags(XCM)
 endif()
