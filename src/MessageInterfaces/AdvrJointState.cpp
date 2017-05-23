@@ -95,6 +95,9 @@ bool XBot::AdvrJointState::init(const std::string& path_to_config_file, GenericJ
             _msg.aux.push_back(0);
             _msg.stiffness.push_back(0);
             _msg.damping.push_back(0);
+            _msg.position_reference.push_back(0);
+            _msg.velocity_reference.push_back(0);
+            _msg.effort_reference.push_back(0);
             _msg.temperature.push_back(0);
             _msg.name.push_back(jname);
         }
@@ -192,4 +195,16 @@ double& XBot::AdvrJointState::stiffness(int index)
 double& XBot::AdvrJointState::temperature(int index)
 {
     return _msg.temperature[index];
+}
+
+double& XBot::AdvrJointState::position_reference ( int index ) {
+    return _msg.position_reference[index];
+}
+
+double& XBot::AdvrJointState::velocity_reference ( int index ) {
+    return _msg.velocity_reference[index];
+}
+
+double& XBot::AdvrJointState::effort_reference ( int index ) {
+    return _msg.effort_reference[index];
 }

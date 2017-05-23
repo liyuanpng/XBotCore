@@ -243,7 +243,33 @@ void CommunicationInterfaceROS::sendRobotState()
         _jointstate_message->temperature(joint_state_msg_idx) = _joint_id_map.at(id);
     }
 
-     _robot->getStiffness(_joint_id_map);
+     _robot->getPositionReference(_joint_id_map);
+     
+     for( int id : _robot->getEnabledJointId() ){
+        int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
+        _jointstate_message->position_reference(joint_state_msg_idx) = _joint_id_map.at(id);
+    }
+
+     _robot->getVelocityReference(_joint_id_map);
+
+    for( int id : _robot->getEnabledJointId() ){
+        int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
+        _jointstate_message->velocity_reference(joint_state_msg_idx) = _joint_id_map.at(id);
+    }
+    
+    for( int id : _robot->getEnabledJointId() ){
+        int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
+        _jointstate_message->stiffness(joint_state_msg_idx) = _joint_id_map.at(id);
+    }
+
+     _robot->getEffortReference(_joint_id_map);
+
+    for( int id : _robot->getEnabledJointId() ){
+        int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
+        _jointstate_message->effort_reference(joint_state_msg_idx) = _joint_id_map.at(id);
+    }
+    
+    _robot->getStiffness(_joint_id_map);
 
     for( int id : _robot->getEnabledJointId() ){
         int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
