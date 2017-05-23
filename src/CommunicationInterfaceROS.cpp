@@ -55,6 +55,7 @@ bool XBot::CommunicationInterfaceROS::callback_master_communication_iface(XCM::c
 CommunicationInterfaceROS::CommunicationInterfaceROS():
     CommunicationInterface()
 {
+    int argc = 1;
     const char *arg = "dummy_arg";
     char* argg = const_cast<char*>(arg);
     char** argv = &argg;
