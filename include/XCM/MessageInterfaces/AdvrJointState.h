@@ -43,6 +43,10 @@ namespace XBot {
         virtual double& motorVelocity(int index);
 
         virtual double& effort(int index);
+        
+        virtual double& position_reference ( int index );
+        virtual double& velocity_reference ( int index );
+        virtual double& effort_reference ( int index );
 
         virtual double& stiffness(int index);
         virtual double& damping(int index);

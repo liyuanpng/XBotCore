@@ -23,11 +23,13 @@
 
 #include <XBotCore-interfaces/XBotESC.h>
 
-#include <mutex>
+// #include <mutex>
 #include <cstring>
 
 #include <XBotCore-interfaces/IXBotJoint.h>
 #include <XBotCore-interfaces/IXBotFT.h>
+#include <XBotCore-interfaces/IXBotIMU.h>
+
 #include <XBotCore-interfaces/XDomainCommunication.h>
 
 #include <XBotCoreModel.h>
@@ -43,7 +45,8 @@ namespace XBot
  * 
  */
 class XBot::XBotXDDP :  public XBot::IXBotJoint,
-                        public XBot::IXBotFT
+                        public XBot::IXBotFT,
+                        public XBot::IXBotIMU
                         
 {
 public:
@@ -83,6 +86,12 @@ public:
     virtual bool get_aux(int joint_id, double& aux) final;
     
     virtual bool get_gains(int joint_id, std::vector< double >& gain_vector) final;
+        
+    virtual bool get_pos_ref(int joint_id, double& pos_ref) final;
+
+    virtual bool get_vel_ref(int joint_id, double& vel_ref) final;
+
+    virtual bool get_tor_ref(int joint_id, double& tor_ref) final;
     
     // NOTE IXBotJoint setters
     virtual bool set_pos_ref(int joint_id, const double& pos_ref) final;
@@ -106,8 +115,13 @@ public:
     virtual bool get_ft_fault(int ft_id, double& fault) final;
     virtual bool get_ft_rtt(int ft_id, double& rtt) final;
     
+    // NOTE IXBotIMU getters
+    virtual bool get_imu(int imu_id, std::vector< double >& lin_acc, std::vector< double >& ang_vel, std::vector< double >& quaternion);
+    virtual bool get_imu_fault(int imu_id, double& fault);
+    virtual bool get_imu_rtt(int imu_id, double& rtt);
     
-    // TBD do an interface that does it
+    
+    // TBD do an interface that does it NOTE now looks like useless to me
     bool get_min_pos(int joint_id, float& min_pos);
     bool get_max_pos(int joint_id, float& max_pos);
     bool get_ctrl_status_cmd(int joint_id, uint16_t& ctrl_status_cmd);
@@ -156,6 +170,12 @@ private:
     std::map<std::string, int> ft;
     
     /**
+     * @brief imu map 
+     * 
+     */
+    std::map<std::string, int> imu;
+    
+    /**
      * @brief fd reading from pipes: we read the robot from XBotCore XDDP pipe
      * 
      */
@@ -174,6 +194,12 @@ private:
     std::map<int,XBot::SubscriberNRT<XBot::RobotFT::pdo_rx>> fd_ft_read;
     
     /**
+     * @brief fd reading from pipes: we read the robot IMU XBotCore XDDP pipe
+     * 
+     */
+    std::map<int,XBot::SubscriberNRT<XBot::RobotIMU::pdo_rx>> fd_imu_read;
+    
+    /**
      * @brief fd reading from pipes: we read the robot SDO XBotCore XDDP pipe
      * 
      */
@@ -185,11 +211,11 @@ private:
      */
     int n_bytes;
     
-    /**
-     * @brief mutex
-     * 
-     */
-    std::map<int,std::shared_ptr<std::mutex>> mutex;
+//     /**
+//      * @brief mutex
+//      * 
+//      */
+//     std::map<int,std::shared_ptr<std::mutex>> mutex;
     
     
     /**

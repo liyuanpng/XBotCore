@@ -32,20 +32,29 @@ public:
     typedef std::shared_ptr<CommunicationInterface> Ptr;
 
     CommunicationInterface() {}
-    CommunicationInterface(XBotInterface::Ptr robot): _robot(robot) {}
+    CommunicationInterface(XBotInterface::Ptr robot):
+        _robot(robot),
+        _master_communication_interface_port("MasterCommunicationInterface_switch") {}
 
     virtual void sendRobotState() = 0;
     virtual void receiveReference() = 0;
 
     virtual bool advertiseSwitch(const std::string& port_name) = 0;
     virtual bool receiveFromSwitch(const std::string& port_name, std::string& message) = 0;
-    
+
     virtual bool advertiseCmd(const std::string& port_name) = 0;
-    virtual bool receiveFromCmd(const std::string& port_name, std::string& message) = 0;  // TBD template message 
+    virtual bool receiveFromCmd(const std::string& port_name, std::string& message) = 0;  // TBD template message
+
+    virtual bool advertiseMasterCommunicationInterface() = 0;
+    virtual bool receiveMasterCommunicationInterface(std::string& framework_name) = 0;
+
+    virtual void advertiseStatus(const std::string& plugin_name){}
+    virtual bool setPluginStatus(const std::string& plugin_name, const std::string& status){}
 
 protected:
 
     XBotInterface::Ptr _robot;
+    std::string _master_communication_interface_port;
 
 private:
 

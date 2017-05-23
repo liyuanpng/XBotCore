@@ -5,7 +5,7 @@
 #endif
 
 #ifdef USE_YARP_COMMUNICATION_INTERFACE
-#include <XCM/CommunicationInterfaceYARP.h>
+#include <XCM/XBotYARP/CommunicationInterfaceYARP.h>
 #endif
 
 namespace XBot {

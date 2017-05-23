@@ -37,7 +37,7 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
     for( int id : _robot->getEnabledJointId() ) {
         _sub_map[id] = XBot::SubscriberRT<XBot::RobotState::pdo_tx>(std::string("rt_in_Motor_id_") + std::to_string(id));
     }
-    
+
     // create the CommunicationHandler thread
 //     _ch = std::make_shared<XBot::CommunicationHandler>(path_to_config_file);
 //     _ch->create(false, 3);
@@ -47,30 +47,39 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
 
 void XBot::XBotCommunicationPlugin::on_start(double time)
 {
-    std::cout << "XBotCommunicationPlugin STARTED!!!" << std::endl;
+    _start_time = time;
+    _robot->getJointPosition(_q0);
 }
 
 void XBot::XBotCommunicationPlugin::on_stop(double time)
 {
-    std::cout << "XBotCommunicationPlugin STOPPED!!!" << std::endl;
 
 }
 
 
 void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
 {
-    XBot::JointIdMap pos_ref_map, vel_ref_map, tor_ref_map;
+
     for( auto& p: _sub_map) {
         if( p.second.read(_pdo_tx) ) {
-            pos_ref_map[p.first] = _pdo_tx.pos_ref;
-            vel_ref_map[p.first] = _pdo_tx.vel_ref;
-            tor_ref_map[p.first] = _pdo_tx.tor_ref;
+            _pos_ref_map[p.first] = _pdo_tx.pos_ref;
+            _vel_ref_map[p.first] = _pdo_tx.vel_ref;
+            _tor_ref_map[p.first] = _pdo_tx.tor_ref;
         }
     }
 
-    _robot->setPositionReference(pos_ref_map);
-    _robot->setVelocityReference(vel_ref_map);
-    _robot->setEffortReference(tor_ref_map);
+    _robot->setPositionReference(_pos_ref_map);
+    _robot->setVelocityReference(_vel_ref_map);
+    _robot->setEffortReference(_tor_ref_map);
+
+    double alpha = (time - _start_time) / 5.0;
+
+    if( alpha < 1 ){
+        _robot->getPositionReference(_qref);
+        _qref = alpha*_qref + (1-alpha)*_q0;
+        _robot->setPositionReference(_qref);
+    }
+
     _robot->move();
 
 }
@@ -80,7 +89,7 @@ bool XBot::XBotCommunicationPlugin::close(void)
     // stop communication handler thread
 //     _ch->stop();
 //     _ch->join();
-    
+
     return true;
 }
 

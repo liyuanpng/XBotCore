@@ -22,17 +22,27 @@
 #define __XBOT_COMMUNICATION_INTERFACE_YARP_H__
 
 #include <XCM/XBotCommunicationInterface.h>
+#include <XBotCore-interfaces/IXBotInit.h>
 
+#include <yarp/os/all.h>
+#include <yarp/dev/all.h>
 
 namespace XBot {
 
-class CommunicationInterfaceYARP : public CommunicationInterface {
+class CommunicationInterfaceYARP : public CommunicationInterface
+{
 
 public:
 
     CommunicationInterfaceYARP();
     CommunicationInterfaceYARP(XBotInterface::Ptr robot);
+    
+    CommunicationInterfaceYARP(const CommunicationInterfaceYARP&) = delete;
+    
+    void YARP_configuration();
 
+    // XBot CommunicationInterface 
+    
     virtual void sendRobotState();
     virtual void receiveReference();
 
@@ -41,10 +51,20 @@ public:
     
     virtual bool advertiseCmd(const std::string& port_name);
     virtual bool receiveFromCmd(const std::string& port_name, std::string& message);  // TBD template message
+    
+    virtual bool advertiseMasterCommunicationInterface();
+    virtual bool receiveMasterCommunicationInterface(std::string& framework_name);
+    
+    virtual ~CommunicationInterfaceYARP() { std::cerr << "~CommunicationInterfaceYARP()" << std::endl; }
 
 protected:
 
 private:
+
+    std::map<std::string, yarp::dev::PolyDriver > _motion_control_map;
+    std::map<std::string, yarp::dev::PolyDriver > _wrapper_map;
+    std::map<std::string, yarp::dev::PolyDriver > _ft_map;
+    std::map<std::string, yarp::dev::PolyDriver > _analog_server_map;
 
 };
 

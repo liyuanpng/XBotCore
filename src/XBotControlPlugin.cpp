@@ -36,20 +36,23 @@ bool XBotControlPlugin::init(std::string path_to_config_file,
                              XBot::SharedMemory::Ptr shared_memory,
                              std::shared_ptr<XBot::IXBotJoint> joint,
                              std::shared_ptr< IXBotModel > model,
-                             std::shared_ptr< IXBotFT > ft)
+                             std::shared_ptr< IXBotFT > ft,
+                             std::shared_ptr< IXBotIMU > imu  )
 {
     this->name = name;
     this->set_xbotcore_joint(joint);
     this->set_xbotcore_model(model);
     this->set_xbotcore_ft(ft);
+    this->set_xbotcore_imu(imu);
 
     AnyMapPtr any_map = std::make_shared<AnyMap>();
     (*any_map)["XBotJoint"] = boost::any(joint);
     (*any_map)["XBotFT"] = boost::any(ft);
+    (*any_map)["XBotIMU"] = boost::any(imu);
 
     RobotInterface::Ptr robotinterface = RobotInterface::getRobot(path_to_config_file, any_map);
     
-    // initialize the coomand port
+    // initialize the command port
     command.init(name + "_cmd");
 
     return init_control_plugin(path_to_config_file, shared_memory, robotinterface);

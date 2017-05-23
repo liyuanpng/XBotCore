@@ -30,6 +30,7 @@
 #include <robot_state_publisher/robot_state_publisher.h>
 
 #include <XCM/cmd_service.h>
+#include <XCM/status_service.h>
 
 namespace XBot {
 
@@ -45,9 +46,15 @@ public:
 
     virtual bool advertiseSwitch(const std::string& port_name);
     virtual bool receiveFromSwitch(const std::string& port_name, std::string& message);
-    
+
     virtual bool advertiseCmd(const std::string& port_name);
     virtual bool receiveFromCmd(const std::string& port_name, std::string& message);  // TBD template message
+
+    virtual bool advertiseMasterCommunicationInterface();
+    virtual bool receiveMasterCommunicationInterface(std::string& framework_name);
+
+    virtual void advertiseStatus(const std::string& plugin_name);
+    virtual bool setPluginStatus(const std::string& plugin_name, const std::string& status);
 
 protected:
 
@@ -55,6 +62,8 @@ private:
 
     bool callback(std_srvs::SetBoolRequest& req, std_srvs::SetBoolResponse& res, const std::string& port_name);
     bool callback_cmd(XCM::cmd_serviceRequest& req, XCM::cmd_serviceResponse& res, const std::string& port_name);
+    bool callback_master_communication_iface(XCM::cmd_serviceRequest& req, XCM::cmd_serviceResponse& res, const std::string& port_name);
+    bool callback_status(XCM::status_serviceRequest& req, XCM::status_serviceResponse& res, const std::string& plugin_name);
 
     void load_ros_message_interfaces();
 
@@ -70,6 +79,9 @@ private:
 
     JointIdMap _joint_id_map;
     JointNameMap _joint_name_map;
+
+    std::map<std::string, ros::ServiceServer> _status_services;
+    std::map<std::string, std::string> _plugin_status_map;
 
     shlibpp::SharedLibraryClass<GenericJointStateMessage> _jointstatemsg_instance;
     shlibpp::SharedLibraryClassFactory<GenericJointStateMessage> _jointstatemsg_factory;
@@ -100,6 +112,8 @@ private:
     std::shared_ptr<robot_state_publisher::RobotStatePublisher> _robot_state_pub;
     std::string _tf_prefix, _urdf_param_name;
 
+    std::map<int, ros::Publisher> _imu_pub_map;
+    std::map<int, ros::Publisher> _ft_pub_map;
 
 
 

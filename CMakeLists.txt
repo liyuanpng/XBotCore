@@ -71,7 +71,7 @@ find_package(XBotInterface REQUIRED)
 find_package(XBotCore-interfaces REQUIRED)
 
 find_package(catkin QUIET COMPONENTS roscpp sensor_msgs std_srvs message_generation robot_state_publisher)
-# find_package(YARP QUIET)
+find_package(YARP QUIET)
 find_package(kdl_parser REQUIRED)
 
 
@@ -91,6 +91,7 @@ if( ${catkin_FOUND} )
     FILES
     advr_controller_joint_names.srv
     cmd_service.srv
+    status_service.srv
     )
 
     generate_messages(
@@ -122,16 +123,49 @@ file(GLOB_RECURSE XCM_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include" *.h*)
 set(COMMUNICATION_INTERFACE_SOURCE_FILES)
 set(COMMUNICATION_INTERFACE_LIBRARIES)
 
+option(ENABLE_YARP "Enable YARP Communication Interface" FALSE)
+
 if(${catkin_FOUND})
     add_definitions(-DUSE_ROS_COMMUNICATION_INTERFACE)
     set(COMMUNICATION_INTERFACE_SOURCE_FILES ${COMMUNICATION_INTERFACE_SOURCE_FILES} src/CommunicationInterfaceROS.cpp)
     set(COMMUNICATION_INTERFACE_LIBRARIES ${COMMUNICATION_INTERFACE_LIBRARIES} ${catkin_LIBRARIES})
 endif()
 
-if(${YARP_FOUND})
+if(${YARP_FOUND} AND ${ENABLE_YARP})
+
     add_definitions(-DUSE_YARP_COMMUNICATION_INTERFACE)
-    set(COMMUNICATION_INTERFACE_SOURCE_FILES ${COMMUNICATION_INTERFACE_SOURCE_FILES} src/CommunicationInterfaceYARP.cpp)
+
+    list(APPEND CMAKE_MODULE_PATH ${YARP_MODULE_PATH})
+
+    # YARP plugin configuration
+    include(YarpPlugin)
+    include(YarpInstallationHelpers)
+
+    set(YARP_FORCE_DYNAMIC_PLUGINS TRUE CACHE INTERNAL "XBotYarp is always built with dynamic plugins")
+    yarp_configure_external_installation(XBotYarp WITH_PLUGINS)
+
+    # add the RPATH support
+    include(AddInstallRPATHSupport)
+
+    add_install_rpath_support(LIB_DIRS "${CMAKE_INSTALL_FULL_LIBDIR}"                                        # Libraries
+                              BIN_DIRS "${CMAKE_INSTALL_FULL_BINDIR}"                                        # Binaries
+                                       "${CMAKE_INSTALL_PREFIX}/${XBOTYARP_DYNAMIC_PLUGINS_INSTALL_DIR}"     # Plugins
+                              USE_LINK_PATH)
+
+    # Prepare a plugin library called "XBotYarp".
+    YARP_BEGIN_PLUGIN_LIBRARY(XBotYarp)
+
+    add_subdirectory(src/XBotYARP/XBotMotionControl)
+    add_subdirectory(src/XBotYARP/XBotFT)
+
+    YARP_END_PLUGIN_LIBRARY(XBotYarp)
+
+    set(COMMUNICATION_INTERFACE_SOURCE_FILES ${COMMUNICATION_INTERFACE_SOURCE_FILES} src/XBotYARP/CommunicationInterfaceYARP.cpp)
     set(COMMUNICATION_INTERFACE_LIBRARIES ${COMMUNICATION_INTERFACE_LIBRARIES} ${YARP_LIBRARIES})
+
+    
+
+
 endif()
 
 message(${COMMUNICATION_INTERFACE_SOURCE_FILES})
@@ -148,6 +182,11 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         ${RT_NRT_SRC}
                         )
 
+if(${catkin_FOUND})
+    add_dependencies(XCM AdvrJointStateMessage)
+    add_dependencies(XCM AdvrCommandMessage)
+endif()
+
 
 target_link_libraries(XCM PUBLIC ${XBotInterface_LIBRARIES}
                                  ${XBotCore-interfaces_LIBRARIES}
@@ -155,14 +194,11 @@ target_link_libraries(XCM PUBLIC ${XBotInterface_LIBRARIES}
                                  )
 
 
-target_include_directories(XCM PUBLIC
+target_include_directories( XCM PUBLIC
                             ${XBotInterface_INCLUDE_DIRS}
                             ${XBotCore-interfaces_INCLUDE_DIRS}
                             )
-if(${catkin_FOUND})  
-    add_dependencies(XCM XCM_generate_messages_cpp)
-endif()
-    
+
 if ( Xenomai_FOUND )
     set_xeno_flags(XCM)
 endif()
@@ -170,8 +206,22 @@ endif()
 add_executable(DummyMain src/DummyMain.cpp)
 target_link_libraries(DummyMain XCM)
 
+install(TARGETS DummyMain
+        EXPORT  DummyMain
+        RUNTIME DESTINATION bin)
+
 add_executable(CommunicationHandler src/XBotCommunicationMain.cpp)
 target_link_libraries(CommunicationHandler XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
+
+install(TARGETS CommunicationHandler
+        EXPORT  CommunicationHandler
+        RUNTIME DESTINATION bin)
+
+
+if ( Xenomai_FOUND )
+    set_xeno_flags(XCM)
+endif()
+
 
 add_subdirectory(src/XBotPlugin)
 
@@ -320,3 +370,6 @@ if(BUILD_TESTS)
   add_custom_target(test_verbose ${CMAKE_CTEST_COMMAND} -V)
   add_subdirectory(tests)
 endif()
+
+# install script to generate XBot RT Plugin skeleton
+INSTALL(PROGRAMS scripts/generate_XBot_RT_Plugin.sh DESTINATION bin)

@@ -19,6 +19,8 @@
 
 
 #include <XCM/CommunicationInterfaceROS.h>
+#include <sensor_msgs/Imu.h>
+#include <geometry_msgs/WrenchStamped.h>
 
 namespace XBot {
 
@@ -31,8 +33,8 @@ bool CommunicationInterfaceROS::callback(std_srvs::SetBoolRequest& req,
     return true;
 }
 
-bool XBot::CommunicationInterfaceROS::callback_cmd(XCM::cmd_serviceRequest& req, 
-                                                   XCM::cmd_serviceResponse& res, 
+bool XBot::CommunicationInterfaceROS::callback_cmd(XCM::cmd_serviceRequest& req,
+                                                   XCM::cmd_serviceResponse& res,
                                                    const std::string& port_name)
 {
     _msgs.at(port_name) = req.cmd;
@@ -40,12 +42,23 @@ bool XBot::CommunicationInterfaceROS::callback_cmd(XCM::cmd_serviceRequest& req,
     return true;
 }
 
+bool XBot::CommunicationInterfaceROS::callback_master_communication_iface(XCM::cmd_serviceRequest& req,
+                                                                          XCM::cmd_serviceResponse& res,
+                                                                          const std::string& port_name)
+{
+    _msgs.at(port_name) = req.cmd;
+    res.success = true;
+    return true;
+}
+
+
 CommunicationInterfaceROS::CommunicationInterfaceROS():
     CommunicationInterface()
 {
     int argc = 1;
-    char *arg = "dummy_arg";
-    char** argv = &arg;
+    const char *arg = "dummy_arg";
+    char* argg = const_cast<char*>(arg);
+    char** argv = &argg;
 
     if(!ros::isInitialized()){
         ros::init(argc, argv, "ros_communication_interface");
@@ -59,8 +72,9 @@ CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot):
     _path_to_cfg(robot->getPathToConfig())
 {
     int argc = 1;
-    char *arg = "dummy_arg";
-    char** argv = &arg;
+    const char *arg = "dummy_arg";
+    char* argg = const_cast<char*>(arg);
+    char** argv = &argg;
 
     if(!ros::isInitialized()){
         ros::init(argc, argv, "ros_communication_interface");
@@ -71,6 +85,20 @@ CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot):
     load_robot_state_publisher();
 
     load_ros_message_interfaces();
+
+    for(const auto& pair : robot->getImu()){
+        XBot::ImuSensor::ConstPtr imuptr = pair.second;
+        std::string imu_topic_name;
+        imu_topic_name = "/xbotcore/" + robot->getUrdf().name_ + "/imu/" + imuptr->getSensorName();
+        _imu_pub_map[imuptr->getSensorId()] = _nh->advertise<sensor_msgs::Imu>(imu_topic_name, 1);
+    }
+
+    for(const auto& pair : robot->getForceTorque()){
+        XBot::ForceTorqueSensor::ConstPtr ftptr = pair.second;
+        std::string ft_topic_name;
+        ft_topic_name = "/xbotcore/" + robot->getUrdf().name_ + "/ft/" + ftptr->getSensorName();
+        _ft_pub_map[ftptr->getSensorId()] = _nh->advertise<geometry_msgs::WrenchStamped>(ft_topic_name, 1);
+    }
 }
 
 void CommunicationInterfaceROS::load_robot_state_publisher()
@@ -162,11 +190,16 @@ void CommunicationInterfaceROS::load_ros_message_interfaces() {
 }
 void CommunicationInterfaceROS::sendRobotState()
 {
+
+    /* TF */
+
     _robot->getJointPosition(_joint_name_map);
     std::map<std::string, double> _joint_name_std_map(_joint_name_map.begin(), _joint_name_map.end());
 
     _robot_state_pub->publishTransforms(_joint_name_std_map, ros::Time::now(), "");
     _robot_state_pub->publishFixedTransforms("");
+
+    /* Joint states */
 
     if( !_send_robot_state_ok ) return;
 
@@ -212,7 +245,33 @@ void CommunicationInterfaceROS::sendRobotState()
         _jointstate_message->temperature(joint_state_msg_idx) = _joint_id_map.at(id);
     }
 
-     _robot->getStiffness(_joint_id_map);
+     _robot->getPositionReference(_joint_id_map);
+     
+     for( int id : _robot->getEnabledJointId() ){
+        int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
+        _jointstate_message->position_reference(joint_state_msg_idx) = _joint_id_map.at(id);
+    }
+
+     _robot->getVelocityReference(_joint_id_map);
+
+    for( int id : _robot->getEnabledJointId() ){
+        int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
+        _jointstate_message->velocity_reference(joint_state_msg_idx) = _joint_id_map.at(id);
+    }
+    
+    for( int id : _robot->getEnabledJointId() ){
+        int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
+        _jointstate_message->stiffness(joint_state_msg_idx) = _joint_id_map.at(id);
+    }
+
+     _robot->getEffortReference(_joint_id_map);
+
+    for( int id : _robot->getEnabledJointId() ){
+        int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
+        _jointstate_message->effort_reference(joint_state_msg_idx) = _joint_id_map.at(id);
+    }
+    
+    _robot->getStiffness(_joint_id_map);
 
     for( int id : _robot->getEnabledJointId() ){
         int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
@@ -227,6 +286,65 @@ void CommunicationInterfaceROS::sendRobotState()
     }
 
     _jointstate_message->publish();
+
+    /* IMU */
+
+    for(const auto& pair : _robot->getImu()){
+
+        XBot::ImuSensor::ConstPtr imuptr = pair.second;
+
+        Eigen::Quaterniond q;
+        Eigen::Vector3d w, a;
+
+        imuptr->getImuData(q, a, w);
+
+        sensor_msgs::Imu msg;
+
+        msg.angular_velocity.x = w.x();
+        msg.angular_velocity.y = w.y();
+        msg.angular_velocity.z = w.z();
+
+        msg.linear_acceleration.x = a.x();
+        msg.linear_acceleration.y = a.y();
+        msg.linear_acceleration.z = a.z();
+
+        msg.orientation.w = q.w();
+        msg.orientation.x = q.x();
+        msg.orientation.y = q.y();
+        msg.orientation.z = q.z();
+
+        msg.header.stamp = ros::Time::now();
+        msg.header.frame_id = pair.first;
+
+        _imu_pub_map.at(imuptr->getSensorId()).publish(msg);
+
+    }
+
+
+    /* FT */
+
+    for(const auto& pair : _robot->getForceTorque()){
+
+        XBot::ForceTorqueSensor::ConstPtr ftptr = pair.second;
+
+        Eigen::Vector6d w;
+        ftptr->getWrench(w);
+
+        geometry_msgs::WrenchStamped msg;
+
+        msg.wrench.force.x = w(0);
+        msg.wrench.force.y = w(1);
+        msg.wrench.force.z = w(2);
+        msg.wrench.torque.x = w(3);
+        msg.wrench.torque.y = w(4);
+        msg.wrench.torque.z = w(5);
+
+        msg.header.stamp = ros::Time::now();
+        msg.header.frame_id = pair.first;
+
+        _ft_pub_map.at(ftptr->getSensorId()).publish(msg);
+
+    }
 }
 
 void CommunicationInterfaceROS::receiveReference()
@@ -297,6 +415,45 @@ bool CommunicationInterfaceROS::advertiseSwitch(const std::string& port_name)
     return true;
 }
 
+void XBot::CommunicationInterfaceROS::advertiseStatus(const std::string& plugin_name)
+{
+    if( _status_services.count(plugin_name) > 0 ){
+        return;
+    }
+
+    std::cout << "Advertised status port for plugin " << plugin_name << std::endl;
+
+    _status_services[plugin_name] = _nh->advertiseService<XCM::status_serviceRequest, XCM::status_serviceResponse>
+                                                (plugin_name + "_status",
+                                                 boost::bind(&CommunicationInterfaceROS::callback_status,
+                                                             this,
+                                                             _1, _2,
+                                                             plugin_name)
+                                                );
+
+    _plugin_status_map[plugin_name] = "";
+
+}
+
+bool XBot::CommunicationInterfaceROS::callback_status(XCM::status_serviceRequest& req, XCM::status_serviceResponse& res, const std::string& plugin_name)
+{
+    res.status = _plugin_status_map.at(plugin_name);
+    return true;
+}
+
+bool XBot::CommunicationInterfaceROS::setPluginStatus(const std::string& plugin_name, const std::string& status)
+{
+    auto it = _plugin_status_map.find(plugin_name);
+    if( it == _plugin_status_map.end() ){
+        return false;
+    }
+
+    it->second = status;
+    return true;
+}
+
+
+
 bool XBot::CommunicationInterfaceROS::advertiseCmd(const std::string& port_name)
 {
     if( _services.count(port_name) > 0 ){
@@ -315,6 +472,25 @@ bool XBot::CommunicationInterfaceROS::advertiseCmd(const std::string& port_name)
 
     return true;
 }
+
+
+bool XBot::CommunicationInterfaceROS::advertiseMasterCommunicationInterface()
+{
+    // NOTE default port name for MasterCommunicationInterface
+
+    _services[_master_communication_interface_port] = _nh->advertiseService<XCM::cmd_serviceRequest, XCM::cmd_serviceResponse>
+                                        (_master_communication_interface_port,
+                                         boost::bind(&CommunicationInterfaceROS::callback_master_communication_iface,
+                                                     this,
+                                                     _1, _2, _master_communication_interface_port)
+                                         );
+    _msgs[_master_communication_interface_port] = "";
+
+    std::cout << "Advertised service " << _master_communication_interface_port << std::endl;
+
+    return true;
+}
+
 
 
 bool CommunicationInterfaceROS::receiveFromSwitch(const std::string& port_name, std::string& message)
@@ -352,6 +528,25 @@ bool XBot::CommunicationInterfaceROS::receiveFromCmd(const std::string& port_nam
         return false;
     }
 }
+
+bool XBot::CommunicationInterfaceROS::receiveMasterCommunicationInterface(std::string& framework_name)
+{
+    ros::spinOnce();
+
+    auto it = _msgs.find(_master_communication_interface_port);
+
+    if( it == _msgs.end() ) return false;
+
+    framework_name = it->second;
+    if( framework_name != "" ) {
+        it->second = "";
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 
 
 bool CommunicationInterfaceROS::computeAbsolutePath (  const std::string& input_path,

@@ -40,6 +40,7 @@ PluginHandler::PluginHandler(RobotInterface::Ptr robot,  TimeProvider::Ptr time_
     _close_was_called(false)
 {
     _path_to_cfg = _robot->getPathToConfig();
+    std::cout << "Plugin Handler is using config file: " << _path_to_cfg << std::endl;
 }
 
 
@@ -75,7 +76,7 @@ bool PluginHandler::load_plugins()
             else{
                 _communication_plugin_idx = std::distance(_rtplugin_names.begin(), it);
             }
-            
+
             // loading by default the XBotLoggingPlugin
             std::string logging_plugin_name = "XBotLoggingPlugin";
             it = std::find(_rtplugin_names.begin(), _rtplugin_names.end(), logging_plugin_name);
@@ -131,6 +132,7 @@ bool PluginHandler::load_plugins()
 
 bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
                                  std::shared_ptr< IXBotFT > ft,
+                                 std::shared_ptr< IXBotIMU > imu,
                                  std::shared_ptr< IXBotModel > model)
 {
     init_xddp();
@@ -138,30 +140,58 @@ bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
     XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
     _plugin_init_success.resize(_rtplugin_vector.size(), false);
     _plugin_command.resize(_rtplugin_vector.size());
+    _plugin_status.resize(_rtplugin_vector.size());
     _plugin_state.resize(_rtplugin_vector.size(), "STOPPED");
     _first_loop.resize(_rtplugin_vector.size(), true);
 
     bool ret = true;
-    
+
     // NOTE starting by default the logging plugin
     _plugin_state[_logging_plugin_idx] = "RUNNING";
 
     for(int i = 0; i < _rtplugin_vector.size(); i++) {
-        if(!(*_rtplugin_vector[i])->init( _path_to_cfg,
-                                          _rtplugin_names[i],
-                                          shared_memory,
-                                          joint,
-                                          model,
-                                          ft)
-             )
-        {
-            std::cout << "ERROR: plugin " << (*_rtplugin_vector[i])->name << " - init() failed" << std::endl;
-            ret = false;
+
+        bool plugin_init_success = false;
+
+        try{
+            /* Try to init the current plugin */
+            plugin_init_success = (*_rtplugin_vector[i])->init( _path_to_cfg,
+                                                                _rtplugin_names[i],
+                                                                shared_memory,
+                                                                joint,
+                                                                model,
+                                                                ft,
+                                                                imu);
+
+            /* Handle return value if init() was performed cleanly */
+            if(!plugin_init_success){
+                std::cout << "ERROR: plugin " << (*_rtplugin_vector[i])->name << " - init() failed. Plugin init() returned false!" << std::endl;
+                ret = false;
+
+            }
+            else{
+                std::cout << "Plugin " << (*_rtplugin_vector[i])->name << " initialized successfully!" << std::endl;
+            }
         }
 
-        std::cout << "Plugin " << (*_rtplugin_vector[i])->name << " initialized successfully!" << std::endl;
-        _plugin_init_success[i] = true;
+        /* Handle exceptions inheriting from std::exception */
+        catch(std::exception& e){
+            std::cerr << "ERROR: plugin " << (*_rtplugin_vector[i])->name << " - init() failed.\n An exception was thrown: " << e.what() << std::endl;
+            ret = false;
+            plugin_init_success = false;
+        }
+
+        /* Handle all other exceptions */
+        catch(...){
+            std::cerr << "ERROR: plugin " << (*_rtplugin_vector[i])->name << " - init() failed.\n An exception was thrown!" << std::endl;
+            ret = false;
+            plugin_init_success = false;
+        }
+
+
+        _plugin_init_success[i] = plugin_init_success;
         _plugin_command[i].init(_rtplugin_names[i]+"_switch");
+        _plugin_status[i].init(_rtplugin_names[i]+"_status");
     }
 
     return ret;
@@ -169,23 +199,55 @@ bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
 
 bool XBot::PluginHandler::init_xddp()
 {
+    // Motor
     for( int id : _robot->getEnabledJointId() ) {
         XBot::PublisherRT<XBot::RobotState> pub(std::string("Motor_id_") + std::to_string(id));
-        _pub_map[id] = pub;
+        _motor_pub_map[id] = pub;
+        // NOTE preallocate memory beacause of XENOMAI
+        _robot_state_map[id] = XBot::RobotState();
+    }
+
+    // FT
+    for( const auto& ft : _robot->getForceTorque() ) {
+        int id = ft.second->getSensorId();
+        XBot::PublisherRT<XBot::RobotFT::pdo_rx> pub(std::string("Ft_id_") + std::to_string(id));
+        _ft_pub_map[id] = pub;
+    }
+
+    // IMU
+    for( const auto& imu : _robot->getImu() ) {
+        int id = imu.second->getSensorId();
+        XBot::PublisherRT<XBot::RobotIMU::pdo_rx> pub(std::string("Imu_id_") + std::to_string(id));
+        _imu_pub_map[id] = pub;
     }
 }
 
 
 void XBot::PluginHandler::run_xddp()
 {
-    for( auto& pub : _pub_map ) {
-        pub.second.write(_robot_state_map.at(pub.first));
+    // Motor
+    for( auto& pub_motor : _motor_pub_map ) {
+        pub_motor.second.write(_robot_state_map.at(pub_motor.first));
     }
+
+    // FT
+    for( auto& pub_ft : _ft_pub_map ) {
+        pub_ft.second.write(_ft_state_map.at(pub_ft.first));
+    }
+
+    // IMU
+    for( auto& pub_imu : _imu_pub_map ) {
+        pub_imu.second.write(_imu_state_map.at(pub_imu.first));
+    }
+
+
 }
 
 void XBot::PluginHandler::fill_robot_state()
 {
     _esc_utils.setRobotStateFromRobotInterface(_robot_state_map);
+    _esc_utils.setRobotFTFromRobotInterface(_ft_state_map);
+    _esc_utils.setRobotIMUFromRobotInterface(_imu_state_map);
 }
 
 
@@ -224,6 +286,8 @@ void PluginHandler::run()
 
         if( _plugin_state[i] == "STOPPED" ){
 
+            _plugin_status[i].write(XBot::Command("STOPPED"));
+
             if( _plugin_command[i].read(cmd) ){
 
                 /* If start command has been received, set plugin to RUNNING */
@@ -238,6 +302,8 @@ void PluginHandler::run()
         /* STATE RUNNING */
 
         if( _plugin_state[i] == "RUNNING" ){
+
+            _plugin_status[i].write(XBot::Command("RUNNING"));
 
             if( _plugin_command[i].read(cmd) ){
 
@@ -304,16 +370,22 @@ PluginHandler::~PluginHandler()
 
 bool PluginHandler::plugin_can_start(int plugin_idx)
 {
+    /* Logging plugin can always start */
+
+    if( plugin_idx == _logging_plugin_idx ){
+        return true;
+    }
+
+    /* We are asked to run the communication plugin,
+    allow it if and ONLY if all plugins are stopped,
+    except for the logging plugin which can always run */
 
     if( plugin_idx == _communication_plugin_idx ){
 
         bool can_start = true;
 
-        /* We are asked to run the communication plugin,
-         allow it if and ONLY if all plugins are stopped */
-
-        for(const std::string& plugin_state : _plugin_state){
-            can_start = can_start && ( plugin_state == "STOPPED" );
+        for(int i = 0; i < _plugin_state.size(); i++){
+            can_start = can_start && ( _plugin_state[i] == "STOPPED" || i == _logging_plugin_idx );
         }
 
         return can_start;

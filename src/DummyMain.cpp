@@ -2,11 +2,12 @@
 #include <errno.h>
 #include <assert.h>
 #include <signal.h>
+#include <ctime>
 #include <exception>
 
 #include <XCM/XBotPluginHandler.h>
 
-static sigset_t   signal_mask;  
+static sigset_t   signal_mask;
 volatile sig_atomic_t g_loop_ok = 1;
 
 void *signal_thread (void *arg)
@@ -34,7 +35,7 @@ void *signal_thread (void *arg)
 }
 
 int main(int argc, char **argv){
-    
+
     // SIGNAL handling
     pthread_t  sig_thr_id;
     int rc;
@@ -46,7 +47,7 @@ int main(int argc, char **argv){
     rc = pthread_create (&sig_thr_id, NULL, signal_thread, NULL);
     // SIGNAL handling
 
-    
+
     using namespace XBot;
 
     std::string path_to_cfg;
@@ -70,7 +71,7 @@ int main(int argc, char **argv){
 
     RobotInterface::Ptr robot = RobotInterface::getRobot(path_to_cfg, AnyMapPtr(), framework);
 
-    
+
     auto time_provider = std::make_shared<SimpleTimeProvider>();
     PluginHandler plugin_handler(robot, time_provider);
 
@@ -80,7 +81,9 @@ int main(int argc, char **argv){
     double time = 0;
 
     while(g_loop_ok){
-        
+
+        std::clock_t tic = std::clock();
+
         time_provider->set_time(time);
 
         if( int(time*1000) % 1000 == 0 ){
@@ -90,7 +93,9 @@ int main(int argc, char **argv){
         plugin_handler.run();
         time += 0.001;
 
-        usleep(1000);
+        double elapsed_time = double(std::clock() - tic)/CLOCKS_PER_SEC;
+
+        usleep(std::max(.0, 1000 - elapsed_time*1e6));
 
     }
 

@@ -29,21 +29,32 @@ namespace XBot
 class ESCUtils
 {
 public:
-    
+
     typedef std::shared_ptr<ESCUtils> Ptr;
-    
+
     explicit ESCUtils(XBot::RobotInterface::Ptr robot);
-    
+
     bool setReferenceFromRobotStateTX( const std::map<int, XBot::RobotState::pdo_tx>& pdo_tx );
     bool setRobotStateFromRobotInterface( std::map<int, XBot::RobotState>& pdo );
+
+    bool setRobotFTFromRobotInterface( std::map<int, XBot::RobotFT::pdo_rx>& ft );
     
+    bool setRobotIMUFromRobotInterface( std::map<int, XBot::RobotIMU::pdo_rx>& imu );
+
 protected:
-    
+
 private:
-    
+
     XBot::RobotInterface::Ptr _robot;
     XBot::JointIdMap _joint_map;
+
+    Eigen::VectorXd _q, _qdot, _tau, _k, _d, _mq, _mqdot, _qref, _qdotref, _tauref;
+
+    KDL::Wrench _wrench;
     
+    Eigen::Quaterniond _orientation; 
+    Eigen::Vector3d _lin_acc, _ang_vel;
+
 
 };
 }

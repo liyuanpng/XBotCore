@@ -24,7 +24,41 @@ SHLIBPP_DEFINE_SHARED_SUBCLASS(advrcommandmessage_control_message, XBot::Command
 
 void XBot::CommandAdvr::callback(XCM::CommandAdvrConstPtr msg)
 {
-    _msg = *msg;
+    for(int i = 0; i < msg->name.size(); i++){
+
+        int idx = getIndex(msg->name[i]);
+
+        if(idx < 0){
+            std::cerr << "ERROR while parsing CommandAdvr message: joint " << msg->name[i] << " undefined" << std::endl;
+            continue;
+        }
+
+        if(msg->aux.size() > i){
+            _msg.aux[idx] = msg->aux[i];
+        }
+
+        _msg.aux_name = msg->aux_name;
+
+        if(msg->damping.size() > i){
+            _msg.damping[idx] = msg->damping[i];
+        }
+
+        if(msg->effort.size() > i){
+            _msg.effort[idx] = msg->effort[i];
+        }
+
+        if(msg->position.size() > i){
+            _msg.position[idx] = msg->position[i];
+        }
+
+        if(msg->stiffness.size() > i){
+            _msg.stiffness[idx] = msg->stiffness[i];
+        }
+
+        if(msg->velocity.size() > i){
+            _msg.velocity[idx] = msg->velocity[i];
+        }
+    }
 }
 
 bool XBot::CommandAdvr::service_callback(XCM::advr_controller_joint_namesRequest& req,

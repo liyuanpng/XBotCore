@@ -20,9 +20,10 @@
 #include <XCM/XBotCommunicationHandler.h>
 
 
-XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config) : _path_to_config(path_to_config)
+XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config) :
+    _path_to_config(path_to_config),
+    _master_communication_ifc(nullptr)
 {
-
 }
 
 void XBot::CommunicationHandler::th_init(void*)
@@ -37,8 +38,8 @@ void XBot::CommunicationHandler::th_init(void*)
     else{
 
         if(!root_cfg["XBotRTPlugins"]["plugins"]){
-            std::cerr << "ERROR in " << __func__ << "!XBotRTPlugins node does NOT contain mandatory node plugins!" << std::endl;
-        return;
+            std::cerr << "ERROR in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node plugins!" << std::endl;
+            return;
         }
         else{
 
@@ -52,17 +53,48 @@ void XBot::CommunicationHandler::th_init(void*)
             }
         }
 
+        if(!root_cfg["XBotRTPlugins"]["io_plugins"]){
+            std::cerr << "WARNING in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node io_plugins!" << std::endl;
+        }
+        else{
+
+            for(const auto& plugin : root_cfg["XBotRTPlugins"]["io_plugins"]){
+                _io_plugin_names.push_back(plugin.as<std::string>());
+            }
+
+        }
     }
 
+    if(!root_cfg["MasterCommunicationInterface"]) {
+        std::cerr << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node MasterCommunicationInterface!" << std::endl;
+    }
+    else {
+        if(!root_cfg["MasterCommunicationInterface"]["framework_name"]){
+            std::cerr << "ERROR in " << __func__ << "! framework_name node does NOT contain mandatory node plugins!" << std::endl;
+            return;
+        }
+        else{
+            _master_communication_interface_name = root_cfg["MasterCommunicationInterface"]["framework_name"].as<std::string>();
+        }
+    }
+
+
+    int plugin_idx = 0;
     for(const std::string& name : _plugin_names) {
         std::string switch_name = name + "_switch";
         _switch_names.push_back(switch_name);
         _switch_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(switch_name));
-        
+
         std::string command_name = name + "_cmd";
         _command_names.push_back(command_name);
         _command_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(command_name));
+
+        _status_sub_vector.push_back(XBot::SubscriberNRT<XBot::Command>(name + "_status"));
+        // save XBotCommunicationPlugin index
+        xbot_communication_idx = plugin_idx;
+        plugin_idx++;
     }
+
 
     _xddp_handler = std::make_shared<XBot::XBotXDDP>(_path_to_config);
     _xddp_handler->init();
@@ -70,32 +102,86 @@ void XBot::CommunicationHandler::th_init(void*)
     XBot::AnyMapPtr anymap = std::make_shared<XBot::AnyMap>();
     std::shared_ptr<XBot::IXBotJoint> xbot_joint = _xddp_handler;
     std::shared_ptr<XBot::IXBotFT> xbot_ft = _xddp_handler;
+    std::shared_ptr<XBot::IXBotIMU> xbot_imu = _xddp_handler;
+    bool enable_ref_read = true;
+
     (*anymap)["XBotJoint"] = boost::any(xbot_joint);
-//     (*anymap)["XBotFT"] = boost::any(xbot_ft);
+    (*anymap)["XBotFT"] = boost::any(xbot_ft);
+    (*anymap)["XBotIMU"] = boost::any(xbot_imu);
+    (*anymap)["EnableReferenceReading"] = boost::any(enable_ref_read);
 
     _robot = XBot::RobotInterface::getRobot(_path_to_config, anymap, "XBotRT");
+
+    _logger = XBot::MatLogger::getLogger("/tmp/CommunicationHandler_log");
+    _robot->initLog(_logger, 100000);
+
+    // update robot
+    _robot->sense();
 
 
     /* Get a vector of communication interfaces to/from NRT frameworks like ROS, YARP, ... */
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
     std::cout << "USE_ROS_COMMUNICATION_INTERFACE found! " << std::endl;
-    _master_communication_ifc = std::make_shared<XBot::CommunicationInterfaceROS>(_robot);  // TBD specify the MASTER who can send TX data
-    _communication_ifc_vector.push_back( _master_communication_ifc );
+    _ros_communication = std::make_shared<XBot::CommunicationInterfaceROS>(_robot);
+    _communication_ifc_vector.push_back( _ros_communication );
+
+    if ( _master_communication_interface_name == "ROS" ||
+         _master_communication_interface_name == "ros"
+    ) {
+        _master_communication_ifc = _ros_communication;
+    }
+
 #endif
 
 #ifdef USE_YARP_COMMUNICATION_INTERFACE
     std::cout << "USE_YARP_COMMUNICATION_INTERFACE found! " << std::endl;
-    communication_ifc_vector.push_back( std::make_shared<XBot::YarpCommunicationInterface>(_robot) );
+    _yarp_communication = std::make_shared<XBot::CommunicationInterfaceYARP>(_robot);
+    _communication_ifc_vector.push_back( _yarp_communication );
+
+    if ( _master_communication_interface_name == "YARP" ||
+         _master_communication_interface_name == "yarp"
+    ) {
+        _master_communication_ifc = _yarp_communication;
+    }
+
 #endif
 
-    /* Advertise switch ports for all plugins on all frameworks */
+    // check on master communication interface
+    if( _master_communication_ifc == nullptr ) {
+        std::cerr << "ERROR in " << __func__ << "! Master Communication Interface specified in the config file but "
+                                             << "not matching with the current NRT frameworks installed in the system" << std::endl;
+        return;
+    }
+
+    /* Load IO plugins */
+    for(const std::string& name : _io_plugin_names) {
+        XBot::IOPluginLoader io_plugin_loader;
+        if(io_plugin_loader.load(name)){
+            _io_plugin_loader.push_back(io_plugin_loader);
+            _io_plugin_ptr.push_back(io_plugin_loader.getPtr());
+            io_plugin_loader.getPtr()->init(_path_to_config);
+        }
+        else{
+            // TBD print error
+        }
+    }
+
+    /* Advertise switch/cmd ports for all plugins on all frameworks */
     for(auto comm_ifc : _communication_ifc_vector){
+
+        /* Advertise swtich port for Master Communication Interface */
+        comm_ifc->advertiseMasterCommunicationInterface();
+
         for(const std::string& switch_name : _switch_names){
             comm_ifc->advertiseSwitch(switch_name);
         }
-        
+
         for(const std::string& cmd_name : _command_names){
             comm_ifc->advertiseCmd(cmd_name);
+        }
+
+        for(const std::string& pl_name : _plugin_names){
+            comm_ifc->advertiseStatus(pl_name);
         }
     }
 
@@ -104,7 +190,7 @@ void XBot::CommunicationHandler::th_init(void*)
     // set thread period - not periodic
     task_period_t t;
     memset(&t, 0, sizeof(t));
-    t.period = {0,3000};
+    t.period = {0,5000};
     period.task_time = t.task_time;
     period.period = t.period;
     // set scheduler policy
@@ -122,8 +208,54 @@ void XBot::CommunicationHandler::th_init(void*)
 
 void XBot::CommunicationHandler::th_loop(void*)
 {
+    /* Receive Master Communication Interface to switch NRT framework at runtime */
+
+    for(auto comm_ifc : _communication_ifc_vector) {
+
+        std::string master;
+
+        if( comm_ifc->receiveMasterCommunicationInterface(master) ) {
+
+            if ( master == "ROS" ||
+                 master == "ros"
+            ) {
+                std::cout << "Switching to ROS Master Communication Interface" << std::endl;
+
+#ifdef USE_ROS_COMMUNICATION_INTERFACE
+                _master_communication_ifc = _ros_communication;
+                // HACK restarting XBotCommunicationPlugin
+                std::string cmd = "stop";
+                _switch_pub_vector[xbot_communication_idx].write(cmd);
+                sleep(1);
+                cmd = "start";
+                _switch_pub_vector[xbot_communication_idx].write(cmd);
+#else
+                std::cerr << "ERROR: ROS Master Communication Interface not compiled" << std::endl;
+#endif
+            }
+
+            else if ( master == "YARP" ||
+                      master == "yarp"
+            ) {
+                std::cout << "Switching to YARP Master Communication Interface" << std::endl;
+
+#ifdef USE_YARP_COMMUNICATION_INTERFACE
+                _master_communication_ifc = _yarp_communication;
+                // HACK restarting XBotCommunicationPlugin
+                std::string cmd = "stop";
+                _switch_pub_vector[xbot_communication_idx].write(cmd);
+                sleep(1);
+                cmd = "start";
+                _switch_pub_vector[xbot_communication_idx].write(cmd);
+#else
+                std::cerr << "ERROR: YARP Master Communication Interface not compiled" << std::endl;
+#endif
+            }
+        }
+    }
+
     /* Receive commands on switch ports */
-    for(auto comm_ifc : _communication_ifc_vector){
+    for(auto comm_ifc : _communication_ifc_vector) {
         for(int i = 0; i < _plugin_names.size(); i++){
             std::string command;
             if( comm_ifc->receiveFromSwitch(_switch_names[i], command) ){
@@ -131,6 +263,11 @@ void XBot::CommunicationHandler::th_loop(void*)
             }
             if( comm_ifc->receiveFromCmd(_command_names[i], command) ){
                 _command_pub_vector[i].write(command);
+            }
+
+            XBot::Command status;
+            if( _status_sub_vector[i].read(status) ){
+                comm_ifc->setPluginStatus(_plugin_names[i], status.str());
             }
         }
     }
@@ -141,6 +278,9 @@ void XBot::CommunicationHandler::th_loop(void*)
     /* Read robot state from RT layer and update robot */
     _robot->sense(false);
 
+    /* Log */
+    _robot->log(_logger, double(XBot::get_time_ns()) / 1e9);
+
     /* Publish robot state to all frameworks */
     for(auto comm_ifc : _communication_ifc_vector){
         comm_ifc->sendRobotState();
@@ -150,6 +290,11 @@ void XBot::CommunicationHandler::th_loop(void*)
      * i.e. the only one enabled to send commands to the robot */
     _master_communication_ifc->receiveReference(); // this updates robot
 
+    /* Run external plugins */
+    for( XBot::IOPlugin * io_plugin_ptr : _io_plugin_ptr ){
+        if(io_plugin_ptr) io_plugin_ptr->run();
+    }
+
     /* Send received commands to the RT layer */
     _robot->move();
 
@@ -157,6 +302,7 @@ void XBot::CommunicationHandler::th_loop(void*)
 
 XBot::CommunicationHandler::~CommunicationHandler()
 {
-
+    _logger->flush();
 }
+
 
