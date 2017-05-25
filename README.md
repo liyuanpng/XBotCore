@@ -26,5 +26,5 @@ XBotRTPlugins:
   io_plugins: []
 ```
 
-Please check this video to better understand how to generate and execute a XBot RT plugin:
+Please check this [video](https://www.youtube.com/watch?v=wJXCLhtS7T0) to better understand how to generate and execute a XBot RT plugin.
 
