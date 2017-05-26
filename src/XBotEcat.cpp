@@ -141,7 +141,8 @@ void XBot::XBotEcat::init_OP(void)
     return;
 }
 
-int XBot::XBotEcat::user_loop(void) {
+int XBot::XBotEcat::user_loop(void) 
+{
     
     // call the control loop
     return control_loop();

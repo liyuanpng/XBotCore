@@ -28,19 +28,13 @@
 #define __X_BOT_ECAT_H__
 
 #include <iit/advr/ec_boards_base.h>
-#include <iit/ecat/advr/esc.h>
+#include <XBotCore-interfaces/XBotESC.h>
 
 namespace XBot
 {
     class XBotEcat;
-    struct sdo_info;
 }
 
-struct XBot::sdo_info {
-    float min_pos;
-    float max_pos;
-    uint16_t ctrl_status_cmd;
-};
 
 /**
  * @brief XBotCore EtherCAT class.

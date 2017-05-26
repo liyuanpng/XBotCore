@@ -42,6 +42,8 @@ endif()
 # find packages 
 find_package(XBotCore-interfaces REQUIRED)
 find_package(XBotCoreModel REQUIRED)
+find_package(XCM REQUIRED)
+
 find_package(soem${LIB_TYPE} REQUIRED)
 find_package(iitecat_iface${LIB_TYPE} REQUIRED)
 find_package(walkman_master${LIB_TYPE} REQUIRED)
@@ -67,38 +69,27 @@ include_directories(include ${XBotCore-interfaces_INCLUDE_DIRS}
                             ${walkman_master${LIB_TYPE}_INCLUDE_DIRS}
                             ${ecat_test_utils${LIB_TYPE}_INCLUDE_DIRS}
                             ${sharedlibpp_INCLUDE_DIRS}
+                            ${XCM_INCLUDE_DIRS}
                     )
-                            #${YARP_INCLUDE_DIRS}
+                            
 
 # exe
 add_executable(${PROJECT_NAME}
     src/XBotMain.cpp
 )
-# 
-# # exe
-# # add_executable(XBotYARP
-# #     src/XBotYARPMain.cpp
-# # )
 
 # lib
-add_library(XBotPluginHandler SHARED
+add_library(XBotCoreThread SHARED
     src/XBotEcat.cpp
     src/XBotCore.cpp
-    src/XBotPluginHandler.cpp
 )
 
-# lib
-add_library(XBotCommunicationHandler SHARED
-    src/XBotCommunicationHandler.cpp
-)
 
 # set Xenomain flags if Xenomai is founded
 if ( Xenomai_FOUND )
     set_xeno_flags(${PROJECT_NAME})
-    set_xeno_flags(XBotPluginHandler)
+    set_xeno_flags(XBotCoreThread)
 endif()
-
-# add_subdirectory(src/XBotPlugin) # leave it here, the main dipends on the compiled plugins -> TBD use ALI
 
 target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
                                       ${XBotCore-interfaces_LIBRARIES}
@@ -107,37 +98,22 @@ target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
                                       ${iitecat_iface${LIB_TYPE}_LIBRARIES}
                                       ${walkman_masterwalkman_master${LIB_TYPE}_LIBRARIES}
                                       ${ecat_test_utils${LIB_TYPE}_LIBRARIES}
-                                      XBotPluginHandler
-                                      XBotCommunicationHandler
+                                      XBotCoreThread
                                       )
 
                                       
                                       
-target_link_libraries(XBotPluginHandler ${COMMON_LIBS}
+target_link_libraries(XBotCoreThread    ${COMMON_LIBS}
                                         ${XBotCoreModel_LIBRARIES}
                                         ${soem${LIB_TYPE}_LIBRARIES} 
                                         ${iitecat_iface${LIB_TYPE}_LIBRARIES}
                                         ${walkman_master${LIB_TYPE}_LIBRARIES}
                                         ${ecat_test_utils${LIB_TYPE}_LIBRARIES}
                                         ${sharedlibpp_LIBRARIES}
+                                        ${XCM_LIBRARIES}
                                         )                                      
-                                      
-# # link the NRT common libs
-# # target_link_libraries(XBotYARP ${COMMON_LIBS_NRT}
-# #                                ${XBotCoreModel_LIBRARIES}
-# #                                ${YARP_LIBRARIES}
-# #                                XBotCommunicationHandler)
 
-if(NOT Xenomai_FOUND)
-    # NOTE do it manually on the build
-    # set_cap_build(${PROJECT_NAME})
-endif()
-
-# install exe, lib and include
-# install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
-# # install(TARGETS XBotYARP RUNTIME DESTINATION bin)
-install(TARGETS XBotPluginHandler RUNTIME LIBRARY DESTINATION lib)
-install(TARGETS XBotCommunicationHandler RUNTIME LIBRARY DESTINATION lib)
+install(TARGETS XBotCoreThread RUNTIME LIBRARY DESTINATION lib)
 
 # documentation
 add_subdirectory(doc)
