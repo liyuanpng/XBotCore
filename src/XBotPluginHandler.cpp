@@ -383,36 +383,43 @@ PluginHandler::~PluginHandler()
 
 bool PluginHandler::plugin_can_start(int plugin_idx)
 {
-    /* Logging plugin can always start */
+    // NOTE Policy for RT Plugins
+    if( _is_RT_plugin_handler ) {
+        
+        /* Logging plugin can always start */
 
-    if( plugin_idx == _logging_plugin_idx ){
-        return true;
-    }
-
-    /* We are asked to run the communication plugin,
-    allow it if and ONLY if all plugins are stopped,
-    except for the logging plugin which can always run */
-
-    if( plugin_idx == _communication_plugin_idx ){
-
-        bool can_start = true;
-
-        for(int i = 0; i < _plugin_state.size(); i++){
-            can_start = can_start && ( _plugin_state[i] == "STOPPED" || i == _logging_plugin_idx );
+        if( plugin_idx == _logging_plugin_idx ){
+            return true;
         }
 
-        return can_start;
+        /* We are asked to run the communication plugin,
+        allow it if and ONLY if all plugins are stopped,
+        except for the logging plugin which can always run */
 
+        if( plugin_idx == _communication_plugin_idx ){
+
+            bool can_start = true;
+
+            for(int i = 0; i < _plugin_state.size(); i++){
+                can_start = can_start && ( _plugin_state[i] == "STOPPED" || i == _logging_plugin_idx );
+            }
+
+            return can_start;
+
+        }
+        else{
+
+            /* We are asked to run a normal plugin. Allow it
+            * only if the communication plugin is not running */
+
+            return _plugin_state[_communication_plugin_idx] == "STOPPED";
+        }
+
+        return false;
     }
-    else{
-
-        /* We are asked to run a normal plugin. Allow it
-         * only if the communication plugin is not running */
-
-        return _plugin_state[_communication_plugin_idx] == "STOPPED";
-    }
-
-    return false;
+    
+    // relaxed policy for NRT Plugins
+    return true;
 }
 
 
