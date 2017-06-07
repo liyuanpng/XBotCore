@@ -40,12 +40,13 @@ namespace XBot {
 
         PluginHandler(RobotInterface::Ptr robot, TimeProvider::Ptr time_provider);
 
-        bool load_plugins();
+        bool load_plugins(const std::string& plugins_set_name);
 
-        bool init_plugins(std::shared_ptr< IXBotJoint> joint  = nullptr,
-                          std::shared_ptr< IXBotFT > ft       = nullptr,
-                          std::shared_ptr< IXBotIMU > imu     = nullptr,
-                          std::shared_ptr< IXBotModel > model = nullptr );
+        bool init_plugins(XBot::SharedMemory::Ptr shared_memory,
+                          std::shared_ptr< IXBotJoint> joint    = nullptr,
+                          std::shared_ptr< IXBotFT > ft         = nullptr,
+                          std::shared_ptr< IXBotIMU > imu       = nullptr,
+                          std::shared_ptr< IXBotModel > model   = nullptr );
 
         void run();
 
@@ -104,6 +105,8 @@ namespace XBot {
 
         RobotInterface::Ptr _robot;
         std::string _path_to_cfg;
+        
+        bool _is_RT_plugin_handler = false;
     };
 }
 #endif

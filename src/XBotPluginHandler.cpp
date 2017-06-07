@@ -44,49 +44,57 @@ PluginHandler::PluginHandler(RobotInterface::Ptr robot,  TimeProvider::Ptr time_
 }
 
 
-bool PluginHandler::load_plugins()
+bool PluginHandler::load_plugins(const std::string& plugins_set_name)
 {
 
     _root_cfg = YAML::LoadFile(_path_to_cfg);
 
 
-    if(!_root_cfg["XBotRTPlugins"]){
+    if(!_root_cfg[plugins_set_name]){
         std::cout << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node XBotRTPlugins!" << std::endl;
         return false;
     }
     else{
 
-        if(!_root_cfg["XBotRTPlugins"]["plugins"]){
+        // NOTE we always expect a subfield plugins inside plugins_set_name
+        if(!_root_cfg[plugins_set_name]["plugins"]){
             std::cout << "ERROR in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node plugins!" << std::endl;
         return false;
         }
         else{
 
-            for(const auto& plugin : _root_cfg["XBotRTPlugins"]["plugins"]){
+            for(const auto& plugin : _root_cfg[plugins_set_name]["plugins"]){
                 _rtplugin_names.push_back(plugin.as<std::string>());
             }
 
-            // loading by default the XBotCommunicationPlugin
-            std::string communication_plugin_name = "XBotCommunicationPlugin";
-            auto it = std::find(_rtplugin_names.begin(), _rtplugin_names.end(), communication_plugin_name);
-            if( it == _rtplugin_names.end() ) {
-                _rtplugin_names.push_back(communication_plugin_name);
-                _communication_plugin_idx = _rtplugin_names.size() - 1;
-            }
-            else{
-                _communication_plugin_idx = std::distance(_rtplugin_names.begin(), it);
-            }
+            // NOTE only for RT plugins
+            if( plugins_set_name == "XBotRTPlugins") {
+                // saving RT PluginHandler model
+                _is_RT_plugin_handler = true;
+                
+                // loading by default the XBotCommunicationPlugin
+                std::string communication_plugin_name = "XBotCommunicationPlugin";
+                auto it = std::find(_rtplugin_names.begin(), _rtplugin_names.end(), communication_plugin_name);
+                if( it == _rtplugin_names.end() ) {
+                    _rtplugin_names.push_back(communication_plugin_name);
+                    _communication_plugin_idx = _rtplugin_names.size() - 1;
+                }
+                else{
+                    _communication_plugin_idx = std::distance(_rtplugin_names.begin(), it);
+                }
 
-            // loading by default the XBotLoggingPlugin
-            std::string logging_plugin_name = "XBotLoggingPlugin";
-            it = std::find(_rtplugin_names.begin(), _rtplugin_names.end(), logging_plugin_name);
-            if( it == _rtplugin_names.end() ) {
-                _rtplugin_names.push_back(logging_plugin_name);
-                _logging_plugin_idx = _rtplugin_names.size() - 1;
+                // loading by default the XBotLoggingPlugin
+                std::string logging_plugin_name = "XBotLoggingPlugin";
+                it = std::find(_rtplugin_names.begin(), _rtplugin_names.end(), logging_plugin_name);
+                if( it == _rtplugin_names.end() ) {
+                    _rtplugin_names.push_back(logging_plugin_name);
+                    _logging_plugin_idx = _rtplugin_names.size() - 1;
+                }
+                else{
+                    _logging_plugin_idx = std::distance(_rtplugin_names.begin(), it);
+                }
             }
-            else{
-                _logging_plugin_idx = std::distance(_rtplugin_names.begin(), it);
-            }
+            
         }
 
     }
@@ -130,14 +138,17 @@ bool PluginHandler::load_plugins()
     return success;
 }
 
-bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
+bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
+                                 std::shared_ptr< IXBotJoint> joint,
                                  std::shared_ptr< IXBotFT > ft,
                                  std::shared_ptr< IXBotIMU > imu,
                                  std::shared_ptr< IXBotModel > model)
 {
-    init_xddp();
+    // NOTE xddp initialization only if we are handling RT Plugins
+    if( _is_RT_plugin_handler ) {
+        init_xddp();
+    }
 
-    XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
     _plugin_init_success.resize(_rtplugin_vector.size(), false);
     _plugin_command.resize(_rtplugin_vector.size());
     _plugin_status.resize(_rtplugin_vector.size());
@@ -260,8 +271,10 @@ void PluginHandler::run()
     // fill robot state
     fill_robot_state();
 
-    // broadcast robot state over pipes
-    run_xddp();
+    // NOTE in the RT case broadcast robot state over pipes
+    if( _is_RT_plugin_handler ) {
+        run_xddp();
+    }
 
     XBot::Command cmd;
 
