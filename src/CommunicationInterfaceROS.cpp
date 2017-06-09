@@ -22,6 +22,8 @@
 #include <sensor_msgs/Imu.h>
 #include <geometry_msgs/WrenchStamped.h>
 
+#include <XCM/XBotUtils.h>
+
 namespace XBot {
 
 bool CommunicationInterfaceROS::callback(std_srvs::SetBoolRequest& req,
@@ -61,7 +63,7 @@ CommunicationInterfaceROS::CommunicationInterfaceROS():
     char** argv = &argg;
 
     if(!ros::isInitialized()){
-        ros::init(argc, argv, "ros_communication_interface");
+        ros::init(argc, argv, "ros_communication_interface_" + std::to_string(XBot::get_time_ns()));
     }
 
     _nh = std::make_shared<ros::NodeHandle>();
@@ -77,7 +79,7 @@ CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot):
     char** argv = &argg;
 
     if(!ros::isInitialized()){
-        ros::init(argc, argv, "ros_communication_interface");
+        ros::init(argc, argv, "ros_communication_interface_" + std::to_string(XBot::get_time_ns()));
     }
 
     _nh = std::make_shared<ros::NodeHandle>();
