@@ -53,6 +53,7 @@ if ( Xenomai_FOUND )
     set(RT_NRT_SRC
         src/XBotRT_thread.cpp
         src/XBotNRT_thread.cpp
+        src/XBotRT_ipc.cpp
         )
 else()
     set(RT_NRT_SRC
@@ -68,7 +69,6 @@ include(MacroOptionalBuild)
 find_package(YCM REQUIRED)
 
 find_package(XBotInterface REQUIRED)
-find_package(XBotCore-interfaces REQUIRED)
 
 find_package(catkin QUIET COMPONENTS roscpp sensor_msgs std_srvs message_generation robot_state_publisher)
 find_package(YARP QUIET)
@@ -171,6 +171,8 @@ endif()
 message(${COMMUNICATION_INTERFACE_SOURCE_FILES})
 
 add_library(XCM SHARED ${XBotInterface_INCLUDES}
+                        src/XDomainCommunication.cpp
+                        src/XBotPlugin.cpp
                         src/XBotControlPlugin.cpp
                         src/XBotPluginHandler.cpp
                         src/XBotModuleHandler.cpp
@@ -371,5 +373,5 @@ if(BUILD_TESTS)
   add_subdirectory(tests)
 endif()
 
-# install script to generate XBot RT Plugin skeleton
-INSTALL(PROGRAMS scripts/generate_XBot_RT_Plugin.sh DESTINATION bin)
+# install script to generate XBot RT/NRT Plugin skeleton
+INSTALL(PROGRAMS scripts/generate_XBot_Plugin.sh DESTINATION bin)
