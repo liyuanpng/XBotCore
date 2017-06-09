@@ -178,6 +178,7 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/XBotModuleHandler.cpp
                         src/XBotControlModule.cpp
                         src/XBotCommunicationHandler.cpp
+                        src/NRTDeployer.cpp
                         src/XBotXDDP.cpp
                         src/XBotESCUtils.cpp
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES}
@@ -218,6 +219,13 @@ target_link_libraries(CommunicationHandler XCM ${COMMUNICATION_INTERFACE_LIBRARI
 install(TARGETS CommunicationHandler
         EXPORT  CommunicationHandler
         RUNTIME DESTINATION bin)
+        
+add_executable(NRTDeployer src/NRTDeployerMain.cpp)
+target_link_libraries(NRTDeployer XCM)
+
+install(TARGETS NRTDeployer
+        EXPORT  NRTDeployer
+        RUNTIME DESTINATION bin)        
 
 
 if ( Xenomai_FOUND )
