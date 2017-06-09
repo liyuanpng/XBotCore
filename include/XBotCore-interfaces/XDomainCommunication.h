@@ -193,6 +193,23 @@ private:
     std::string _aux_data;
 };
 
+class NRT_ROS_Publisher : public Publisher<XBot::Command>  {
+
+public:
+
+    NRT_ROS_Publisher();
+    explicit NRT_ROS_Publisher(const std::string& socket_name);
+
+    virtual void init(const std::string& socket_name);
+
+    virtual void write(const XBot::Command& data);
+
+private:
+    
+    XBot::CommunicationInterfaceROS::Ptr _ros_communication;
+    std::string _aux_data;
+};
+
 
 }
 

@@ -30,7 +30,7 @@ NRT_ROS_Subscriber::NRT_ROS_Subscriber()
 NRT_ROS_Subscriber::NRT_ROS_Subscriber(const std::string& socket_name) : 
     NRT_ROS_Subscriber()
 {
-    _ros_communication->advertiseSwitch(socket_name);
+//     _ros_communication->advertiseSwitch(socket_name);
 }
 
 void NRT_ROS_Subscriber::init(const std::string& socket_name)
@@ -48,5 +48,31 @@ bool NRT_ROS_Subscriber::read(XBot::Command& data)
     
     return false;
 }
+
+
+XBot::NRT_ROS_Publisher::NRT_ROS_Publisher()
+{
+    _ros_communication = std::make_shared<XBot::CommunicationInterfaceROS>();
+}
+
+XBot::NRT_ROS_Publisher::NRT_ROS_Publisher(const std::string& socket_name) : 
+    NRT_ROS_Publisher()
+{
+//     _ros_communication->advertiseStatus(socket_name);
+}
+
+void XBot::NRT_ROS_Publisher::init(const std::string& socket_name)
+{
+    std::string aux_str = socket_name;
+    aux_str.erase(aux_str.find("_status"), 7);
+    _ros_communication->advertiseStatus(aux_str);
+    _name = aux_str;
+}
+
+void XBot::NRT_ROS_Publisher::write(const Command& data)
+{
+    _ros_communication->setPluginStatus(_name, data.str());
+}
+
 
 }

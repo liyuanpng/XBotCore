@@ -73,14 +73,14 @@ bool PluginHandler::load_plugins()
 
 
     if(!_root_cfg[_plugins_set_name]){
-        std::cout << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node XBotRTPlugins!" << std::endl;
+        std::cout << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node " << _plugins_set_name << "!" << std::endl;
         return false;
     }
     else{
 
         // NOTE we always expect a subfield plugins inside _plugins_set_name
         if(!_root_cfg[_plugins_set_name]["plugins"]){
-            std::cout << "ERROR in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node plugins!" << std::endl;
+            std::cout << "ERROR in " << __func__ << "! " << _plugins_set_name << " node does NOT contain mandatory node plugins!" << std::endl;
         return false;
         }
         else{
@@ -164,21 +164,22 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
                                  std::shared_ptr< IXBotIMU > imu,
                                  std::shared_ptr< IXBotModel > model)
 {
-    // NOTE xddp initialization only if we are handling RT Plugins
-    if( _is_RT_plugin_handler ) {
-        init_xddp();
-    }
 
     _plugin_init_success.resize(_rtplugin_vector.size(), false);
     _plugin_switch.resize(_rtplugin_vector.size());
     _plugin_status.resize(_rtplugin_vector.size());
     _plugin_state.resize(_rtplugin_vector.size(), "STOPPED");
     _first_loop.resize(_rtplugin_vector.size(), true);
+    
+    // NOTE xddp initialization only if we are handling RT Plugins
+    if( _is_RT_plugin_handler ) {
+        init_xddp();
+        
+        // NOTE starting by default the logging plugin
+        _plugin_state[_logging_plugin_idx] = "RUNNING";
+    }
 
     bool ret = true;
-
-    // NOTE starting by default the logging plugin
-    _plugin_state[_logging_plugin_idx] = "RUNNING";
 
     for(int i = 0; i < _rtplugin_vector.size(); i++) {
 
@@ -225,6 +226,8 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
             _plugin_status[i] = std::make_shared<XBot::PublisherRT<XBot::Command>>();
         }
         else {
+            _plugin_switch[i] = std::make_shared<XBot::NRT_ROS_Subscriber>();
+            _plugin_status[i] = std::make_shared<XBot::NRT_ROS_Publisher>();
         }
 
         // initialize pub/sub
