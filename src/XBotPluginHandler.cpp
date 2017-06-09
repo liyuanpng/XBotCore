@@ -33,44 +33,64 @@ extern char **environ;
 
 namespace XBot {
 
-PluginHandler::PluginHandler(RobotInterface::Ptr robot,  TimeProvider::Ptr time_provider):
+PluginHandler::PluginHandler(RobotInterface::Ptr robot,  
+                             TimeProvider::Ptr time_provider, 
+                             const std::string& plugins_set_name) :
     _robot(robot),
     _time_provider(time_provider),
+    _plugins_set_name(plugins_set_name),
     _esc_utils(robot),
     _close_was_called(false)
 {
+    // plugin set mode 
+    update_plugins_set_name(_plugins_set_name);
+    
+    // Path
     _path_to_cfg = _robot->getPathToConfig();
     std::cout << "Plugin Handler is using config file: " << _path_to_cfg << std::endl;
+    std::cout << "With plugin set name : " << _plugins_set_name << std::endl;
+}
+
+void XBot::PluginHandler::update_plugins_set_name(const std::string& plugins_set_name)
+{
+    _plugins_set_name = _plugins_set_name;
+     if( _plugins_set_name == "XBotRTPlugins") {
+        // saving RT PluginHandler mode
+        _is_RT_plugin_handler = true;
+    }
+    else {
+        // NRT PluginHandler
+        _is_RT_plugin_handler = false;
+    }
 }
 
 
-bool PluginHandler::load_plugins(const std::string& plugins_set_name)
+
+bool PluginHandler::load_plugins()
 {
 
     _root_cfg = YAML::LoadFile(_path_to_cfg);
 
 
-    if(!_root_cfg[plugins_set_name]){
+    if(!_root_cfg[_plugins_set_name]){
         std::cout << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node XBotRTPlugins!" << std::endl;
         return false;
     }
     else{
 
-        // NOTE we always expect a subfield plugins inside plugins_set_name
-        if(!_root_cfg[plugins_set_name]["plugins"]){
+        // NOTE we always expect a subfield plugins inside _plugins_set_name
+        if(!_root_cfg[_plugins_set_name]["plugins"]){
             std::cout << "ERROR in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node plugins!" << std::endl;
         return false;
         }
         else{
 
-            for(const auto& plugin : _root_cfg[plugins_set_name]["plugins"]){
+            for(const auto& plugin : _root_cfg[_plugins_set_name]["plugins"]){
                 _rtplugin_names.push_back(plugin.as<std::string>());
             }
 
             // NOTE only for RT plugins
-            if( plugins_set_name == "XBotRTPlugins") {
-                // saving RT PluginHandler model
-                _is_RT_plugin_handler = true;
+            if( _is_RT_plugin_handler ) {
                 
                 // loading by default the XBotCommunicationPlugin
                 std::string communication_plugin_name = "XBotCommunicationPlugin";
@@ -150,7 +170,7 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
     }
 
     _plugin_init_success.resize(_rtplugin_vector.size(), false);
-    _plugin_command.resize(_rtplugin_vector.size());
+    _plugin_switch.resize(_rtplugin_vector.size());
     _plugin_status.resize(_rtplugin_vector.size());
     _plugin_state.resize(_rtplugin_vector.size(), "STOPPED");
     _first_loop.resize(_rtplugin_vector.size(), true);
@@ -198,11 +218,19 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
             ret = false;
             plugin_init_success = false;
         }
+        
+        // allocate concrete pub/sub classes
+        if( _is_RT_plugin_handler ) {
+            _plugin_switch[i] = std::make_shared<XBot::SubscriberRT<XBot::Command>>();
+            _plugin_status[i] = std::make_shared<XBot::PublisherRT<XBot::Command>>();
+        }
+        else {
+        }
 
-
+        // initialize pub/sub
         _plugin_init_success[i] = plugin_init_success;
-        _plugin_command[i].init(_rtplugin_names[i]+"_switch");
-        _plugin_status[i].init(_rtplugin_names[i]+"_status");
+        _plugin_switch[i]->init(_rtplugin_names[i]+"_switch");
+        _plugin_status[i]->init(_rtplugin_names[i]+"_status");
     }
 
     return ret;
@@ -299,9 +327,9 @@ void PluginHandler::run()
 
         if( _plugin_state[i] == "STOPPED" ){
 
-            _plugin_status[i].write(XBot::Command("STOPPED"));
+            _plugin_status[i]->write(XBot::Command("STOPPED"));
 
-            if( _plugin_command[i].read(cmd) ){
+            if( _plugin_switch[i]->read(cmd) ){
 
                 /* If start command has been received, set plugin to RUNNING */
                 if( cmd.str() == "start" && plugin_can_start(i) ){
@@ -316,9 +344,9 @@ void PluginHandler::run()
 
         if( _plugin_state[i] == "RUNNING" ){
 
-            _plugin_status[i].write(XBot::Command("RUNNING"));
+            _plugin_status[i]->write(XBot::Command("RUNNING"));
 
-            if( _plugin_command[i].read(cmd) ){
+            if( _plugin_switch[i]->read(cmd) ){
 
                 /* If stop command has been received, set plugin to STOPPED */
                 if( cmd.str() == "stop" ){
