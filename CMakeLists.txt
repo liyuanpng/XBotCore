@@ -373,3 +373,5 @@ endif()
 
 # install script to generate XBot RT Plugin skeleton
 INSTALL(PROGRAMS scripts/generate_XBot_RT_Plugin.sh DESTINATION bin)
+# install script to generate XBot RT FSM Plugin skeleton
+INSTALL(PROGRAMS scripts/generate_XBot_RT_PluginFSM.sh DESTINATION bin)
