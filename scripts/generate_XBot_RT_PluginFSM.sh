@@ -6,7 +6,7 @@ if [ $# -lt 2 ]; then
 fi
 
 # Local copy of XCM skeleton
-cp -r $ROBOTOLOGY_ROOT/external/XCM/skeleton/fsm_plugin/* .
+cp -r $ROBOTOLOGY_ROOT/external/XCM/skeleton/fsm_control/* .
 
 # find and replace 
 find . -maxdepth 3 -type f -not -path '*/\.*' -exec sed -i -e "s/_MODULE_PREFIX_/$1/g" {} \;
