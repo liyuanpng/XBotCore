@@ -41,10 +41,10 @@ public:
     virtual bool init(std::string path_to_config_file,
                       std::string name,
                       XBot::SharedMemory::Ptr shared_memory,
-                      std::shared_ptr<XBot::IXBotJoint> joint,
-                      std::shared_ptr< IXBotModel > model,
-                      std::shared_ptr< IXBotFT > ft,
-                      std::shared_ptr< IXBotIMU > imu ) final;
+                      std::shared_ptr< XBot::IXBotJoint > joint,
+                      std::shared_ptr< XBot::IXBotModel > model,
+                      std::shared_ptr< XBot::IXBotFT > ft,
+                      std::shared_ptr< XBot::IXBotIMU > imu ) final;
 
     virtual bool init_control_plugin(std::string path_to_config_file,
                                      XBot::SharedMemory::Ptr shared_memory,
