@@ -9,8 +9,6 @@ endif(COMMAND cmake_policy)
 # XBotPlugin
 project(XBotPlugin)
 
-find_package(XBotCore-interfaces REQUIRED)
-
 # C++11
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
@@ -25,8 +23,7 @@ endif()
 
 # include
 include_directories(../include
-                    ${XBotCore-interfaces_INCLUDE_DIRS}
-                    )
+                   )
 
 # lib
 add_library(XBotCommunicationPlugin SHARED
