@@ -53,6 +53,7 @@ if ( Xenomai_FOUND )
     set(RT_NRT_SRC
         src/XBotRT_thread.cpp
         src/XBotNRT_thread.cpp
+        src/XBotRT_ipc.cpp
         )
 else()
     set(RT_NRT_SRC
@@ -68,7 +69,6 @@ include(MacroOptionalBuild)
 find_package(YCM REQUIRED)
 
 find_package(XBotInterface REQUIRED)
-find_package(XBotCore-interfaces REQUIRED)
 
 find_package(catkin QUIET COMPONENTS roscpp sensor_msgs std_srvs message_generation robot_state_publisher)
 find_package(YARP QUIET)
@@ -171,11 +171,14 @@ endif()
 message(${COMMUNICATION_INTERFACE_SOURCE_FILES})
 
 add_library(XCM SHARED ${XBotInterface_INCLUDES}
+                        src/XDomainCommunication.cpp
+                        src/XBotPlugin.cpp
                         src/XBotControlPlugin.cpp
                         src/XBotPluginHandler.cpp
                         src/XBotModuleHandler.cpp
                         src/XBotControlModule.cpp
                         src/XBotCommunicationHandler.cpp
+                        src/NRTDeployer.cpp
                         src/XBotXDDP.cpp
                         src/XBotESCUtils.cpp
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES}
@@ -216,6 +219,13 @@ target_link_libraries(CommunicationHandler XCM ${COMMUNICATION_INTERFACE_LIBRARI
 install(TARGETS CommunicationHandler
         EXPORT  CommunicationHandler
         RUNTIME DESTINATION bin)
+        
+add_executable(NRTDeployer src/NRTDeployerMain.cpp)
+target_link_libraries(NRTDeployer XCM)
+
+install(TARGETS NRTDeployer
+        EXPORT  NRTDeployer
+        RUNTIME DESTINATION bin)        
 
 
 if ( Xenomai_FOUND )

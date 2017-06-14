@@ -33,15 +33,37 @@ extern char **environ;
 
 namespace XBot {
 
-PluginHandler::PluginHandler(RobotInterface::Ptr robot,  TimeProvider::Ptr time_provider):
+PluginHandler::PluginHandler(RobotInterface::Ptr robot,  
+                             TimeProvider::Ptr time_provider, 
+                             const std::string& plugins_set_name) :
     _robot(robot),
     _time_provider(time_provider),
+    _plugins_set_name(plugins_set_name),
     _esc_utils(robot),
     _close_was_called(false)
 {
+    // plugin set mode 
+    update_plugins_set_name(_plugins_set_name);
+    
+    // Path
     _path_to_cfg = _robot->getPathToConfig();
     std::cout << "Plugin Handler is using config file: " << _path_to_cfg << std::endl;
+    std::cout << "With plugin set name : " << _plugins_set_name << std::endl;
 }
+
+void XBot::PluginHandler::update_plugins_set_name(const std::string& plugins_set_name)
+{
+    _plugins_set_name = _plugins_set_name;
+     if( _plugins_set_name == "XBotRTPlugins") {
+        // saving RT PluginHandler mode
+        _is_RT_plugin_handler = true;
+    }
+    else {
+        // NRT PluginHandler
+        _is_RT_plugin_handler = false;
+    }
+}
+
 
 
 bool PluginHandler::load_plugins()
@@ -50,43 +72,49 @@ bool PluginHandler::load_plugins()
     _root_cfg = YAML::LoadFile(_path_to_cfg);
 
 
-    if(!_root_cfg["XBotRTPlugins"]){
-        std::cout << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node XBotRTPlugins!" << std::endl;
+    if(!_root_cfg[_plugins_set_name]){
+        std::cout << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node " << _plugins_set_name << "!" << std::endl;
         return false;
     }
     else{
 
-        if(!_root_cfg["XBotRTPlugins"]["plugins"]){
-            std::cout << "ERROR in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node plugins!" << std::endl;
+        // NOTE we always expect a subfield plugins inside _plugins_set_name
+        if(!_root_cfg[_plugins_set_name]["plugins"]){
+            std::cout << "ERROR in " << __func__ << "! " << _plugins_set_name << " node does NOT contain mandatory node plugins!" << std::endl;
         return false;
         }
         else{
 
-            for(const auto& plugin : _root_cfg["XBotRTPlugins"]["plugins"]){
+            for(const auto& plugin : _root_cfg[_plugins_set_name]["plugins"]){
                 _rtplugin_names.push_back(plugin.as<std::string>());
             }
 
-            // loading by default the XBotCommunicationPlugin
-            std::string communication_plugin_name = "XBotCommunicationPlugin";
-            auto it = std::find(_rtplugin_names.begin(), _rtplugin_names.end(), communication_plugin_name);
-            if( it == _rtplugin_names.end() ) {
-                _rtplugin_names.push_back(communication_plugin_name);
-                _communication_plugin_idx = _rtplugin_names.size() - 1;
-            }
-            else{
-                _communication_plugin_idx = std::distance(_rtplugin_names.begin(), it);
-            }
+            // NOTE only for RT plugins
+            if( _is_RT_plugin_handler ) {
+                
+                // loading by default the XBotCommunicationPlugin
+                std::string communication_plugin_name = "XBotCommunicationPlugin";
+                auto it = std::find(_rtplugin_names.begin(), _rtplugin_names.end(), communication_plugin_name);
+                if( it == _rtplugin_names.end() ) {
+                    _rtplugin_names.push_back(communication_plugin_name);
+                    _communication_plugin_idx = _rtplugin_names.size() - 1;
+                }
+                else{
+                    _communication_plugin_idx = std::distance(_rtplugin_names.begin(), it);
+                }
 
-            // loading by default the XBotLoggingPlugin
-            std::string logging_plugin_name = "XBotLoggingPlugin";
-            it = std::find(_rtplugin_names.begin(), _rtplugin_names.end(), logging_plugin_name);
-            if( it == _rtplugin_names.end() ) {
-                _rtplugin_names.push_back(logging_plugin_name);
-                _logging_plugin_idx = _rtplugin_names.size() - 1;
+                // loading by default the XBotLoggingPlugin
+                std::string logging_plugin_name = "XBotLoggingPlugin";
+                it = std::find(_rtplugin_names.begin(), _rtplugin_names.end(), logging_plugin_name);
+                if( it == _rtplugin_names.end() ) {
+                    _rtplugin_names.push_back(logging_plugin_name);
+                    _logging_plugin_idx = _rtplugin_names.size() - 1;
+                }
+                else{
+                    _logging_plugin_idx = std::distance(_rtplugin_names.begin(), it);
+                }
             }
-            else{
-                _logging_plugin_idx = std::distance(_rtplugin_names.begin(), it);
-            }
+            
         }
 
     }
@@ -130,24 +158,28 @@ bool PluginHandler::load_plugins()
     return success;
 }
 
-bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
+bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
+                                 std::shared_ptr< IXBotJoint> joint,
                                  std::shared_ptr< IXBotFT > ft,
                                  std::shared_ptr< IXBotIMU > imu,
                                  std::shared_ptr< IXBotModel > model)
 {
-    init_xddp();
 
-    XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
     _plugin_init_success.resize(_rtplugin_vector.size(), false);
-    _plugin_command.resize(_rtplugin_vector.size());
+    _plugin_switch.resize(_rtplugin_vector.size());
     _plugin_status.resize(_rtplugin_vector.size());
     _plugin_state.resize(_rtplugin_vector.size(), "STOPPED");
     _first_loop.resize(_rtplugin_vector.size(), true);
+    
+    // NOTE xddp initialization only if we are handling RT Plugins
+    if( _is_RT_plugin_handler ) {
+        init_xddp();
+        
+        // NOTE starting by default the logging plugin
+        _plugin_state[_logging_plugin_idx] = "RUNNING";
+    }
 
     bool ret = true;
-
-    // NOTE starting by default the logging plugin
-    _plugin_state[_logging_plugin_idx] = "RUNNING";
 
     for(int i = 0; i < _rtplugin_vector.size(); i++) {
 
@@ -187,11 +219,21 @@ bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
             ret = false;
             plugin_init_success = false;
         }
+        
+        // allocate concrete pub/sub classes
+        if( _is_RT_plugin_handler ) {
+            _plugin_switch[i] = std::make_shared<XBot::SubscriberRT<XBot::Command>>();
+            _plugin_status[i] = std::make_shared<XBot::PublisherRT<XBot::Command>>();
+        }
+        else {
+            _plugin_switch[i] = std::make_shared<XBot::NRT_ROS_Subscriber>();
+            _plugin_status[i] = std::make_shared<XBot::NRT_ROS_Publisher>();
+        }
 
-
+        // initialize pub/sub
         _plugin_init_success[i] = plugin_init_success;
-        _plugin_command[i].init(_rtplugin_names[i]+"_switch");
-        _plugin_status[i].init(_rtplugin_names[i]+"_status");
+        _plugin_switch[i]->init(_rtplugin_names[i]+"_switch");
+        _plugin_status[i]->init(_rtplugin_names[i]+"_status");
     }
 
     return ret;
@@ -260,8 +302,10 @@ void PluginHandler::run()
     // fill robot state
     fill_robot_state();
 
-    // broadcast robot state over pipes
-    run_xddp();
+    // NOTE in the RT case broadcast robot state over pipes
+    if( _is_RT_plugin_handler ) {
+        run_xddp();
+    }
 
     XBot::Command cmd;
 
@@ -286,9 +330,9 @@ void PluginHandler::run()
 
         if( _plugin_state[i] == "STOPPED" ){
 
-            _plugin_status[i].write(XBot::Command("STOPPED"));
+            _plugin_status[i]->write(XBot::Command("STOPPED"));
 
-            if( _plugin_command[i].read(cmd) ){
+            if( _plugin_switch[i]->read(cmd) ){
 
                 /* If start command has been received, set plugin to RUNNING */
                 if( cmd.str() == "start" && plugin_can_start(i) ){
@@ -303,9 +347,9 @@ void PluginHandler::run()
 
         if( _plugin_state[i] == "RUNNING" ){
 
-            _plugin_status[i].write(XBot::Command("RUNNING"));
+            _plugin_status[i]->write(XBot::Command("RUNNING"));
 
-            if( _plugin_command[i].read(cmd) ){
+            if( _plugin_switch[i]->read(cmd) ){
 
                 /* If stop command has been received, set plugin to STOPPED */
                 if( cmd.str() == "stop" ){
@@ -370,36 +414,43 @@ PluginHandler::~PluginHandler()
 
 bool PluginHandler::plugin_can_start(int plugin_idx)
 {
-    /* Logging plugin can always start */
+    // NOTE Policy for RT Plugins
+    if( _is_RT_plugin_handler ) {
+        
+        /* Logging plugin can always start */
 
-    if( plugin_idx == _logging_plugin_idx ){
-        return true;
-    }
-
-    /* We are asked to run the communication plugin,
-    allow it if and ONLY if all plugins are stopped,
-    except for the logging plugin which can always run */
-
-    if( plugin_idx == _communication_plugin_idx ){
-
-        bool can_start = true;
-
-        for(int i = 0; i < _plugin_state.size(); i++){
-            can_start = can_start && ( _plugin_state[i] == "STOPPED" || i == _logging_plugin_idx );
+        if( plugin_idx == _logging_plugin_idx ){
+            return true;
         }
 
-        return can_start;
+        /* We are asked to run the communication plugin,
+        allow it if and ONLY if all plugins are stopped,
+        except for the logging plugin which can always run */
 
+        if( plugin_idx == _communication_plugin_idx ){
+
+            bool can_start = true;
+
+            for(int i = 0; i < _plugin_state.size(); i++){
+                can_start = can_start && ( _plugin_state[i] == "STOPPED" || i == _logging_plugin_idx );
+            }
+
+            return can_start;
+
+        }
+        else{
+
+            /* We are asked to run a normal plugin. Allow it
+            * only if the communication plugin is not running */
+
+            return _plugin_state[_communication_plugin_idx] == "STOPPED";
+        }
+
+        return false;
     }
-    else{
-
-        /* We are asked to run a normal plugin. Allow it
-         * only if the communication plugin is not running */
-
-        return _plugin_state[_communication_plugin_idx] == "STOPPED";
-    }
-
-    return false;
+    
+    // relaxed policy for NRT Plugins
+    return true;
 }
 
 

@@ -73,10 +73,12 @@ int main(int argc, char **argv){
 
 
     auto time_provider = std::make_shared<SimpleTimeProvider>();
-    PluginHandler plugin_handler(robot, time_provider);
+    PluginHandler plugin_handler(robot, time_provider, "XBotRTPlugins");
 
+    XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
+    
     plugin_handler.load_plugins();
-    plugin_handler.init_plugins();
+    plugin_handler.init_plugins(shared_memory);
 
     double time = 0;
 
