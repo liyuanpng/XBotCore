@@ -1,0 +1,3 @@
+<map id="XBot::CommunicationInterfaceYARP" name="XBot::CommunicationInterfaceYARP">
+<area shape="rect" id="node2" href="$classXBot_1_1CommunicationInterface.html" title="{XBot::CommunicationInterface\n|# _robot\l# _master_communication\l_interface_port\l|+ CommunicationInterface()\l+ CommunicationInterface()\l+ sendRobotState()\l+ receiveReference()\l+ advertiseSwitch()\l+ receiveFromSwitch()\l+ advertiseCmd()\l+ receiveFromCmd()\l+ advertiseMasterCommunication\lInterface()\l+ receiveMasterCommunication\lInterface()\l+ advertiseStatus()\l+ setPluginStatus()\l}" alt="" coords="15,5,234,303"/>
+</map>
