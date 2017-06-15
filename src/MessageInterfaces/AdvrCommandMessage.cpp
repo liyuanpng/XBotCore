@@ -89,15 +89,22 @@ bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::Gener
     if( type == XBot::GenericControlMessage::Type::Rx ){
 
         auto robot = XBot::RobotInterface::getRobot(path_to_config_file);
+        robot->sense();
+
+        XBot::JointNameMap _joint_pos, _joint_stiffness, _joint_damping;
+        robot->getJointPosition(_joint_pos);
+        robot->getStiffness(_joint_stiffness);
+        robot->getDamping(_joint_damping);
 
         for( const std::string& jname : robot->getEnabledJointNames() ){
+
             _joint_names_res.name.push_back(jname);
             _msg.name.push_back(jname);
             _msg.aux.push_back(0);
-            _msg.damping.push_back(0);
+            _msg.damping.push_back(_joint_damping.at(jname));
             _msg.effort.push_back(0);
-            _msg.position.push_back(0);
-            _msg.stiffness.push_back(0);
+            _msg.position.push_back(_joint_pos.at(jname));
+            _msg.stiffness.push_back(_joint_stiffness.at(jname));
             _msg.velocity.push_back(0);
         }
 

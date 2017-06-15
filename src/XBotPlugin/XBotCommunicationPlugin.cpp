@@ -45,6 +45,8 @@ void XBot::XBotCommunicationPlugin::on_start(double time)
 {
     _start_time = time;
     _robot->getJointPosition(_q0);
+    _robot->getStiffness(_k0);
+    _robot->getDamping(_d0);
 }
 
 void XBot::XBotCommunicationPlugin::on_stop(double time)
@@ -61,12 +63,16 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
             _pos_ref_map[p.first] = _pdo_tx.pos_ref;
             _vel_ref_map[p.first] = _pdo_tx.vel_ref;
             _tor_ref_map[p.first] = _pdo_tx.tor_ref;
+            _k_ref_map[p.first] = _pdo_tx.gain_0;
+            _d_ref_map[p.first] = _pdo_tx.gain_1;
         }
     }
 
     _robot->setPositionReference(_pos_ref_map);
     _robot->setVelocityReference(_vel_ref_map);
     _robot->setEffortReference(_tor_ref_map);
+    _robot->setStiffness(_k_ref_map);
+    _robot->setDamping(_d_ref_map);
 
     double alpha = (time - _start_time) / 5.0;
 
@@ -74,6 +80,14 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
         _robot->getPositionReference(_qref);
         _qref = alpha*_qref + (1-alpha)*_q0;
         _robot->setPositionReference(_qref);
+
+        _robot->getStiffness(_kref);
+        _kref = alpha*_kref + (1-alpha)*_k0;
+        _robot->setStiffness(_kref);
+
+        _robot->getDamping(_dref);
+        _dref = alpha*_dref + (1-alpha)*_d0;
+        _robot->setDamping(_dref);
     }
 
     _robot->move();

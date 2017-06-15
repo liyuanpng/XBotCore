@@ -62,8 +62,8 @@ protected:
 
 private:
 
-    XBot::JointIdMap _pos_ref_map, _vel_ref_map, _tor_ref_map;
-    Eigen::VectorXd _q0, _qref;
+    XBot::JointIdMap _pos_ref_map, _vel_ref_map, _tor_ref_map, _k_ref_map, _d_ref_map;
+    Eigen::VectorXd _q0, _qref, _k0, _kref, _d0, _dref;
 
     double _start_time;
 
