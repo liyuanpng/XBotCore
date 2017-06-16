@@ -1,4 +1,4 @@
-/*
+  /*
  * Copyright (C) 2017 IIT-ADVR
  * Author: Arturo Laurenzi, Luca Muratore
  * email:  arturo.laurenzi@iit.it, luca.muratore@iit.it
@@ -48,6 +48,8 @@ PluginHandler::PluginHandler(RobotInterface::Ptr robot,
     // Path
     _path_to_cfg = _robot->getPathToConfig();
     std::cout << "Plugin Handler is using config file: " << _path_to_cfg << std::endl;
+
+    _pluginhandler_log = XBot::MatLogger::getLogger("/tmp/PluginHandler_log");
     std::cout << "With plugin set name : " << _plugins_set_name << std::endl;
 }
 
@@ -148,6 +150,8 @@ bool PluginHandler::load_plugins()
         auto plugin_ptr = std::make_shared<shlibpp::SharedLibraryClass<XBot::XBotControlPlugin>>(*factory_ptr);
 
         _rtplugin_vector.push_back(plugin_ptr);
+
+        _pluginhandler_log->createScalarVariable(plugin_name + "_exec_time");
 
     }
 
@@ -359,7 +363,11 @@ void PluginHandler::run()
                 }
             }
 
+            double tic = _time_provider->get_time();
             (*plugin)->run(_time[i], _period[i]);
+            double toc = _time_provider->get_time();
+
+            _pluginhandler_log->add(_rtplugin_names[i] + "_exec_time", toc-tic);
 
         }
 
@@ -378,6 +386,8 @@ void PluginHandler::close()
     for( const auto& plugin : _rtplugin_vector ){
         (*plugin)->close();
     }
+
+    _pluginhandler_log->flush();
 }
 
 bool PluginHandler::computeAbsolutePath(const std::string& input_path,

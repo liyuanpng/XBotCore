@@ -99,7 +99,7 @@ XBot::XBotXDDP::XBotXDDP(std::string config_file)
         // initialize the mutex
 //         mutex[ft_j.second] = std::make_shared<std::mutex>();
     }
-    
+
     //imu
     for(auto& imu_j : imu) {
         // initialize all the fd reading for the imu
@@ -332,7 +332,9 @@ bool XBot::XBotXDDP::get_ft(int ft_id, std::vector< double >& ft, int channels)
 {
 
     XBot::RobotFT::pdo_rx actual_pdo_rx_ft;
-    fd_ft_read.at(ft_id).read(actual_pdo_rx_ft);
+    if(!fd_ft_read.at(ft_id).read(actual_pdo_rx_ft)){
+        return false;
+    }
 
     ft.resize(channels);
     std::memcpy(ft.data(), &(actual_pdo_rx_ft.force_X), channels*sizeof(double));
@@ -343,7 +345,9 @@ bool XBot::XBotXDDP::get_ft(int ft_id, std::vector< double >& ft, int channels)
 bool XBot::XBotXDDP::get_ft_fault(int ft_id, double& fault)
 {
     XBot::RobotFT::pdo_rx actual_pdo_rx_ft;
-    fd_ft_read.at(ft_id).read(actual_pdo_rx_ft);
+    if(!fd_ft_read.at(ft_id).read(actual_pdo_rx_ft)){
+        return false;
+    }
 
     fault = actual_pdo_rx_ft.fault;
 
@@ -353,49 +357,55 @@ bool XBot::XBotXDDP::get_ft_fault(int ft_id, double& fault)
 bool XBot::XBotXDDP::get_ft_rtt(int ft_id, double& rtt)
 {
     XBot::RobotFT::pdo_rx actual_pdo_rx_ft;
-    fd_ft_read.at(ft_id).read(actual_pdo_rx_ft);
+    if(!fd_ft_read.at(ft_id).read(actual_pdo_rx_ft)){
+        return false;
+    }
 
     rtt = actual_pdo_rx_ft.rtt;
 
     return true;
 }
 
-bool XBot::XBotXDDP::get_imu(int imu_id, 
-                             std::vector< double >& lin_acc, 
-                             std::vector< double >& ang_vel, 
+bool XBot::XBotXDDP::get_imu(int imu_id,
+                             std::vector< double >& lin_acc,
+                             std::vector< double >& ang_vel,
                              std::vector< double >& quaternion)
 {
 
     XBot::RobotIMU::pdo_rx actual_pdo_rx_imu;
-    fd_imu_read.at(imu_id).read(actual_pdo_rx_imu);
-    
+    if(!fd_imu_read.at(imu_id).read(actual_pdo_rx_imu)){
+        return false;
+    }
+
     if(quaternion.size() == 4) {
         quaternion.at(0) = actual_pdo_rx_imu.quat_X;
         quaternion.at(1) = actual_pdo_rx_imu.quat_Y;
         quaternion.at(2) = actual_pdo_rx_imu.quat_Z;
         quaternion.at(3) = actual_pdo_rx_imu.quat_W;
     }
-    
+
     if(ang_vel.size() == 3 ) {
         ang_vel.at(0) = actual_pdo_rx_imu.ang_vel_X;
         ang_vel.at(1) = actual_pdo_rx_imu.ang_vel_Y;
         ang_vel.at(2) = actual_pdo_rx_imu.ang_vel_Z;
     }
-    
+
     if(lin_acc.size() == 3 ) {
         lin_acc.at(0) = actual_pdo_rx_imu.lin_acc_X;
         lin_acc.at(1) = actual_pdo_rx_imu.lin_acc_Y;
         lin_acc.at(2) = actual_pdo_rx_imu.lin_acc_Z;
     }
-    
+
     return true;
-    
+
 }
 
 bool XBot::XBotXDDP::get_imu_fault(int imu_id, double& fault)
 {
     XBot::RobotIMU::pdo_rx actual_pdo_rx_imu;
-    fd_imu_read.at(imu_id).read(actual_pdo_rx_imu);
+    if(!fd_imu_read.at(imu_id).read(actual_pdo_rx_imu)){
+        return false;
+    }
 
     fault = actual_pdo_rx_imu.fault;
 
@@ -405,7 +415,9 @@ bool XBot::XBotXDDP::get_imu_fault(int imu_id, double& fault)
 bool XBot::XBotXDDP::get_imu_rtt(int imu_id, double& rtt)
 {
     XBot::RobotIMU::pdo_rx actual_pdo_rx_imu;
-    fd_imu_read.at(imu_id).read(actual_pdo_rx_imu);
+    if(!fd_imu_read.at(imu_id).read(actual_pdo_rx_imu)){
+        return false;
+    }
 
     rtt = actual_pdo_rx_imu.rtt;
 
