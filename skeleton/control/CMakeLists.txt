@@ -49,7 +49,7 @@ if ( ${ENABLE_XENO} )
 endif()
 
 # include
-include_directories(include
+include_directories(include/${PROJECT_NAME}
                     ${XCM_INCLUDE_DIRS}
                     )
 
