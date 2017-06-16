@@ -11,10 +11,16 @@ XCM provides a script that generate for you a skeleton of a XBot RT plugin: the 
 Once execute it 
 
 ```
-mkdir RT_PLUGIN_NAME
 generate_XBot_RT_Plugin.sh RT_PLUGIN_NAME
 ```
-you will have a ready to use empty skeleton for a XBot RT plugin.
+it will create a folder containing a ready to use empty skeleton for a XBot RT plugin.
+
+FSM Plugin
+
+```
+generate_XBot_RT_PluginFSM.sh RT_PLUGIN_NAME state1 state2 staten
+```
+in addition to the previous command, it will provide a basic implementation of the FSM API.
 
 Just compile it and install it using the [advr-superbuild](https://github.com/ADVRHumanoids/advr-superbuild) (check the [advr-superbuild wiki](https://github.com/ADVRHumanoids/advr-superbuild/wiki#creating-a-new-project-in-github-and-adding-it-to-the-superbuild) to understand how).
 
