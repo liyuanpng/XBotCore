@@ -1,0 +1,9 @@
+<map id="XBot::XBotLoggingPlugin" name="XBot::XBotLoggingPlugin">
+<area shape="rect" id="node2" href="$classXBot_1_1XBotControlPlugin.html" title="{XBot::XBotControlPlugin\n||+ XBotControlPlugin()\l+ ~XBotControlPlugin()\l+ init()\l+ init_control_plugin()\l+ on_start()\l+ on_stop()\l+ run()\l# control_loop()\l}" alt="" coords="125,923,292,1103"/>
+<area shape="rect" id="node3" href="$classXBot_1_1XBotPlugin.html" title="XBotCore Plugin Interface. " alt="" coords="5,447,164,700"/>
+<area shape="rect" id="node4" title="STL class. " alt="" coords="94,147,174,224"/>
+<area shape="rect" id="node7" href="$classXBot_1_1Subscriber.html" title="{XBot::Subscriber\&lt; XBot\l::XBot::Command \&gt;\n||+ Subscriber()\l+ Subscriber()\l+ init()\l+ read()\l}" alt="" coords="123,287,286,423"/>
+<area shape="rect" id="node5" title="STL class. " alt="" coords="71,5,197,97"/>
+<area shape="rect" id="node6" href="$classXBot_1_1SubscriberRT.html" title="{XBot::SubscriberRT\l\&lt; XBot::XBot::Command \&gt;\n||+ SubscriberRT()\l+ SubscriberRT()\l+ init()\l+ read()\l}" alt="" coords="119,724,299,860"/>
+<area shape="rect" id="node8" href="$classXBot_1_1Command.html" title="Class which acts as a std::string of maximum length equal to 40 chars. " alt="" coords="323,731,473,853"/>
+</map>

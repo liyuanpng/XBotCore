@@ -38,14 +38,19 @@ namespace XBot {
 
         typedef std::shared_ptr<PluginHandler> Ptr;
 
-        PluginHandler(RobotInterface::Ptr robot, TimeProvider::Ptr time_provider);
+        PluginHandler( RobotInterface::Ptr robot, 
+                       TimeProvider::Ptr time_provider,
+                       const std::string& plugins_set_name );
+        
+        void update_plugins_set_name(const std::string& plugins_set_name);
 
         bool load_plugins();
 
-        bool init_plugins(std::shared_ptr< IXBotJoint> joint  = nullptr,
-                          std::shared_ptr< IXBotFT > ft       = nullptr,
-                          std::shared_ptr< IXBotIMU > imu     = nullptr,
-                          std::shared_ptr< IXBotModel > model = nullptr );
+        bool init_plugins(XBot::SharedMemory::Ptr shared_memory,
+                          std::shared_ptr< IXBotJoint> joint    = nullptr,
+                          std::shared_ptr< IXBotFT > ft         = nullptr,
+                          std::shared_ptr< IXBotIMU > imu       = nullptr,
+                          std::shared_ptr< IXBotModel > model   = nullptr );
 
         void run();
 
@@ -81,8 +86,8 @@ namespace XBot {
         std::vector<std::string> _rtplugin_names;
         std::vector<std::shared_ptr<shlibpp::SharedLibraryClass<XBot::XBotControlPlugin>>> _rtplugin_vector;
         std::vector<bool> _plugin_init_success;
-        std::vector<XBot::SubscriberRT<XBot::Command>> _plugin_command;
-        std::vector<XBot::PublisherRT<XBot::Command>> _plugin_status;
+        std::vector<std::shared_ptr<XBot::Subscriber<XBot::Command>>> _plugin_switch;
+        std::vector<std::shared_ptr<XBot::Publisher<XBot::Command>>> _plugin_status;
         std::vector<std::string> _plugin_state;
         std::vector<bool> _first_loop;
 
@@ -106,6 +111,10 @@ namespace XBot {
         std::string _path_to_cfg;
 
         XBot::MatLogger::Ptr _pluginhandler_log;
+        
+        std::string _plugins_set_name;
+        bool _is_RT_plugin_handler;
+
     };
 }
 #endif

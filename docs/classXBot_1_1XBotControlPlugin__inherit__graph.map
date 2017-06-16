@@ -1,0 +1,5 @@
+<map id="XBot::XBotControlPlugin" name="XBot::XBotControlPlugin">
+<area shape="rect" id="node3" href="$classXBot_1_1XBotCommunicationPlugin.html" title="XBotCore RT plugin that communicates wit the non&#45;RT enviroment using XDDP pipes. " alt="" coords="5,549,220,715"/>
+<area shape="rect" id="node4" href="$classXBot_1_1XBotLoggingPlugin.html" title="XBotCore RT plugin that communicates wit the non&#45;RT enviroment using XDDP pipes. " alt="" coords="244,549,413,715"/>
+<area shape="rect" id="node2" href="$classXBot_1_1XBotPlugin.html" title="XBotCore Plugin Interface. " alt="" coords="141,5,300,259"/>
+</map>

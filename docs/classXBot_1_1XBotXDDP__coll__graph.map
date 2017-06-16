@@ -1,0 +1,5 @@
+<map id="XBot::XBotXDDP" name="XBot::XBotXDDP">
+<area shape="rect" id="node2" href="$classXBot_1_1IXBotJoint.html" title="XBotCore Joint Interface. " alt="" coords="5,5,141,229"/>
+<area shape="rect" id="node3" href="$classXBot_1_1IXBotFT.html" title="XBotCore F&#45;T Force Torque Interface. " alt="" coords="166,57,274,178"/>
+<area shape="rect" id="node4" href="$classXBot_1_1IXBotIMU.html" title="XBotCore IMU Interface. " alt="" coords="299,57,419,178"/>
+</map>

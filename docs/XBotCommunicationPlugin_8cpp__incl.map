@@ -1,0 +1,20 @@
+<map id="/home/lucamuratore/advr&#45;superbuild/external/XCM/src/XBotPlugin/XBotCommunicationPlugin.cpp" name="/home/lucamuratore/advr&#45;superbuild/external/XCM/src/XBotPlugin/XBotCommunicationPlugin.cpp">
+<area shape="rect" id="node2" href="$XBotCommunicationPlugin_8h.html" title="XBotPlugin/XBotCommunication\lPlugin.h" alt="" coords="1263,124,1474,165"/>
+<area shape="rect" id="node3" href="$XBotControlPlugin_8h.html" title="XCM/XBotControlPlugin.h" alt="" coords="668,288,843,315"/>
+<area shape="rect" id="node15" href="$XBotESC_8h.html" title="XBotCore&#45;interfaces\l/XBotESC.h" alt="" coords="1080,452,1220,493"/>
+<area shape="rect" id="node17" href="$XDomainCommunication_8h.html" title="XBotCore&#45;interfaces\l/XDomainCommunication.h" alt="" coords="1309,363,1492,404"/>
+<area shape="rect" id="node39" href="$XBotThread_8h.html" title="XCM/XBotThread.h" alt="" coords="2025,459,2161,486"/>
+<area shape="rect" id="node46" href="$XBotCommunicationHandler_8h.html" title="XCM/XBotCommunicationHandler.h" alt="" coords="1330,213,1562,240"/>
+<area shape="rect" id="node5" href="$XBotPlugin_8h.html" title="XBotCore&#45;interfaces\l/XBotPlugin.h" alt="" coords="592,363,732,404"/>
+<area shape="rect" id="node6" href="$IXBotJoint_8h.html" title="XBotCore&#45;interfaces\l/IXBotJoint.h" alt="" coords="700,452,840,493"/>
+<area shape="rect" id="node11" href="$IXBotModel_8h.html" title="XBotCore&#45;interfaces\l/IXBotModel.h" alt="" coords="484,452,624,493"/>
+<area shape="rect" id="node12" href="$IXBotFT_8h.html" title="XBotCore&#45;interfaces\l/IXBotFT.h" alt="" coords="916,452,1056,493"/>
+<area shape="rect" id="node13" href="$IXBotIMU_8h.html" title="XBotCore&#45;interfaces\l/IXBotIMU.h" alt="" coords="39,452,179,493"/>
+<area shape="rect" id="node14" href="$XBotSharedMemory_8h.html" title="XBotCore&#45;interfaces\l/XBotSharedMemory.h" alt="" coords="305,452,459,493"/>
+<area shape="rect" id="node18" href="$XBotPipes_8h.html" title="XBotCore&#45;interfaces\l/XBotPipes.h" alt="" coords="1720,452,1860,493"/>
+<area shape="rect" id="node37" href="$CommunicationInterfaceROS_8h.html" title="XCM/CommunicationInterface\lROS.h" alt="" coords="1295,452,1493,493"/>
+<area shape="rect" id="node24" href="$XBotUtils_8h.html" title="XCM/XBotUtils.h" alt="" coords="2031,541,2154,568"/>
+<area shape="rect" id="node38" href="$XBotCommunicationInterface_8h.html" title="XCM/XBotCommunicationInterface.h" alt="" coords="1184,541,1423,568"/>
+<area shape="rect" id="node47" href="$XBotXDDP_8h.html" title="XCM/XBotXDDP.h" alt="" coords="973,288,1108,315"/>
+<area shape="rect" id="node50" href="$IOPlugin_8h.html" title="XCM/IOPlugin.h" alt="" coords="1310,288,1427,315"/>
+</map>
