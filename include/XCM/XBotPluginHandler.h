@@ -109,9 +109,12 @@ namespace XBot {
 
         RobotInterface::Ptr _robot;
         std::string _path_to_cfg;
+
+        XBot::MatLogger::Ptr _pluginhandler_log;
         
         std::string _plugins_set_name;
         bool _is_RT_plugin_handler;
+
     };
 }
 #endif
