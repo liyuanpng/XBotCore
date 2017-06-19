@@ -163,7 +163,7 @@ if(${YARP_FOUND} AND ${ENABLE_YARP})
     set(COMMUNICATION_INTERFACE_SOURCE_FILES ${COMMUNICATION_INTERFACE_SOURCE_FILES} src/XBotYARP/CommunicationInterfaceYARP.cpp)
     set(COMMUNICATION_INTERFACE_LIBRARIES ${COMMUNICATION_INTERFACE_LIBRARIES} ${YARP_LIBRARIES})
 
-    
+
 
 
 endif()
@@ -181,6 +181,7 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/NRTDeployer.cpp
                         src/XBotXDDP.cpp
                         src/XBotESCUtils.cpp
+                        src/IOPlugin.cpp
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES}
                         ${RT_NRT_SRC}
                         )
@@ -219,13 +220,13 @@ target_link_libraries(CommunicationHandler XCM ${COMMUNICATION_INTERFACE_LIBRARI
 install(TARGETS CommunicationHandler
         EXPORT  CommunicationHandler
         RUNTIME DESTINATION bin)
-        
+
 add_executable(NRTDeployer src/NRTDeployerMain.cpp)
 target_link_libraries(NRTDeployer XCM)
 
 install(TARGETS NRTDeployer
         EXPORT  NRTDeployer
-        RUNTIME DESTINATION bin)        
+        RUNTIME DESTINATION bin)
 
 
 if ( Xenomai_FOUND )
