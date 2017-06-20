@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#ifndef _MODULE_PREFIX__H_
+#ifndef _MODULE_PREFIX__PLUGIN_H_
 #define _MODULE_PREFIX__PLUGIN_H_
 
 #include <XCM/XBotControlPlugin.h>
