@@ -4,6 +4,8 @@
 #include <signal.h>
 #include <ctime>
 #include <exception>
+#include <ros/ros.h>
+#include <rosgraph_msgs/Clock.h>
 
 #include <XCM/XBotPluginHandler.h>
 
@@ -24,9 +26,11 @@ void *signal_thread (void *arg)
     {
     case SIGINT:     /* process SIGINT  */
         g_loop_ok = 0;
+        fprintf (stderr, "\nSIGINT signal %d\n", sig_caught);
         break;
     case SIGTERM:    /* process SIGTERM */
         g_loop_ok = 0;
+        fprintf (stderr, "\nSIGTERM signal %d\n", sig_caught);
         break;
     default:         /* should normally not happen */
         fprintf (stderr, "\nUnexpected signal %d\n", sig_caught);
@@ -35,6 +39,11 @@ void *signal_thread (void *arg)
 }
 
 int main(int argc, char **argv){
+
+    ros::init(argc, argv, "DummyMain", ros::init_options::NoSigintHandler);
+    ros::NodeHandle nh;
+
+    ros::Publisher clock_pub = nh.advertise<rosgraph_msgs::Clock>("/clock", 1);
 
     // SIGNAL handling
     pthread_t  sig_thr_id;
@@ -76,13 +85,17 @@ int main(int argc, char **argv){
     PluginHandler plugin_handler(robot, time_provider, "XBotRTPlugins");
 
     XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
-    
+
     plugin_handler.load_plugins();
     plugin_handler.init_plugins(shared_memory);
 
     double time = 0;
 
     while(g_loop_ok){
+
+        rosgraph_msgs::Clock msg;
+        msg.clock = ros::Time(time);
+        clock_pub.publish(msg);
 
         std::clock_t tic = std::clock();
 
