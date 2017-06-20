@@ -163,7 +163,7 @@ if(${YARP_FOUND} AND ${ENABLE_YARP})
     set(COMMUNICATION_INTERFACE_SOURCE_FILES ${COMMUNICATION_INTERFACE_SOURCE_FILES} src/XBotYARP/CommunicationInterfaceYARP.cpp)
     set(COMMUNICATION_INTERFACE_LIBRARIES ${COMMUNICATION_INTERFACE_LIBRARIES} ${YARP_LIBRARIES})
 
-    
+
 
 
 endif()
@@ -219,13 +219,13 @@ target_link_libraries(CommunicationHandler XCM ${COMMUNICATION_INTERFACE_LIBRARI
 install(TARGETS CommunicationHandler
         EXPORT  CommunicationHandler
         RUNTIME DESTINATION bin)
-        
+
 add_executable(NRTDeployer src/NRTDeployerMain.cpp)
 target_link_libraries(NRTDeployer XCM)
 
 install(TARGETS NRTDeployer
         EXPORT  NRTDeployer
-        RUNTIME DESTINATION bin)        
+        RUNTIME DESTINATION bin)
 
 
 if ( Xenomai_FOUND )
@@ -386,3 +386,5 @@ endif()
 INSTALL(PROGRAMS scripts/generate_XBot_Plugin.sh DESTINATION bin)
 # install script to generate XBot RT FSM Plugin skeleton
 INSTALL(PROGRAMS scripts/generate_XBot_PluginFSM.sh DESTINATION bin)
+# install script to generate XBot IO Plugin skeleton
+INSTALL(PROGRAMS scripts/generate_XBot_IOPlugin.sh DESTINATION bin)
