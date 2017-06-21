@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#include <_MODULE_PREFIX__rt_plugin.h>
+#include <_MODULE_PREFIX__plugin.h>
 
 /* Specify that the class XBotPlugin::_MODULE_PREFIX_ is a XBot RT plugin with name "_MODULE_PREFIX_" */
 REGISTER_XBOT_PLUGIN(_MODULE_PREFIX_, XBotPlugin::_MODULE_PREFIX_)
