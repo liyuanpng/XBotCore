@@ -55,7 +55,7 @@ include_directories(include/${PROJECT_NAME}
 
 # lib
 add_library(${PROJECT_NAME} SHARED
-    src/_MODULE_PREFIX__rt_plugin.cpp
+    src/_MODULE_PREFIX__plugin.cpp
 )
 
 # set Xenomain flags if Xenomai is found

@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#include <_MODULE_PREFIX__rt_plugin.h>
+#include <_MODULE_PREFIX__plugin.h>
 
 /* Specify that the class XBotPlugin::_MODULE_PREFIX_ is a XBot RT plugin with name "_MODULE_PREFIX_" */
 REGISTER_XBOT_PLUGIN(_MODULE_PREFIX_, XBotPlugin::_MODULE_PREFIX_)
@@ -41,6 +41,15 @@ bool _MODULE_PREFIX_::init_control_plugin(std::string path_to_config_file,
      * so that logs do not overwrite each other. */
     
     _logger = XBot::MatLogger::getLogger("/tmp/_MODULE_PREFIX__log");
+
+
+    /*Saves robot as shared variable between states*/
+    fsm.shared_data()._robot= robot;
+    
+    /*Registers states*/
+    _FSM_STATE_REGISTRATION_
+    // Initialize the FSM with the initial state
+    _FSM_STATE_INIT_
 
     return true;
 
@@ -76,6 +85,9 @@ void _MODULE_PREFIX_::control_loop(double time, double period)
      * it is stopped.
      * Since this function is called within the real-time loop, you should not perform
      * operations that are not rt-safe. */
+
+
+     fsm.run(time, 0.01);
 
 }
 
