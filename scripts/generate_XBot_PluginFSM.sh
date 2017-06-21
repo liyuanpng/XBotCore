@@ -17,7 +17,7 @@ find . -maxdepth 3 -type f -not -path '*/\.*' -exec sed -i -e "s/_MODULE_PREFIX_
 # rename
 find . -maxdepth 3 -type f -not -path '*/\.*' -not -name "CMakeLists.txt" -not -name "README.md" -not -name "FindXenomai.cmake" -not -name "MacroYCMInstallLibrary.cmake" -not -name "fsm_definition.h" -not -name "fsm_state.h" -not -name "fsm_implementation.cpp" -not -name "fsm_implementationTemplate.cpp" -exec bash -c 'dir=$(dirname $0) && file=$(basename $0) && mv $0 "$dir/$1_$file"' {} $1 \;
 
-mv "./include/rt_plugin" "./include/$1"
+mv "./include/plugin" "./include/$1"
 
 
 #read state definition template
@@ -26,7 +26,7 @@ content_definition=$(cat include/$package_name/fsm_state.h)
 content_implementation=$(cat src/fsm_implementationTemplate.cpp)
 content_registration="   fsm.register_state(std::make_shared<myfsm::_STATE_PREFIX_>());"    
 content_init="fsm.init("\"$2\"");"
-plugin_name="$1_rt_plugin.cpp"
+plugin_name="$1_plugin.cpp"
  
 
 #append the created states      
