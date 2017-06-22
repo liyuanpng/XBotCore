@@ -56,7 +56,7 @@ void XBot::NRTDeployer::th_init(void*)
     // set thread period - not periodic
     task_period_t t;
     memset(&t, 0, sizeof(t));
-    t.period = {0,20000};
+    t.period = {0,5000};
     period.task_time = t.task_time;
     period.period = t.period;
     // set scheduler policy
