@@ -181,6 +181,7 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/NRTDeployer.cpp
                         src/XBotXDDP.cpp
                         src/XBotESCUtils.cpp
+                        src/IOPlugin.cpp
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES}
                         ${RT_NRT_SRC}
                         )
