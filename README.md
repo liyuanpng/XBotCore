@@ -2,6 +2,7 @@ XCM
 ===
 
 XBot Control Modules and RT plugins.
+Online documentation: https://advrhumanoids.github.io/XCM/
 
 How to generate and execute a XBot RT Plugin?
 ==============================================
