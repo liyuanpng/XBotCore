@@ -39,7 +39,7 @@ bool _MODULE_PREFIX_::init_control_plugin(std::string path_to_config_file,
     /* Initialize a logger which saves to the specified file. Remember that
      * the current date/time is always appended to the provided filename,
      * so that logs do not overwrite each other. */
-    
+
     _logger = XBot::MatLogger::getLogger("/tmp/_MODULE_PREFIX__log");
 
     return true;
@@ -76,6 +76,23 @@ void _MODULE_PREFIX_::control_loop(double time, double period)
      * it is stopped.
      * Since this function is called within the real-time loop, you should not perform
      * operations that are not rt-safe. */
+
+    /* The following code checks if any command was received from the plugin standard port
+     * (e.g. from ROS you can send commands with
+     *         rosservice call /_MODULE_PREFIX__cmd "cmd: 'MY_COMMAND_1'"
+     * If any command was received, the code inside the if statement is then executed. */
+
+    if(command.read(current_command)){
+
+        if(current_command.str() == "MY_COMMAND_1"){
+            /* Handle command */
+        }
+
+        if(current_command.str() == "MY_COMMAND_2"){
+            /* Handle command */
+        }
+
+    }
 
 }
 
