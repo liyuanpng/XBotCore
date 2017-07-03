@@ -29,7 +29,7 @@
 namespace XBot
 {
 
-    class NRTDeployer : public Thread_hook
+class NRTDeployer : public Thread_hook
 {
 public:
 
