@@ -38,6 +38,12 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
         _sub_map[id] = XBot::SubscriberRT<XBot::RobotState::pdo_tx>(std::string("rt_in_Motor_id_") + std::to_string(id));
     }
 
+    // initialize filter
+    _filter_q = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    _filter_k = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    _filter_d = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    _filter_enabled = false;
+
     return true;
 }
 
@@ -47,6 +53,14 @@ void XBot::XBotCommunicationPlugin::on_start(double time)
     _robot->getJointPosition(_q0);
     _robot->getStiffness(_k0);
     _robot->getDamping(_d0);
+
+    _filter_q.reset(_q0);
+    _filter_k.reset(_k0);
+    _filter_d.reset(_d0);
+
+    _robot->getJointPosition(_pos_ref_map);
+    _robot->getStiffness(_k_ref_map);
+    _robot->getDamping(_d_ref_map);
 }
 
 void XBot::XBotCommunicationPlugin::on_stop(double time)
@@ -58,8 +72,25 @@ void XBot::XBotCommunicationPlugin::on_stop(double time)
 void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
 {
 
+    if(command.read(current_command)){
+        if(current_command.str() == "filter ON"){
+            _filter_enabled = true;
+            _robot->getJointPosition(_qref);
+            _robot->getStiffness(_kref);
+            _robot->getDamping(_dref);
+
+            _filter_q.reset(_qref);
+            _filter_k.reset(_kref);
+            _filter_d.reset(_dref);
+        }
+        if(current_command.str() == "filter OFF"){
+            _filter_enabled = false;
+        }
+    }
+
     for( auto& p: _sub_map) {
         if( p.second.read(_pdo_tx) ) {
+
             _pos_ref_map[p.first] = _pdo_tx.pos_ref;
             _vel_ref_map[p.first] = _pdo_tx.vel_ref;
             _tor_ref_map[p.first] = _pdo_tx.tor_ref;
@@ -90,6 +121,17 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
         _robot->setDamping(_dref);
     }
 
+    if(_filter_enabled){
+        _robot->getPositionReference(_qref);
+        _robot->setPositionReference(_filter_q.process(_qref));
+
+        _robot->getStiffness(_kref);
+        _robot->setStiffness(_filter_k.process(_kref));
+
+        _robot->getDamping(_dref);
+        _robot->setDamping(_filter_d.process(_dref));
+    }
+
     _robot->move();
 
 }
@@ -104,4 +146,5 @@ XBot::XBotCommunicationPlugin::~XBotCommunicationPlugin()
 {
     printf("~XBotCommunicationPlugin()\n");
 }
+
 

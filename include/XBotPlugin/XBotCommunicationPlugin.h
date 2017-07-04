@@ -28,6 +28,8 @@
 #include <XBotCore-interfaces/XBotESC.h>
 #include <XBotCore-interfaces/XDomainCommunication.h>
 
+#include <XBotInterface/Utils.h>
+
 #include <memory>
 
 namespace XBot
@@ -71,6 +73,10 @@ private:
     XBot::RobotState::pdo_tx _pdo_tx;
 
     XBot::RobotInterface::Ptr _robot;
+
+    XBot::Utils::SecondOrderFilter<Eigen::VectorXd> _filter_q, _filter_k, _filter_d;
+
+    bool _filter_enabled;
 
     Thread_hook::Ptr _ch;
 
