@@ -44,7 +44,8 @@ public:
                       std::shared_ptr< XBot::IXBotJoint > joint,
                       std::shared_ptr< XBot::IXBotModel > model,
                       std::shared_ptr< XBot::IXBotFT > ft,
-                      std::shared_ptr< XBot::IXBotIMU > imu ) final;
+                      std::shared_ptr< XBot::IXBotIMU > imu,
+                      std::shared_ptr<XBot::IXBotHand> hand ) final;
 
     virtual bool init_control_plugin(std::string path_to_config_file,
                                      XBot::SharedMemory::Ptr shared_memory,
