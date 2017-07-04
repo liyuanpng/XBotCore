@@ -29,6 +29,7 @@
 #include <XBotCore-interfaces/IXBotJoint.h>
 #include <XBotCore-interfaces/IXBotFT.h>
 #include <XBotCore-interfaces/IXBotIMU.h>
+#include <XBotCore-interfaces/IXBotHand.h>
 
 #include <XBotCore-interfaces/XDomainCommunication.h>
 
@@ -46,7 +47,8 @@ namespace XBot
  */
 class XBot::XBotXDDP :  public XBot::IXBotJoint,
                         public XBot::IXBotFT,
-                        public XBot::IXBotIMU
+                        public XBot::IXBotIMU,
+                        public XBot::IXBotHand
                         
 {
 public:
@@ -126,6 +128,10 @@ public:
     bool get_max_pos(int joint_id, float& max_pos);
     bool get_ctrl_status_cmd(int joint_id, uint16_t& ctrl_status_cmd);
 
+    //NOTE IXBotHand
+    virtual bool grasp(int hand_id, double grasp_percentage) final;
+    
+    virtual double get_grasp_state(int hand_id) final;
 
 private:
 

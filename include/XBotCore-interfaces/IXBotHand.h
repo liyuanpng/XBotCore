@@ -17,40 +17,33 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#ifndef __XBOT_NRT_DEPLOYER__
-#define __XBOT_NRT_DEPLOYER__
 
-#include <XCM/XBotThread.h>
-#include <XCM/XBotPluginHandler.h>
+#ifndef __I_X_BOT_HAND_H__
+#define __I_X_BOT_HAND_H__
 
-#include <XBotCore-interfaces/XDomainCommunication.h>
-
+#include <vector>
 
 namespace XBot
 {
-
-class NRTDeployer : public Thread_hook
-{
-public:
-
-    NRTDeployer(std::string path_to_config);
-
-    virtual void th_init(void*);
-    virtual void th_loop(void*);
-
-    virtual ~NRTDeployer();
-
-protected:
-
-private:
-    
-    double get_time();
-
-    PluginHandler::Ptr _plugin_handler;
-    RobotInterface::Ptr _robot;
-    std::string _path_to_config;
-};
-
+    class IXBotHand;
 }
 
-#endif
+/**
+ * @brief XBotCore Hand Interface
+ *
+ */
+class XBot::IXBotHand
+{
+
+public:
+
+    virtual bool grasp(int hand_id, double grasp_percentage) = 0;
+    
+    virtual double get_grasp_state(int hand_id) = 0;
+   
+    // TBD grasp force?
+
+
+};
+
+#endif //__I_X_BOT_HAND_H__

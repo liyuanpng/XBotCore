@@ -24,6 +24,7 @@
 #include <XBotCore-interfaces/IXBotJoint.h>
 #include <XBotCore-interfaces/IXBotFT.h>
 #include <XBotCore-interfaces/IXBotIMU.h>
+#include <XBotCore-interfaces/IXBotHand.h>
 #include <XBotCore-interfaces/XBotPlugin.h>
 #include <XBotCore-interfaces/XBotSharedMemory.h>
 #include <XBotCore-interfaces/XBotSharedObject.h>

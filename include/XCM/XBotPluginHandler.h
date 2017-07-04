@@ -50,7 +50,8 @@ namespace XBot {
                           std::shared_ptr< IXBotJoint> joint    = nullptr,
                           std::shared_ptr< IXBotFT > ft         = nullptr,
                           std::shared_ptr< IXBotIMU > imu       = nullptr,
-                          std::shared_ptr< IXBotModel > model   = nullptr );
+                          std::shared_ptr< IXBotModel > model   = nullptr,
+                          std::shared_ptr< IXBotHand > hand     = nullptr  );
 
         void run();
 
