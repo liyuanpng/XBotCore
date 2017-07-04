@@ -424,7 +424,15 @@ bool XBot::XBotXDDP::get_imu_rtt(int imu_id, double& rtt)
     return true;
 }
 
-
+bool XBot::XBotXDDP::grasp(int hand_id, double grasp_percentage)
+{
+  
+}
+    
+double XBot::XBotXDDP::get_grasp_state(int hand_id)
+{
+  
+}
 
 
 XBot::XBotXDDP::~XBotXDDP()
