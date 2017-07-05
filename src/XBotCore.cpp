@@ -58,13 +58,16 @@ void XBot::XBotCore::control_init(void)
     auto time_provider = std::make_shared<XBot::TimeProviderFunction<boost::function<double()>>>(time_func);
     
     // create plugin handler
-    _pluginHandler = std::make_shared<XBot::PluginHandler>(_robot, time_provider);
+    _pluginHandler = std::make_shared<XBot::PluginHandler>(_robot, time_provider, "XBotRTPlugins");
+    
+    // define the XBotCore shared_memory for the RT plugins
+    XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
     
     //
     _pluginHandler->load_plugins();
     
     //
-    _pluginHandler->init_plugins(xbot_joint, xbot_ft, xbot_imu);
+    _pluginHandler->init_plugins(shared_memory, xbot_joint, xbot_ft, xbot_imu);
 }
 
 double XBot::XBotCore::get_time()

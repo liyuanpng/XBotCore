@@ -40,7 +40,6 @@ else ()
 endif()
 
 # find packages 
-find_package(XBotCore-interfaces REQUIRED)
 find_package(XBotCoreModel REQUIRED)
 find_package(XCM REQUIRED)
 
@@ -61,8 +60,7 @@ set(COMMON_LIBS
 
 
 # include 
-include_directories(include ${XBotCore-interfaces_INCLUDE_DIRS}
-                            ${XBotCoreModel_INCLUDE_DIRS} 
+include_directories(include ${XBotCoreModel_INCLUDE_DIRS} 
                             ${kdl_parser_INCLUDE_DIRS}
                             ${soem${LIB_TYPE}_INCLUDE_DIRS}
                             ${iitecat_iface${LIB_TYPE}_INCLUDE_DIRS}
@@ -92,7 +90,6 @@ if ( Xenomai_FOUND )
 endif()
 
 target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
-                                      ${XBotCore-interfaces_LIBRARIES}
                                       ${XBotCoreModel_LIBRARIES}
                                       ${soem${LIB_TYPE}_LIBRARIES} 
                                       ${iitecat_iface${LIB_TYPE}_LIBRARIES}
