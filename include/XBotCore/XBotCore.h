@@ -80,7 +80,8 @@ struct XBot::XBotConversion {
 class XBot::XBotCore : public   XBot::XBotEcat,
                        public   XBot::IXBotJoint,
                        public   XBot::IXBotFT,
-                       public   XBot::IXBotIMU
+                       public   XBot::IXBotIMU,
+                       public   XBot::IXBotHand
                         
 {
 public:
@@ -103,6 +104,10 @@ public:
      * @return 1 on plugin_handler_loop() success. 0 otherwise
      */
     virtual int control_loop(void) final;
+    
+    // NOTE IXBotHand getters/setters
+    virtual double get_grasp_state(int hand_id);
+    virtual bool   grasp(int hand_id, double grasp_percentage);
     
     // NOTE IXBotFT getters
     virtual bool get_ft(int ft_id, std::vector< double >& ft, int channels = 6) final;

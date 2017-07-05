@@ -45,10 +45,12 @@ void XBot::XBotCore::control_init(void)
     std::shared_ptr<XBot::IXBotJoint> xbot_joint(this);
     std::shared_ptr<XBot::IXBotFT> xbot_ft(this);
     std::shared_ptr<XBot::IXBotIMU> xbot_imu(this);
+    std::shared_ptr<XBot::IXBotHand> xbot_hand(this);
     
     (*anymap)["XBotJoint"] = boost::any(xbot_joint);
     (*anymap)["XBotFT"] = boost::any(xbot_ft);
     (*anymap)["XBotIMU"] = boost::any(xbot_imu);
+    (*anymap)["XBotHand"] = boost::any(xbot_hand);
     
     _robot = XBot::RobotInterface::getRobot(_path_to_config, anymap, "XBotRT");
     
@@ -72,7 +74,7 @@ void XBot::XBotCore::control_init(void)
 
 double XBot::XBotCore::get_time()
 {
-    return iit::ecat::get_time_ns() / 10e8;
+    return iit::ecat::get_time_ns() / 1e9;
 }
 
 
@@ -519,6 +521,43 @@ bool XBot::XBotCore::get_imu_rtt(int imu_id, double& rtt)
     DPRINTF("Trying to get_imu_rtt() on ft with imu_id : %d that does not exists\n", imu_id);
     return false; 
 }
+
+bool XBot::XBotCore::grasp(int hand_id, double grasp_percentage)
+{ 
+    // check if the hand joint requested exists
+    if( motors.count(rid2Pos(hand_id)) ) {
+        // set the data
+        last_pdo_tx = motors[rid2Pos(hand_id)]->getTxPDO();
+        // HACK 10.0 is assumed as maximum position range
+        last_pdo_tx.pos_ref = (grasp_percentage * 10.0) * _conversion.pos_ref;
+        motors[rid2Pos(hand_id)]->setTxPDO(last_pdo_tx);
+        return true;
+    }
+    
+    // we don't touch the value that you passed
+    DPRINTF("Trying to set_fault_ack() on joint with joint_id : %d that does not exists\n", hand_id);
+    return false; 
+}
+
+double XBot::XBotCore::get_grasp_state(int hand_id)
+{
+    double link_pos = 0.0;
+    double grasp_state = 0.0;
+    // check if the hand joint requested exists
+    if( motors.count(rid2Pos(hand_id)) ) {
+        // get the data
+        link_pos = motors[rid2Pos(hand_id)]->getRxPDO().link_pos * _conversion.link_pos;
+        if( link_pos != 0.0) {
+            grasp_state = 10.0 / link_pos;
+        }
+        return grasp_state;
+    }
+    
+    // we don't touch the value that you passed
+    DPRINTF("Trying to get_grasp_state() on joint with joint_id : %d that does not exists\n", hand_id);
+    return -1;   
+}
+
 
 
 XBot::XBotCore::~XBotCore() {
