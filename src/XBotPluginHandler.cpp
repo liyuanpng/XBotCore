@@ -166,8 +166,8 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
                                  std::shared_ptr< IXBotJoint> joint,
                                  std::shared_ptr< IXBotFT > ft,
                                  std::shared_ptr< IXBotIMU > imu,
-                                 std::shared_ptr< IXBotModel > model,
-                                 std::shared_ptr< IXBotHand > hand )
+                                 std::shared_ptr< IXBotHand > hand,
+                                 std::shared_ptr< IXBotModel > model )
 {
 
     _plugin_init_success.resize(_rtplugin_vector.size(), false);
