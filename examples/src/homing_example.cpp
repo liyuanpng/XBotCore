@@ -70,6 +70,25 @@ void HomingExample::on_start(double time)
     _robot->sense();
     _robot->getJointPosition(_q0);
     std::cout << name << " STARTED!!!" << std::endl;
+    
+    
+// NOTE if you want to grasp use this piece of code    
+//     _robot->setPositionReference(_q0);
+//     
+//       
+//     //r hand open
+//     int r_hand_id =_robot->getHand()["r_handj"]->getHandId();
+//     XBot::Hand::Ptr r_hand =_robot->getHand(r_hand_id);
+//     r_hand->grasp(0.5);
+//     
+//     //l hand closing
+//     int l_hand_id =_robot->getHand()["l_handj"]->getHandId();
+//     XBot::Hand::Ptr l_hand =_robot->getHand(l_hand_id);
+//     l_hand->grasp(0.0);
+//    
+//     _robot->move();
+    
+    
 }
 
 void HomingExample::on_stop(double time)
