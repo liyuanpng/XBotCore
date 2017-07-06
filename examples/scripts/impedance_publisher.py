@@ -6,12 +6,12 @@ if __name__ == '__main__':
     rospy.init_node('impedance_pub')
 
 # replace 'centauro' with the actual robot name ('bigman' for WALKMAN)
-    pub = rospy.Publisher('/xbotcore/centauro/command', msg.CommandAdvr, queue_size='1')
-    sub = rospy.Subscriber('/xbotcore/centauro/joint_states', msg.JointStateAdvr)
+    pub = rospy.Publisher('/xbotcore/bigman/command', msg.CommandAdvr, queue_size='1')
+    sub = rospy.Subscriber('/xbotcore/bigman/joint_states', msg.JointStateAdvr)
 
 # read a joint state
     joint_state = msg.JointStateAdvr()
-    joint_state = rospy.wait_for_message('/xbotcore/centauro/joint_states', msg.JointStateAdvr, 1.0)
+    joint_state = rospy.wait_for_message('/xbotcore/bigman/joint_states', msg.JointStateAdvr, 1.0)
 
     print(joint_state)
 
