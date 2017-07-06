@@ -178,7 +178,6 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/XBotModuleHandler.cpp
                         src/XBotControlModule.cpp
                         src/XBotCommunicationHandler.cpp
-                        src/NRTDeployer.cpp
                         src/XBotXDDP.cpp
                         src/XBotESCUtils.cpp
                         src/IOPlugin.cpp
@@ -221,7 +220,7 @@ install(TARGETS CommunicationHandler
         EXPORT  CommunicationHandler
         RUNTIME DESTINATION bin)
 
-add_executable(NRTDeployer src/NRTDeployerMain.cpp)
+add_executable(NRTDeployer src/NRTDeployer.cpp src/NRTDeployerMain.cpp)
 target_link_libraries(NRTDeployer XCM)
 
 install(TARGETS NRTDeployer
