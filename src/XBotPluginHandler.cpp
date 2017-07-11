@@ -173,6 +173,7 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
     _plugin_init_success.resize(_rtplugin_vector.size(), false);
     _plugin_switch.resize(_rtplugin_vector.size());
     _plugin_status.resize(_rtplugin_vector.size());
+    _plugin_custom_status.resize(_rtplugin_vector.size());
     _plugin_state.resize(_rtplugin_vector.size(), "STOPPED");
     _first_loop.resize(_rtplugin_vector.size(), true);
     
@@ -189,11 +190,13 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
     for(int i = 0; i < _rtplugin_vector.size(); i++) {
 
         bool plugin_init_success = false;
+        _plugin_custom_status[i] = std::make_shared<PluginStatus>();
 
         try{
             /* Try to init the current plugin */
             plugin_init_success = (*_rtplugin_vector[i])->init( _path_to_cfg,
                                                                 _rtplugin_names[i],
+                                                                _plugin_custom_status[i],
                                                                 shared_memory,
                                                                 joint,
                                                                 model,
@@ -331,12 +334,14 @@ void PluginHandler::run()
 
         /* If init was unsuccessful, do not run */
         if(!_plugin_init_success[i]) continue;
+        
+         
 
         /* STATE STOPPED */
 
         if( _plugin_state[i] == "STOPPED" ){
-
-            _plugin_status[i]->write(XBot::Command("STOPPED"));
+          
+            _plugin_status[i]->write(XBot::Command("STOPPED"+_plugin_custom_status[i]->getStatus()));
 
             if( _plugin_switch[i]->read(cmd) ){
 
@@ -353,7 +358,7 @@ void PluginHandler::run()
 
         if( _plugin_state[i] == "RUNNING" ){
 
-            _plugin_status[i]->write(XBot::Command("RUNNING"));
+            _plugin_status[i]->write(XBot::Command("RUNNING"+_plugin_custom_status[i]->getStatus()));
 
             if( _plugin_switch[i]->read(cmd) ){
 

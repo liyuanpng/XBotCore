@@ -33,6 +33,7 @@ XBotControlPlugin::~XBotControlPlugin()
 
 bool XBotControlPlugin::init(std::string path_to_config_file,
                              std::string name,
+                             std::shared_ptr<PluginStatus> cstatus,
                              XBot::SharedMemory::Ptr shared_memory,
                              std::shared_ptr< XBot::IXBotJoint > joint,
                              std::shared_ptr< XBot::IXBotModel > model,
@@ -57,6 +58,7 @@ bool XBotControlPlugin::init(std::string path_to_config_file,
     
     // initialize the command port
     command.init(name + "_cmd");
+    _custom_status = cstatus;
 
     return init_control_plugin(path_to_config_file, shared_memory, robotinterface);
 
@@ -67,7 +69,5 @@ void XBotControlPlugin::run(double time, double period)
     
     control_loop(time, period);
 }
-
-
 
 }
