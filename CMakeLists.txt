@@ -184,10 +184,27 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES}
                         ${RT_NRT_SRC}
                         )
+                        
+add_library(XCM_no_xeno SHARED ${XBotInterface_INCLUDES}
+                        src/XDomainCommunication.cpp
+                        src/XBotPlugin.cpp
+                        src/XBotControlPlugin.cpp
+                        src/XBotPluginHandler.cpp
+                        src/XBotModuleHandler.cpp
+                        src/XBotControlModule.cpp
+                        src/XBotCommunicationHandler.cpp
+                        src/XBotXDDP.cpp
+                        src/XBotESCUtils.cpp
+                        src/IOPlugin.cpp
+                        ${COMMUNICATION_INTERFACE_SOURCE_FILES}
+                        src/XBotNRT_thread.cpp
+                        )                        
 
 if(${catkin_FOUND})
     add_dependencies(XCM AdvrJointStateMessage)
     add_dependencies(XCM AdvrCommandMessage)
+    
+    add_dependencies(XCM_no_xeno XCM)
 endif()
 
 
@@ -201,6 +218,17 @@ target_include_directories( XCM PUBLIC
                             ${XBotInterface_INCLUDE_DIRS}
                             ${XBotCore-interfaces_INCLUDE_DIRS}
                             )
+                            
+target_link_libraries(XCM_no_xeno PUBLIC ${XBotInterface_LIBRARIES}
+                                 ${XBotCore-interfaces_LIBRARIES}
+                                 ${COMMUNICATION_INTERFACE_LIBRARIES}
+                                 )
+
+
+target_include_directories( XCM_no_xeno PUBLIC
+                            ${XBotInterface_INCLUDE_DIRS}
+                            ${XBotCore-interfaces_INCLUDE_DIRS}
+                            )                            
 
 if ( Xenomai_FOUND )
     set_xeno_flags(XCM)
@@ -221,7 +249,7 @@ install(TARGETS CommunicationHandler
         RUNTIME DESTINATION bin)
 
 add_executable(NRTDeployer src/NRTDeployer.cpp src/NRTDeployerMain.cpp)
-target_link_libraries(NRTDeployer XCM)
+target_link_libraries(NRTDeployer XCM_no_xeno)
 
 install(TARGETS NRTDeployer
         EXPORT  NRTDeployer
@@ -277,6 +305,49 @@ install_basic_package_files(XCM VARS_PREFIX ${VARS_PREFIX}
                                     COMPATIBILITY SameMajorVersion
                                     TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
                                     NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+                                    
+########################################################################
+
+set(VARS_PREFIX "XCM_no_xeno")
+
+set(XCM_no_xeno_MAJOR_VERSION 0)
+set(XCM_no_xeno_MINOR_VERSION 1)
+set(XCM_no_xeno_PATCH_VERSION 0)
+set(XCM_no_xeno_VERSION ${XCM_no_xeno_MAJOR_VERSION}.${XCM_no_xeno_MINOR_VERSION}.${XCM_no_xeno_PATCH_VERSION})
+
+find_package(YCM REQUIRED)
+include(YCMDefaultDirs)
+ycm_default_dirs(${VARS_PREFIX})
+
+target_include_directories(XCM_no_xeno PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
+                                                "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
+
+set_target_properties(XCM_no_xeno PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
+                                               SOVERSION ${${VARS_PREFIX}_VERSION})
+
+install(DIRECTORY include/
+        DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"
+        FILES_MATCHING PATTERN "*.h*")
+
+install(TARGETS XCM_no_xeno
+        EXPORT XCM_no_xeno
+        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
+        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
+        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
+
+
+
+#enabling it will add all XCM_no_xeno dependencies as dependencies for third party users
+set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS XCM_no_xeno)
+
+
+include(InstallBasicPackageFiles)
+install_basic_package_files(XCM_no_xeno VARS_PREFIX ${VARS_PREFIX}
+                                    VERSION ${${VARS_PREFIX}_VERSION}
+                                    COMPATIBILITY SameMajorVersion
+                                    TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
+                                    NO_CHECK_REQUIRED_COMPONENTS_MACRO)  
+########################################################################                                    
 
 if( ${catkin_FOUND} )
 ########################################################################
