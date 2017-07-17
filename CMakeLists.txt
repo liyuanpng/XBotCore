@@ -197,6 +197,7 @@ add_library(XCM_no_xeno SHARED ${XBotInterface_INCLUDES}
                         src/XBotXDDP.cpp
                         src/XBotESCUtils.cpp
                         src/IOPlugin.cpp
+                        src/XBotPluginStatus.cpp
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES}
                         src/XBotNRT_thread.cpp
                         )                        
