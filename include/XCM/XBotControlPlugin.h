@@ -24,7 +24,7 @@
 #include <XBotCore-interfaces/XBotPlugin.h>
 
 #include <XBotCore-interfaces/XDomainCommunication.h>
-
+#include <XCM/XBotPluginStatus.h>
 #define REGISTER_XBOT_PLUGIN(plugin_name, scoped_class_name) SHLIBPP_DEFINE_SHARED_SUBCLASS(plugin_name ## _factory, scoped_class_name, XBot::XBotControlPlugin);
 
 
@@ -40,6 +40,7 @@ public:
 
     virtual bool init(std::string path_to_config_file,
                       std::string name,
+                      std::shared_ptr<PluginStatus> cstatus,
                       XBot::SharedMemory::Ptr shared_memory,
                       std::shared_ptr< XBot::IXBotJoint > joint,
                       std::shared_ptr< XBot::IXBotModel > model,
@@ -56,6 +57,7 @@ public:
     virtual void on_stop(double time) {};
 
     virtual void run(double time, double period) final;
+    
 
 protected:
 
@@ -63,6 +65,8 @@ protected:
 
     XBot::SubscriberRT<XBot::Command> command;
     XBot::Command current_command;
+    
+    std::shared_ptr<PluginStatus> _custom_status;
 
 private:
 
