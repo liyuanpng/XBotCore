@@ -55,7 +55,7 @@ add_executable(IpcExampleRT src/example_ipc_rt.cpp)
 add_executable(IpcExampleNRT src/example_ipc_nonrt.cpp)
 
 if ( Xenomai_FOUND )
-#     set_xeno_flags(HomingExample)
+    set_xeno_flags(HomingExample)
 endif()
 
 
