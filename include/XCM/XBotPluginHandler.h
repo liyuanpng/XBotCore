@@ -29,6 +29,7 @@
 
 #include <SharedLibraryClassFactory.h>
 #include <SharedLibraryClass.h>
+#include <XCM/XBotPluginStatus.h>
 
 namespace XBot {
 
@@ -89,6 +90,7 @@ namespace XBot {
         std::vector<bool> _plugin_init_success;
         std::vector<std::shared_ptr<XBot::Subscriber<XBot::Command>>> _plugin_switch;
         std::vector<std::shared_ptr<XBot::Publisher<XBot::Command>>> _plugin_status;
+        std::vector<std::shared_ptr<PluginStatus>> _plugin_custom_status;
         std::vector<std::string> _plugin_state;
         std::vector<bool> _first_loop;
 
