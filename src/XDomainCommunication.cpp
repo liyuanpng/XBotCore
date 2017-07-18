@@ -35,15 +35,30 @@ NRT_ROS_Subscriber::NRT_ROS_Subscriber(const std::string& socket_name) :
 
 void NRT_ROS_Subscriber::init(const std::string& socket_name)
 {
-    _ros_communication->advertiseSwitch(socket_name);
+
+    
+    if(boost::algorithm::ends_with(socket_name, "_switch")) {
+        _ros_communication->advertiseSwitch(socket_name);
+        _is_cmd = false;
+        _is_switch = true;
+    }
+    else if(boost::algorithm::ends_with(socket_name, "_cmd")) {
+        _ros_communication->advertiseCmd(socket_name);
+        _is_cmd = true;
+        _is_switch = false;
+    }
     _name = socket_name;
 }
 
 bool NRT_ROS_Subscriber::read(XBot::Command& data)
 {
-    if(_ros_communication->receiveFromSwitch(_name, _aux_data)) {
+    if(_is_switch && _ros_communication->receiveFromSwitch(_name, _aux_data)) {
         data = _aux_data;
         return true;
+    }
+    else if(_is_cmd && _ros_communication->receiveFromCmd(_name, _aux_data)) {
+        data = _aux_data;
+        return true;  
     }
     
     return false;

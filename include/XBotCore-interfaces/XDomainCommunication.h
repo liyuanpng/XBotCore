@@ -191,6 +191,8 @@ private:
     
     XBot::CommunicationInterfaceROS::Ptr _ros_communication;
     std::string _aux_data;
+    
+    bool _is_switch, _is_cmd;
 };
 
 class NRT_ROS_Publisher : public Publisher<XBot::Command>  {
@@ -397,3 +399,4 @@ Publisher<DataType>::Publisher(const std::string& socket_name) :
 }
 
 #endif
+
