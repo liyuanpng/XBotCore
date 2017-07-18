@@ -173,6 +173,7 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
     _plugin_init_success.resize(_rtplugin_vector.size(), false);
     _plugin_switch.resize(_rtplugin_vector.size());
     _plugin_status.resize(_rtplugin_vector.size());
+    _plugin_cmd.resize(_rtplugin_vector.size());
     _plugin_custom_status.resize(_rtplugin_vector.size());
     _plugin_state.resize(_rtplugin_vector.size(), "STOPPED");
     _first_loop.resize(_rtplugin_vector.size(), true);
@@ -237,6 +238,12 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
         else {
             _plugin_switch[i] = std::make_shared<XBot::NRT_ROS_Subscriber>();
             _plugin_status[i] = std::make_shared<XBot::NRT_ROS_Publisher>();
+            // NOTE handling cmd for NRTPlugin in CH style
+            _plugin_cmd[i] = std::make_shared<XBot::NRT_ROS_Subscriber>();
+            _plugin_cmd[i]->init(_rtplugin_names[i]+"_cmd");
+            // pipes
+            std::string command_name = _rtplugin_names[i] + "_cmd";
+            _command_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(command_name));
         }
 
         // initialize pub/sub
@@ -367,6 +374,14 @@ void PluginHandler::run()
                     std::cout << "Stopping plugin : " << (*plugin)->name << std::endl;
                     (*plugin)->on_stop(_time[i]);
                     _plugin_state[i] = "STOPPED";
+                }
+            }
+            
+            // NOTE in the NRT case read the cmd from ROS and send it trough the pipes
+            if( !_is_RT_plugin_handler ) {
+                
+                if( _plugin_cmd[i]->read(cmd) ) {
+                    _command_pub_vector[i].write(cmd);
                 }
             }
 
