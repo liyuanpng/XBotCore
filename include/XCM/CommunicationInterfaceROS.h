@@ -31,6 +31,7 @@
 
 #include <XCM/cmd_service.h>
 #include <XCM/status_service.h>
+#include <std_msgs/Float64.h>
 
 namespace XBot {
 
@@ -64,6 +65,8 @@ private:
     bool callback_cmd(XCM::cmd_serviceRequest& req, XCM::cmd_serviceResponse& res, const std::string& port_name);
     bool callback_master_communication_iface(XCM::cmd_serviceRequest& req, XCM::cmd_serviceResponse& res, const std::string& port_name);
     bool callback_status(XCM::status_serviceRequest& req, XCM::status_serviceResponse& res, const std::string& plugin_name);
+    
+    bool callback_hand(const std_msgs::Float64::ConstPtr& msg, int hand_id);
 
     void load_ros_message_interfaces();
 
@@ -114,6 +117,10 @@ private:
 
     std::map<int, ros::Publisher> _imu_pub_map;
     std::map<int, ros::Publisher> _ft_pub_map;
+    
+    std::map<int, ros::Publisher> _hand_pub_map;
+    std::map<int, ros::Subscriber> _hand_sub_map;
+    std::map<int, double> _hand_value_map;
 
 
 

@@ -53,6 +53,12 @@ bool XBot::CommunicationInterfaceROS::callback_master_communication_iface(XCM::c
     return true;
 }
 
+bool XBot::CommunicationInterfaceROS::callback_hand(const std_msgs::Float64::ConstPtr& msg, int hand_id)
+{
+  
+    _hand_value_map[hand_id] = msg->data;
+    return true;
+}
 
 CommunicationInterfaceROS::CommunicationInterfaceROS():
     CommunicationInterface()
@@ -100,6 +106,15 @@ CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot):
         std::string ft_topic_name;
         ft_topic_name = "/xbotcore/" + robot->getUrdf().name_ + "/ft/" + ftptr->getSensorName();
         _ft_pub_map[ftptr->getSensorId()] = _nh->advertise<geometry_msgs::WrenchStamped>(ft_topic_name, 1);
+    }
+    
+    for(const auto& pair : robot->getHand()){
+        XBot::Hand::Ptr hptr = pair.second;
+        std::string h_topic_name;
+        h_topic_name = "/xbotcore/" + robot->getUrdf().name_ + "/hand/" + hptr->getHandName();
+        _hand_pub_map[hptr->getHandId()] = _nh->advertise<std_msgs::Float64>(h_topic_name+"/state", 1);
+        _hand_sub_map[hptr->getHandId()] = _nh->subscribe<std_msgs::Float64>(h_topic_name+"/command", 1,boost::bind(&XBot::CommunicationInterfaceROS::callback_hand,this,_1,hptr->getHandId()));
+        _hand_value_map[hptr->getHandId()] = 0.0;
     }
 }
 
@@ -347,6 +362,23 @@ void CommunicationInterfaceROS::sendRobotState()
         _ft_pub_map.at(ftptr->getSensorId()).publish(msg);
 
     }
+    
+    
+     /* HAND */
+
+    for(const auto& pair : _robot->getHand()){
+
+        XBot::Hand::Ptr hptr = pair.second;
+
+        double grasp = hptr->getGraspReference();
+
+        std_msgs::Float64 msg;
+
+        msg.data = grasp;
+
+        _hand_pub_map.at(hptr->getHandId()).publish(msg);
+
+    }
 }
 
 void CommunicationInterfaceROS::receiveReference()
@@ -394,6 +426,18 @@ void CommunicationInterfaceROS::receiveReference()
     }
 
     _robot->setDamping(_joint_id_map);
+    
+    
+    /* HAND */
+
+    for(const auto& pair : _robot->getHand()){
+
+        XBot::Hand::Ptr hptr = pair.second;
+        
+        double grasp = _hand_value_map[hptr->getHandId()];
+
+        hptr->grasp(grasp);
+    }
 
 
 }
