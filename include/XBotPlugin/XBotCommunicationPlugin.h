@@ -77,6 +77,8 @@ private:
     XBot::Utils::SecondOrderFilter<Eigen::VectorXd> _filter_q, _filter_k, _filter_d;
 
     bool _filter_enabled;
+    
+    std::map <int, XBot::Hand::Ptr> _hand_map;
 
     Thread_hook::Ptr _ch;
 

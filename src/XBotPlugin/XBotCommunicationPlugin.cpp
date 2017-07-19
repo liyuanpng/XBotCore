@@ -48,6 +48,17 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
     _filter_k = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
     _filter_d = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
     _filter_enabled = false;
+    
+    int rh = _robot->getHand()["r_handj"]->getHandId();
+    int lh = _robot->getHand()["l_handj"]->getHandId();
+    
+    for (auto& p: _robot->getHand())
+    {
+      XBot::Hand::Ptr hand = p.second;
+      _hand_map[hand->getHandId()] =  hand;
+    }
+    
+    
 
     return true;
 }
@@ -92,10 +103,15 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
             _filter_enabled = false;
         }
     }
-
+    
+   
+     
     for( auto& p: _sub_map) {
         if( p.second.read(_pdo_tx) ) {
-
+          
+          if( _hand_map[p.first] != nullptr){            
+            _hand_map[p.first]->grasp(_pdo_tx.pos_ref);
+          }          
             _pos_ref_map[p.first] = _pdo_tx.pos_ref;
             _vel_ref_map[p.first] = _pdo_tx.vel_ref;
             _tor_ref_map[p.first] = _pdo_tx.tor_ref;
@@ -105,6 +121,7 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
     }
 
     _robot->setPositionReference(_pos_ref_map);
+
     _robot->setVelocityReference(_vel_ref_map);
     _robot->setEffortReference(_tor_ref_map);
     _robot->setStiffness(_k_ref_map);
