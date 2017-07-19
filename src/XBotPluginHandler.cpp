@@ -278,12 +278,21 @@ bool XBot::PluginHandler::init_xddp()
         XBot::PublisherRT<XBot::RobotIMU::pdo_rx> pub(std::string("Imu_id_") + std::to_string(id));
         _imu_pub_map[id] = pub;
     }
+    
+    // HAND
+    for( const auto& h : _robot->getHand() ) {
+        int id = h.second->getHandId();
+        XBot::PublisherRT<XBot::RobotState> pub(std::string("Motor_id_") + std::to_string(id));
+        _motor_pub_map[id] = pub;
+        // NOTE preallocate memory beacause of XENOMAI
+        _robot_state_map[id] = XBot::RobotState();
+    }
 }
 
 
 void XBot::PluginHandler::run_xddp()
 {
-    // Motor
+    // Motor + Hand
     for( auto& pub_motor : _motor_pub_map ) {
         pub_motor.second.write(_robot_state_map.at(pub_motor.first));
     }
