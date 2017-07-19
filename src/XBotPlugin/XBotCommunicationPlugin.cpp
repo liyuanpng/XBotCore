@@ -37,6 +37,11 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
     for( int id : _robot->getEnabledJointId() ) {
         _sub_map[id] = XBot::SubscriberRT<XBot::RobotState::pdo_tx>(std::string("rt_in_Motor_id_") + std::to_string(id));
     }
+    // and for hands
+    for( const auto& h : _robot->getHand() ) {
+        int id = h.second->getHandId();
+        _sub_map[id] = XBot::SubscriberRT<XBot::RobotState::pdo_tx>(std::string("rt_in_Motor_id_") + std::to_string(id));
+    }
 
     // initialize filter
     _filter_q = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
