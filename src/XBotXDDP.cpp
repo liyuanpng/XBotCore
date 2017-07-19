@@ -53,6 +53,8 @@ XBot::XBotXDDP::XBotXDDP(std::string config_file)
     ft = model.get_ft_sensors();
     // get the imu
     imu = model.get_imu_sensors();
+    // get the hand
+    hand = model.get_hands();
 
     // motors
     for(auto& c : robot) {
@@ -107,6 +109,30 @@ XBot::XBotXDDP::XBotXDDP(std::string config_file)
         fd_imu_read[imu_j.second] = subscriber_imu;
 
     }
+    
+    //hand
+    for(auto& hand_j : hand) {
+            XBot::SubscriberNRT<XBot::RobotState> subscriber_rx(std::string("Motor_id_") + std::to_string(hand_j.second).c_str());
+            fd_read[hand_j.second] = subscriber_rx;
+
+            XBot::PublisherNRT<XBot::RobotState::pdo_tx> publisher_tx(std::string("rt_in_Motor_id_") + std::to_string(hand_j.second).c_str());
+            fd_write[hand_j.second] = publisher_tx;
+
+//             XBot::SubscriberNRT<XBot::sdo_info> subscriber_sdo(std::string("sdo_Motor_id_") + std::to_string(c.second[i]).c_str());
+//             fd_sdo_read[c.second[i]] = subscriber_sdo;
+
+            // initialize the mutex
+//             mutex[c.second[i]] = std::make_shared<std::mutex>();
+
+            // initialize the pdo_motor
+            if(fd_read.count(hand_j.second)) {
+                XBot::RobotState current_robot_state;
+                while( !(fd_read[hand_j.second].read(current_robot_state)) ) {
+                   sleep(1);
+                }
+                pdo_motor[hand_j.second] = std::make_shared<XBot::RobotState>(current_robot_state);
+            }
+    }
 
 }
 
@@ -136,7 +162,7 @@ bool XBot::XBotXDDP::init()
 
 void XBot::XBotXDDP::update()
 {
-    // Motor
+    // Motor + hands
     for( auto& f: fd_read) {
 
         // write to the NRT publisher to command the RobotStateTX in the pdo_motor buffer
@@ -426,14 +452,21 @@ bool XBot::XBotXDDP::get_imu_rtt(int imu_id, double& rtt)
 
 bool XBot::XBotXDDP::grasp(int hand_id, double grasp_percentage)
 {
-    // TBD
+    // HACK 9.0 is assumed as maximum position range
+    pdo_motor.at(hand_id)->RobotStateTX.pos_ref = grasp_percentage * 9.0;
     return true;
 }
     
 double XBot::XBotXDDP::get_grasp_state(int hand_id)
 {
-    // TBD
-    return true;
+    double grasp_state = 0.0;
+    double link_pos = pdo_motor.at(hand_id)->RobotStateRX.link_pos;
+    
+    if( link_pos != 0.0) {
+        // HACK 9.0 is assumed as maximum position range
+        grasp_state = 9.0 / link_pos;
+    }
+    return  grasp_state;
 }
 
 

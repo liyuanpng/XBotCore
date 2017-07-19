@@ -182,6 +182,12 @@ private:
     std::map<std::string, int> imu;
     
     /**
+     * @brief hand map 
+     * 
+     */
+    std::map<std::string, int> hand;
+    
+    /**
      * @brief fd reading from pipes: we read the robot from XBotCore XDDP pipe
      * 
      */
