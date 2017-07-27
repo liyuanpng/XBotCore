@@ -531,7 +531,7 @@ bool XBot::XBotCore::grasp(int hand_id, double grasp_percentage)
         // HACK 9.0 is assumed as maximum position range
         last_pdo_tx.pos_ref = (grasp_percentage * 9.0) * _conversion.pos_ref;
         motors[rid2Pos(hand_id)]->setTxPDO(last_pdo_tx);
-        DPRINTF("grasp %f - on joint with joint_id : %d - ecat_id : %d\n", last_pdo_tx.pos_ref, hand_id, rid2Pos(hand_id));
+//         DPRINTF("grasp %f - on joint with joint_id : %d - ecat_id : %d\n", last_pdo_tx.pos_ref, hand_id, rid2Pos(hand_id));
         return true;
     }
     
@@ -556,7 +556,7 @@ double XBot::XBotCore::get_grasp_state(int hand_id)
     }
     
     // we don't touch the value that you passed
-    DPRINTF("Trying to get_grasp_state() on joint with joint_id : %d that does not exists\n", hand_id);
+//     DPRINTF("Trying to get_grasp_state() on joint with joint_id : %d that does not exists\n", hand_id);
     return -1;   
 }
 
