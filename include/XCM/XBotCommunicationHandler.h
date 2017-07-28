@@ -37,6 +37,8 @@
 #include <XCM/XBotYARP/CommunicationInterfaceYARP.h>
 #endif
 
+#include <XCM/CommunicationInterfaceWebServer.h>
+
 namespace XBot
 {
 class CommunicationHandler : public Thread_hook
@@ -77,6 +79,8 @@ private:
 
     std::vector<XBot::CommunicationInterface::Ptr> _communication_ifc_vector;
     XBot::CommunicationInterface::Ptr _master_communication_ifc;
+    
+    XBot::CommunicationInterfaceWebServer::Ptr _web_communication;
 
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
     XBot::CommunicationInterfaceROS::Ptr _ros_communication;
