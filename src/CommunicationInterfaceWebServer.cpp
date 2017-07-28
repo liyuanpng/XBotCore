@@ -30,8 +30,6 @@ bool exitNow = false;
 
 namespace XBot {
 
-
-
 CommunicationInterfaceWebServer::CommunicationInterfaceWebServer():
     CommunicationInterface()
 {
@@ -59,17 +57,20 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
 void CommunicationInterfaceWebServer::sendRobotState()
 {
 
+  //use websocket
+  //try to send json over pipe
 }
 
 void CommunicationInterfaceWebServer::receiveReference()
 {
-    
+    //use websocket
+  //try to send json over pipe
 }
 
 bool CommunicationInterfaceWebServer::advertiseSwitch(const std::string& port_name)
 {
    
-    s_handler = std::make_shared<SwitchHandler>(_status,_switch);
+    s_handler = std::make_shared<SwitchHandler>(_status,_switch,_cmd);
     server->addHandler(SWITCH_URI, *s_handler);
     server->addHandler(CMD_URI, *s_handler);
     _switch[port_name] = "";
@@ -91,7 +92,6 @@ bool XBot::CommunicationInterfaceWebServer::setPluginStatus(const std::string& p
 }
 
 
-
 bool XBot::CommunicationInterfaceWebServer::advertiseCmd(const std::string& port_name)
 {
     _cmd[port_name] = "";
@@ -110,6 +110,8 @@ bool CommunicationInterfaceWebServer::receiveFromSwitch(const std::string& port_
 {
    
     message = _switch[port_name];
+    _switch[port_name] = "";
+    if (message.compare("")==0) return false;
     return true;
     
 }
@@ -118,6 +120,8 @@ bool XBot::CommunicationInterfaceWebServer::receiveFromCmd(const std::string& po
 {
     
     message = _cmd[port_name];
+    _cmd[port_name] = "";
+    if (message.compare("")==0) return false;
     return true;
     
 }

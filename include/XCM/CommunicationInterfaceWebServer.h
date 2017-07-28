@@ -45,25 +45,32 @@ class SwitchHandler : public CivetHandler
  
   public:
           
-    SwitchHandler(std::map<std::string,std::string> &map,std::map<std::string,std::string> &switch_map){
+    SwitchHandler(std::map<std::string,std::string> &map,std::map<std::string,std::string> &switch_map, std::map<std::string,std::string> &cmd_map){
       
       this->status_map = &map;
       this->switch_map = &switch_map;
-      
+      this->cmd_map = &cmd_map;
     } 
       
     
     bool handleGet(CivetServer *server, struct mg_connection *conn) {
       
       const char* uri =mg_get_request_info(conn)->request_uri;
-      std::cout<<" "<<uri<<std::endl;
+      std::string suri(uri);
+//       std::cout<<" "<<suri<<std::endl;
       const char* query = mg_get_request_info(conn)->query_string;
       if (query!=nullptr){
       std::string squery(query);
       std::string key = squery.substr(0, squery.find("="));
       std::string val = squery.substr(squery.find("=")+1);
-      auto& m= *switch_map;
-      m[key]=val;          
+      if(suri.compare("/switch")==0){
+	auto& m= *switch_map;
+	m[key]=val; 
+      }
+      else if(suri.compare("/cmd")==0) {
+	auto& m= *cmd_map;
+	m[key]=val; 
+      }
       }
       
       
@@ -78,7 +85,7 @@ class SwitchHandler : public CivetHandler
         auto const &outer_key = s.first;
         auto const &inner_map = s.second;
         std::string ss="<h3>"+ outer_key+ " "+ inner_map+ "</h3>\r\n";
-        char * w =const_cast<char*>( ss.c_str());
+        const char * w =const_cast<char*>( ss.c_str());
 
         mg_printf(conn, w);
 

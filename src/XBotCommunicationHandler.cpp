@@ -136,11 +136,11 @@ void XBot::CommunicationHandler::th_init(void*)
 #endif
 
 
-    /********************WEB INTERFACE********************************************/
+    /********************************WEB INTERFACE********************************************/
     std::cout << "USE_WEB_COMMUNICATION_INTERFACE found! " << std::endl;
     _web_communication = std::make_shared<XBot::CommunicationInterfaceWebServer>(_robot);
     _communication_ifc_vector.push_back( _web_communication );
-    /*****************************************************************************/
+    /****************************************************************************************/
 
 #ifdef USE_YARP_COMMUNICATION_INTERFACE
     std::cout << "USE_YARP_COMMUNICATION_INTERFACE found! " << std::endl;
@@ -271,7 +271,6 @@ void XBot::CommunicationHandler::th_loop(void*)
                 _switch_pub_vector[i].write(command);
             }
             if( comm_ifc->receiveFromCmd(_command_names[i], command) ){
-              //std::cout<<"cmd "<<command<<std::endl;
                 _command_pub_vector[i].write(command);
             }
 
