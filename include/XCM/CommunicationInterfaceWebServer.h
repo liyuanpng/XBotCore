@@ -25,6 +25,13 @@
 #include "CivetServer.h"
 #include <boost/bind.hpp>
 
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+
+using namespace rapidjson;
+
+
 //192.168.0.100
 #define DOCUMENT_ROOT "./pages"
 //#define PORT "192.168.0.100:8081"
@@ -73,8 +80,8 @@ class SwitchHandler : public CivetHandler
       }
       }
       
-      
-      
+
+      /*
       mg_printf(conn,
               "HTTP/1.1 200 OK\r\nContent-Type: "
               "text/html\r\nConnection: close\r\n\r\n");
@@ -93,7 +100,30 @@ class SwitchHandler : public CivetHandler
 
 
 
-      mg_printf(conn, "</body></html>\r\n");
+      mg_printf(conn, "</body></html>\r\n");*/
+      
+      // 1. Parse a JSON string into DOM.
+                const char* json = "[{\"project\":\"rapidjson\",\"stars\":10}, {\"project\":\"rapidjson\",\"stars\":10}]";
+                Document d;
+                d.Parse(json);
+
+                // 2. Modify it by DOM.
+                Value& s = d["stars"];
+                s.SetInt(s.GetInt() + 1);
+
+                // 3. Stringify the DOM
+                StringBuffer buffer;
+                Writer<StringBuffer> writer(buffer);
+                d.Accept(writer);
+
+                // Output {"project":"rapidjson","stars":11}
+                std::cout << buffer.GetString() << std::endl;
+                const char* btosend = buffer.GetString();
+                
+               mg_printf(conn,
+                "HTTP/1.1 200 OK\r\nContent-Type: "
+                "application/json\r\nConnection: close\r\n\r\n");
+                mg_write(conn,btosend,buffer.GetLength());
             return true;
     }
 
@@ -153,6 +183,134 @@ class SwitchHandler : public CivetHandler
 // 
 // };
 
+
+class WebSocketHandler : public CivetWebSocketHandler {
+
+public:
+   StringBuffer buffer;
+   
+        virtual bool handleConnection(CivetServer *server,
+                                      const struct mg_connection *conn) {
+                printf("WS connected\n");
+                return true;
+        }
+
+        virtual void handleReadyState(CivetServer *server,
+                                      struct mg_connection *conn) {
+                printf("WS ready\n");
+
+                const char *text = "Hello from the websocket ready handler";
+                mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, text, strlen(text));
+                
+                        
+                     // 1. Parse a JSON string into DOM.
+//                 const char* json = "[{\"project\":\"rapidjson\",\"stars\":10}, {\"project\":\"rapidjson\",\"stars\":10}]";
+//                 Document d;
+//                 d.Parse(json);
+
+                // 2. Modify it by DOM.
+                //Value& s = d["stars"];
+                //s.SetInt(s.GetInt() + 1);
+
+                // 3. Stringify the DOM
+//                 StringBuffer buffer;
+//                 Writer<StringBuffer> writer(buffer);
+//                 d.Accept(writer);
+// 
+//                 // Output {"project":"rapidjson","stars":11}
+//                 std::cout << buffer.GetString() << std::endl;
+//                 const char* btosend = buffer.GetString();
+//                 
+//                 
+                
+//                 StringBuffer buffer;
+//                 Writer<StringBuffer> writer(buffer);
+//                
+//                 
+//                 writer.StartObject();               // Between StartObject()/EndObject(), 
+//                 writer.Key("hello");                // output a key,
+//                 writer.String("world");             // follow by a value.
+//                 writer.Key("t");
+//                 writer.Bool(true);
+//                 writer.Key("f");
+//                 writer.Bool(false);
+//                 writer.Key("n");
+//                 writer.Null();
+//                 writer.Key("i");
+//                 writer.Uint(123);
+//                 writer.Key("pi");
+//                 writer.Double(3.1416);
+//                 writer.Key("a");
+//                 writer.StartArray();                // Between StartArray()/EndArray(),
+//                 for (unsigned i = 0; i < 4; i++)
+//                     writer.Uint(i);                 // all values are elements of the array.
+//                 writer.EndArray();
+//                 writer.EndObject();
+//                   
+//                 
+//                 const char* btosend = buffer.GetString();
+//                 
+//                 Document d1;
+//                 d1.Parse(btosend);
+//                 
+//                 assert(document.HasMember("hello"));
+//                 assert(document["hello"].IsString());
+//                 std::cout << d1["hello"].GetString() << std::endl;
+                
+                
+               // mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, btosend, buffer.GetLength());
+        }
+
+        virtual bool handleData(CivetServer *server,
+                                struct mg_connection *conn,
+                                int bits,
+                                char *data,
+                                size_t data_len) {
+                printf("WS got %lu bytes: ", (long unsigned)data_len);
+                /*fwrite(data, 1, data_len, stdout);
+                printf("\n");
+
+                mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, data, data_len);
+                return (data_len<4);*/
+                
+                 StringBuffer buffer;
+                Writer<StringBuffer> writer(buffer);
+
+
+                
+                writer.StartObject();               // Between StartObject()/EndObject(), 
+                writer.Key("hello");                // output a key,
+                writer.String("world");             // follow by a value.
+                writer.Key("t");
+                writer.Bool(true);
+                writer.Key("f");
+                writer.Bool(false);
+                writer.Key("n");
+                writer.Null();
+                writer.Key("i");
+                writer.Uint(123);
+                writer.Key("pi");
+                writer.Double(3.1416);
+                writer.Key("a");
+                writer.StartArray();                // Between StartArray()/EndArray(),
+                for (unsigned i = 0; i < 4; i++)
+                    writer.Uint(i);                 // all values are elements of the array.
+                writer.EndArray();
+                writer.EndObject();
+                  
+
+                const char* btosend = buffer.GetString();
+                if( btosend!=nullptr)
+                mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, btosend, buffer.GetLength());
+        
+               return true;
+        }
+
+        virtual void handleClose(CivetServer *server,
+                                 const struct mg_connection *conn) {
+                printf("WS closed\n");
+        }
+};
   
 class CommunicationInterfaceWebServer : public CommunicationInterface {
 
@@ -182,6 +340,9 @@ private:
 
     std::shared_ptr<CivetServer> server;
     std::shared_ptr<SwitchHandler> s_handler;
+    std::shared_ptr<WebSocketHandler> ws_handler;
+    
+      
 
     static bool computeAbsolutePath ( const std::string& input_path,
                                        const std::string& middle_path,

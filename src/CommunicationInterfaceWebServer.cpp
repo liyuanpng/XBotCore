@@ -48,7 +48,9 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
         cpp_options.push_back(options[i]);
     }      
     
-    server = std::make_shared<CivetServer>(cpp_options);    
+    server = std::make_shared<CivetServer>(cpp_options);  
+    ws_handler = std::make_shared<WebSocketHandler>();
+    server->addWebSocketHandler("/websocket", *ws_handler);
   
     std::cout<<"XBotCore server running at http://"<<PORT<<SWITCH_URI<<std::endl;        
 }
@@ -59,6 +61,8 @@ void CommunicationInterfaceWebServer::sendRobotState()
 
   //use websocket
   //try to send json over pipe
+   
+   
 }
 
 void CommunicationInterfaceWebServer::receiveReference()

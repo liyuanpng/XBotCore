@@ -171,6 +171,8 @@ endif()
 
 message(${COMMUNICATION_INTERFACE_SOURCE_FILES})
 
+add_definitions(-DUSE_WEBSOCKET)
+
 add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/XDomainCommunication.cpp
                         src/XBotPlugin.cpp
