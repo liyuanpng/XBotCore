@@ -30,6 +30,144 @@ bool exitNow = false;
 
 namespace XBot {
 
+bool SwitchHandler::handleGet(CivetServer *server, struct mg_connection *conn) {
+      
+      const char* uri =mg_get_request_info(conn)->request_uri;
+      std::string suri(uri);
+       //std::cout<<" "<<suri<<std::endl;
+       
+      if(suri.compare("/streamy")==0) {
+       buffer->setCanSend(true);        
+      }
+      else if(suri.compare("/streamn")==0) {
+       buffer->setCanSend(false);    
+      }
+       
+      const char* query = mg_get_request_info(conn)->query_string;
+      if (query!=nullptr){
+      std::string squery(query);
+      std::string key = squery.substr(0, squery.find("="));
+      std::string val = squery.substr(squery.find("=")+1);
+      if(suri.compare("/switch")==0){
+        auto& m= *switch_map;
+        m[key]=val; 
+      }
+      else if(suri.compare("/cmd")==0) {
+        auto& m= *cmd_map;
+        m[key]=val; 
+      }
+      
+      
+      }
+      
+
+      /*
+      mg_printf(conn,
+              "HTTP/1.1 200 OK\r\nContent-Type: "
+              "text/html\r\nConnection: close\r\n\r\n");
+      mg_printf(conn, "<html><body>\r\n");
+      mg_printf(conn,
+              "<h2>XBOTCORE </h2>\r\n");
+      for( auto const &s : *status_map){                 
+        auto const &outer_key = s.first;
+        auto const &inner_map = s.second;
+        std::string ss="<h3>"+ outer_key+ " "+ inner_map+ "</h3>\r\n";
+        const char * w =const_cast<char*>( ss.c_str());
+
+        mg_printf(conn, w);
+
+      }
+
+
+
+      mg_printf(conn, "</body></html>\r\n");*/
+      
+      // 1. Parse a JSON string into DOM.
+                const char* json = "[{\"project\":\"rapidjson\",\"stars\":10}, {\"project\":\"rapidjson\",\"stars\":10}]";
+                Document d;
+                d.Parse(json);
+
+                // 2. Modify it by DOM.
+                Value& s = d["stars"];
+                s.SetInt(s.GetInt() + 1);
+
+                // 3. Stringify the DOM
+                StringBuffer buffer;
+                Writer<StringBuffer> writer(buffer);
+                d.Accept(writer);
+
+                // Output {"project":"rapidjson","stars":11}
+                std::cout << buffer.GetString() << std::endl;
+                const char* btosend = buffer.GetString();
+                
+               mg_printf(conn,
+                "HTTP/1.1 200 OK\r\nContent-Type: "
+                "application/json\r\nConnection: close\r\n\r\n");
+                mg_write(conn,btosend,buffer.GetLength());
+            return true;
+    }  
+  
+  
+bool WebSocketHandler::handleConnection(CivetServer *server, const struct mg_connection *conn) {
+    
+    std::cout<<"WS connected\n";
+    return true;
+
+  
+}
+
+void WebSocketHandler::handleReadyState(CivetServer *server, struct mg_connection *conn) {
+   
+    std::cout<<"WS ready\n";
+    const char *text = "Hello from XBotCore";
+    mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, text, strlen(text));
+    
+} 
+        
+bool WebSocketHandler::handleData(CivetServer *server,
+                                struct mg_connection *conn,
+                                int bits,
+                                char *data,
+                                size_t data_len) {
+                
+    //read robot state
+    std::vector<double> vec;
+    bool resp = buffer->remove(vec);
+        
+    StringBuffer buffer;
+    Writer<StringBuffer> writer(buffer);
+    const char* btosend = nullptr;
+    
+    //send robot state
+    buffer.Clear();
+    if(resp){
+      
+        writer.StartObject();              
+        writer.Key("link_position");   
+        writer.StartArray();
+        for( double val : vec ){  
+          writer.Double(val);
+        }
+        
+        writer.EndArray();
+        writer.EndObject();  
+        
+        btosend = buffer.GetString();
+    }
+    
+    
+    if( btosend!=nullptr)
+      mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, btosend, buffer.GetLength());
+
+        
+    return true;
+}  
+
+void WebSocketHandler::handleClose(CivetServer *server, const struct mg_connection *conn) {
+       std::cout<<"WS closed\n";
+       buffer->clear();
+}        
+        
 CommunicationInterfaceWebServer::CommunicationInterfaceWebServer():
     CommunicationInterface()
 {
@@ -48,35 +186,50 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
         cpp_options.push_back(options[i]);
     }      
     
+    
+    buffer = std::make_shared<Buffer>();
     server = std::make_shared<CivetServer>(cpp_options);  
     ws_handler = std::make_shared<WebSocketHandler>();
+    ws_handler->buffer = buffer;
     server->addWebSocketHandler("/websocket", *ws_handler);
   
-    std::cout<<"XBotCore server running at http://"<<PORT<<SWITCH_URI<<std::endl;        
+    std::cout<<"XBotCore server running at http://"<<PORT<<std::endl;        
 }
 
 
 void CommunicationInterfaceWebServer::sendRobotState()
 {
 
-  //use websocket
-  //try to send json over pipe
-   
-   
+  if(!buffer->getCanSend().load()) return;
+  
+  //read from robot
+  //write to a buffer that the callback handleData will use
+  _robot->getJointPosition(_joint_id_map);
+  std::vector<double> vec;
+  for( int id : _robot->getEnabledJointId() ){       
+    double val= _joint_id_map.at(id);
+    vec.push_back(val);
+  }
+
+  buffer->add(vec);
+  
 }
 
 void CommunicationInterfaceWebServer::receiveReference()
 {
-    //use websocket
-  //try to send json over pipe
+    //use buffer websocket
+  
+ 
 }
 
 bool CommunicationInterfaceWebServer::advertiseSwitch(const std::string& port_name)
 {
    
-    s_handler = std::make_shared<SwitchHandler>(_status,_switch,_cmd);
+    s_handler = std::make_shared<SwitchHandler>(_status,_switch,_cmd,buffer);
     server->addHandler(SWITCH_URI, *s_handler);
     server->addHandler(CMD_URI, *s_handler);
+    server->addHandler("/streamy", *s_handler);
+    server->addHandler("/streamn", *s_handler);
     _switch[port_name] = "";
 
     return true;
