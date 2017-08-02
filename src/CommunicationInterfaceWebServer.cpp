@@ -34,15 +34,7 @@ bool SwitchHandler::handleGet(CivetServer *server, struct mg_connection *conn) {
       
       const char* uri =mg_get_request_info(conn)->request_uri;
       std::string suri(uri);
-       //std::cout<<" "<<suri<<std::endl;
-       
-      if(suri.compare("/streamy")==0) {
-       buffer->setCanSend(true);        
-      }
-      else if(suri.compare("/streamn")==0) {
-       buffer->setCanSend(false);    
-      }
-       
+       //std::cout<<" "<<suri<<std::endl;       
       const char* query = mg_get_request_info(conn)->query_string;
       if (query!=nullptr){
       std::string squery(query);
@@ -122,6 +114,8 @@ void WebSocketHandler::handleReadyState(CivetServer *server, struct mg_connectio
     const char *text = "Hello from XBotCore";
     mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, text, strlen(text));
     
+    buffer->increaseNumClient();
+    
 } 
         
 bool WebSocketHandler::handleData(CivetServer *server,
@@ -165,7 +159,7 @@ bool WebSocketHandler::handleData(CivetServer *server,
 
 void WebSocketHandler::handleClose(CivetServer *server, const struct mg_connection *conn) {
        std::cout<<"WS closed\n";
-       buffer->clear();
+       buffer->decreaseNumClient();
 }        
         
 CommunicationInterfaceWebServer::CommunicationInterfaceWebServer():
@@ -200,15 +194,16 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
 void CommunicationInterfaceWebServer::sendRobotState()
 {
 
-  if(!buffer->getCanSend().load()) return;
+  if(buffer->getNumClient().load() <= 0) return;
   
   //read from robot
   //write to a buffer that the callback handleData will use
   _robot->getJointPosition(_joint_id_map);
+  //TBD create object that encapsulate all robot info and push it to the buffer
   std::vector<double> vec;
   for( int id : _robot->getEnabledJointId() ){       
-    double val= _joint_id_map.at(id);
-    vec.push_back(val);
+      double val= _joint_id_map.at(id);
+      vec.push_back(val);
   }
 
   buffer->add(vec);
@@ -217,8 +212,9 @@ void CommunicationInterfaceWebServer::sendRobotState()
 
 void CommunicationInterfaceWebServer::receiveReference()
 {
-    //use buffer websocket
-  
+    //use buffer
+    //in the case of hololens (we just send position goal), so the client makes a GET
+  //and we save in a thread safe structure that this method will use
  
 }
 
@@ -228,8 +224,6 @@ bool CommunicationInterfaceWebServer::advertiseSwitch(const std::string& port_na
     s_handler = std::make_shared<SwitchHandler>(_status,_switch,_cmd,buffer);
     server->addHandler(SWITCH_URI, *s_handler);
     server->addHandler(CMD_URI, *s_handler);
-    server->addHandler("/streamy", *s_handler);
-    server->addHandler("/streamn", *s_handler);
     _switch[port_name] = "";
 
     return true;

@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2016 IIT-ADVR
- * Author: Arturo Laurenzi, Luca Muratore, Giuseppe Rigano
- * email:  arturo.laurenzi@iit.it, luca.muratore@iit.it, giuseppe.rigano@iit.it
+ * Copyright (C) 2017 IIT-ADVR
+ * Author: Giuseppe Rigano
+ * email:  giuseppe.rigano@iit.it
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -25,7 +25,7 @@
 #include "CivetServer.h"
 #include <boost/bind.hpp>
 
-#include <queue> 
+#include <boost/circular_buffer.hpp>
 
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
@@ -74,18 +74,18 @@ class Buffer {
   public:
   
     void add(std::vector<double>& vec) {       
-            std::lock_guard<std::mutex> locker(mutex);          
-            buffer.push(vec);       
+            std::lock_guard<std::mutex> locker(mutex);  
+            circular_buffer.push_back(vec);
             return;       
     }
     
     
     bool remove(std::vector<double>& vec) {
       
-            if(!buffer.empty()){
+            if(!circular_buffer.empty()){
               std::lock_guard<std::mutex> locker(mutex);            
-              std::vector<double> back = buffer.front();
-              buffer.pop();
+              std::vector<double> back = circular_buffer.front();
+              circular_buffer.pop_front();
               vec = back;
               return true;
             }
@@ -95,33 +95,43 @@ class Buffer {
     
     void clear() {
       
-            if(!buffer.empty()){
+            if(!circular_buffer.empty()){
               std::lock_guard<std::mutex> locker(mutex); 
-              std::queue<std::vector<double>> empty;
-              buffer.swap(empty);
+              //boost::circular_buffer<std::vector<double>> empty;
+              circular_buffer.clear();
+              //circular_buffer.swap(empty);
             }
         return;
     }
     
-    Buffer() {can_send.store(false);}
-    
-    void setCanSend(bool val){
+    Buffer() {
       
-      can_send.store(val);
+      num_client.store(0);
+      circular_buffer.set_capacity(100);
       
     }
     
-    std::atomic<bool>& getCanSend(){
-      
-      return can_send;
+    void increaseNumClient(){      
+      num_client++;
+      std::cout<<"Num_Client "<< num_client.load()<<std::endl;
+    }
+    
+    void decreaseNumClient(){     
+      num_client--;
+      std::cout<<"Num_Client "<< num_client.load()<<std::endl;      
+    }
+    
+    std::atomic<int>& getNumClient(){
+      return num_client;
     }
     
     
   private:
-   
+       
     std::mutex mutex;
-    std::atomic<bool> can_send;  
-    std::queue<std::vector<double>> buffer;
+    std::atomic<int> num_client;
+    boost::circular_buffer<std::vector<double>> circular_buffer;
+
 };
 
 class CommunicationInterfaceWebServer;
