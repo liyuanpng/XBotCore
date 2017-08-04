@@ -40,6 +40,7 @@ using namespace rapidjson;
 #define PORT "127.0.0.1:8081"
 #define SWITCH_URI "/switch"
 #define CMD_URI "/cmd"
+#define MASTER_URI "/webmaster"
 
 namespace XBot {
 class Buffer;
@@ -107,6 +108,7 @@ class Buffer {
     Buffer() {
       
       num_client.store(0);
+      master = "";
       circular_buffer.set_capacity(100);
       
     }
@@ -125,12 +127,27 @@ class Buffer {
       return num_client;
     }
     
+     
+    void setMaster(std::string& val) {       
+            std::lock_guard<std::mutex> locker(m_master);  
+            master = val;
+            return;       
+    }
+    
+    void getMaster(std::string& val) {       
+            std::lock_guard<std::mutex> locker(m_master);  
+            val = master;
+            return;       
+    }
     
   private:
        
     std::mutex mutex;
     std::atomic<int> num_client;
+    
     boost::circular_buffer<std::vector<double>> circular_buffer;
+    std::mutex m_master;
+    std::string master;
 
 };
 

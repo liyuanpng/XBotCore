@@ -242,6 +242,22 @@ void XBot::CommunicationHandler::th_loop(void*)
                 std::cerr << "ERROR: ROS Master Communication Interface not compiled" << std::endl;
 #endif
             }
+            
+            else if ( master == "WEB" ||
+                 master == "web"
+            ) {
+                std::cout << "Switching to WEB Master Communication Interface" << std::endl;
+
+                _master_communication_ifc = _web_communication;
+                // HACK restarting XBotCommunicationPlugin
+                std::string cmd = "stop";
+                _switch_pub_vector[xbot_communication_idx].write(cmd);
+                sleep(1);
+                cmd = "start";
+                _switch_pub_vector[xbot_communication_idx].write(cmd);
+
+                
+            }
 
             else if ( master == "YARP" ||
                       master == "yarp"
@@ -299,10 +315,6 @@ void XBot::CommunicationHandler::th_loop(void*)
      * i.e. the only one enabled to send commands to the robot */
     _master_communication_ifc->receiveReference(); // this updates robot
     
-    
-    //TODO
-    //_web_communication->receiveReference();
-
     /* Run external plugins */
     for( XBot::IOPlugin * io_plugin_ptr : _io_plugin_ptr ){
         if(io_plugin_ptr) io_plugin_ptr->run();

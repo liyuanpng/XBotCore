@@ -34,7 +34,8 @@ bool SwitchHandler::handleGet(CivetServer *server, struct mg_connection *conn) {
       
       const char* uri =mg_get_request_info(conn)->request_uri;
       std::string suri(uri);
-       //std::cout<<" "<<suri<<std::endl;       
+       //std::cout<<" "<<suri<<std::endl;
+     
       const char* query = mg_get_request_info(conn)->query_string;
       if (query!=nullptr){
       std::string squery(query);
@@ -47,6 +48,10 @@ bool SwitchHandler::handleGet(CivetServer *server, struct mg_connection *conn) {
       else if(suri.compare("/cmd")==0) {
         auto& m= *cmd_map;
         m[key]=val; 
+      }
+       
+      else if(suri.compare("/webmaster")==0){
+        buffer->setMaster(key);
       }
       
       
@@ -213,17 +218,19 @@ void CommunicationInterfaceWebServer::sendRobotState()
 void CommunicationInterfaceWebServer::receiveReference()
 {
     //use buffer
-    //in the case of hololens (we just send position goal), so the client makes a GET
+    //TODO in the case of hololens (we just send position goal), so the client makes a GET
   //and we save in a thread safe structure that this method will use
+  
+  //std::cout<<"RECEIVE WEB"<<std::endl;
  
 }
 
 bool CommunicationInterfaceWebServer::advertiseSwitch(const std::string& port_name)
 {
-   
     s_handler = std::make_shared<SwitchHandler>(_status,_switch,_cmd,buffer);
     server->addHandler(SWITCH_URI, *s_handler);
     server->addHandler(CMD_URI, *s_handler);
+    server->addHandler(MASTER_URI, *s_handler);
     _switch[port_name] = "";
 
     return true;
@@ -259,7 +266,6 @@ bool XBot::CommunicationInterfaceWebServer::advertiseMasterCommunicationInterfac
 
 bool CommunicationInterfaceWebServer::receiveFromSwitch(const std::string& port_name, std::string& message)
 {
-   
     message = _switch[port_name];
     _switch[port_name] = "";
     if (message.compare("")==0) return false;
@@ -278,9 +284,11 @@ bool XBot::CommunicationInterfaceWebServer::receiveFromCmd(const std::string& po
 }
 
 bool XBot::CommunicationInterfaceWebServer::receiveMasterCommunicationInterface(std::string& framework_name)
-{
-  
-    return false;
+{ 
+    std::string master = "";
+    buffer->getMaster(framework_name);
+    buffer->setMaster(master);
+    return true;
    
 }
 
