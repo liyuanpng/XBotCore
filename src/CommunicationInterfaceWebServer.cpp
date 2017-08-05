@@ -30,79 +30,34 @@ bool exitNow = false;
 
 namespace XBot {
 
-bool SwitchHandler::handleGet(CivetServer *server, struct mg_connection *conn) {
+bool HttpCivetHandler::handleGet(CivetServer *server, struct mg_connection *conn) {
       
       const char* uri =mg_get_request_info(conn)->request_uri;
       std::string suri(uri);
-       //std::cout<<" "<<suri<<std::endl;
-     
+      
       const char* query = mg_get_request_info(conn)->query_string;
       if (query!=nullptr){
+	  std::string squery(query);
+	  std::string key = squery.substr(0, squery.find("="));
+	  std::string val = squery.substr(squery.find("=")+1);
+	  http_interface->setKey(key);
+	  http_interface->setVal(val);
+      }
       std::string squery(query);
-      std::string key = squery.substr(0, squery.find("="));
-      std::string val = squery.substr(squery.find("=")+1);
-      if(suri.compare("/switch")==0){
-        auto& m= *switch_map;
-        m[key]=val; 
-      }
-      else if(suri.compare("/cmd")==0) {
-        auto& m= *cmd_map;
-        m[key]=val; 
-      }
-       
-      else if(suri.compare("/webmaster")==0){
-        buffer->setMaster(key);
-      }
-      
-      
-      }
-      
+        
+      http_interface->setUri(suri);
+      http_interface->setQuery(squery);
+      std::shared_ptr<ResponseInterface> resp_interface;
+      http_interface->handleGet(resp_interface);
+      std::string type = resp_interface->GetTypeResponse();
+      std::string header = "HTTP/1.1 200 OK\r\nContent-Type: "
+			    +type+"\r\nConnection: close\r\n\r\n";
 
-      /*
-      mg_printf(conn,
-              "HTTP/1.1 200 OK\r\nContent-Type: "
-              "text/html\r\nConnection: close\r\n\r\n");
-      mg_printf(conn, "<html><body>\r\n");
-      mg_printf(conn,
-              "<h2>XBOTCORE </h2>\r\n");
-      for( auto const &s : *status_map){                 
-        auto const &outer_key = s.first;
-        auto const &inner_map = s.second;
-        std::string ss="<h3>"+ outer_key+ " "+ inner_map+ "</h3>\r\n";
-        const char * w =const_cast<char*>( ss.c_str());
-
-        mg_printf(conn, w);
-
-      }
-
-
-
-      mg_printf(conn, "</body></html>\r\n");*/
-      
-      // 1. Parse a JSON string into DOM.
-                const char* json = "[{\"project\":\"rapidjson\",\"stars\":10}, {\"project\":\"rapidjson\",\"stars\":10}]";
-                Document d;
-                d.Parse(json);
-
-                // 2. Modify it by DOM.
-                Value& s = d["stars"];
-                s.SetInt(s.GetInt() + 1);
-
-                // 3. Stringify the DOM
-                StringBuffer buffer;
-                Writer<StringBuffer> writer(buffer);
-                d.Accept(writer);
-
-                // Output {"project":"rapidjson","stars":11}
-                std::cout << buffer.GetString() << std::endl;
-                const char* btosend = buffer.GetString();
-                
-               mg_printf(conn,
-                "HTTP/1.1 200 OK\r\nContent-Type: "
-                "application/json\r\nConnection: close\r\n\r\n");
-                mg_write(conn,btosend,buffer.GetLength());
-            return true;
-    }  
+      mg_printf(conn, header.c_str());
+      mg_write(conn,resp_interface->GetData(),resp_interface->GetLength());
+  
+      return true;
+}  
   
   
 bool WebSocketHandler::handleConnection(CivetServer *server, const struct mg_connection *conn) {
@@ -134,6 +89,9 @@ bool WebSocketHandler::handleData(CivetServer *server,
     bool resp = buffer->remove(vec);
         
     StringBuffer buffer;
+    
+    //vec.serialize(buffer);
+    
     Writer<StringBuffer> writer(buffer);
     const char* btosend = nullptr;
     
@@ -192,6 +150,7 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
     ws_handler->buffer = buffer;
     server->addWebSocketHandler("/websocket", *ws_handler);
   
+    //creo oggetto che implementa interfaccia e lo passo all hanlder
     std::cout<<"XBotCore server running at http://"<<PORT<<std::endl;        
 }
 
@@ -205,10 +164,15 @@ void CommunicationInterfaceWebServer::sendRobotState()
   //write to a buffer that the callback handleData will use
   _robot->getJointPosition(_joint_id_map);
   //TBD create object that encapsulate all robot info and push it to the buffer
+  //std::vector<XBot::RobotState::pdo_tx> rstate;
+  
   std::vector<double> vec;
   for( int id : _robot->getEnabledJointId() ){       
       double val= _joint_id_map.at(id);
       vec.push_back(val);
+      //XBot::RoboState::pdo_tx tmp;
+      //tmp.pos_ref = val;
+      //rstate.push_back(XBot::RoboState::pdo_tx
   }
 
   buffer->add(vec);
@@ -227,7 +191,8 @@ void CommunicationInterfaceWebServer::receiveReference()
 
 bool CommunicationInterfaceWebServer::advertiseSwitch(const std::string& port_name)
 {
-    s_handler = std::make_shared<SwitchHandler>(_status,_switch,_cmd,buffer);
+    http_handler = std::make_shared<HttpHandler>(*this, buffer);
+    s_handler = std::make_shared<HttpCivetHandler>(*http_handler);
     server->addHandler(SWITCH_URI, *s_handler);
     server->addHandler(CMD_URI, *s_handler);
     server->addHandler(MASTER_URI, *s_handler);

@@ -22,6 +22,7 @@
 #define __XBOT_COMMUNICATION_INTERFACE_WEBSERVER_H__
 
 #include <XCM/XBotCommunicationInterface.h>
+#include <XBotCore-interfaces/XBotESC.h>
 #include "CivetServer.h"
 #include <boost/bind.hpp>
 
@@ -44,27 +45,99 @@ using namespace rapidjson;
 
 namespace XBot {
 class Buffer;
-class SwitchHandler : public CivetHandler
+class HttpInterface;
+
+class ResponseInterface {
+  
+  public:
+    virtual const void * GetData() = 0;
+    
+    virtual std::size_t GetLength() = 0;
+    
+    virtual std::string GetTypeResponse() = 0;
+    
+};
+
+class StringResponse : public ResponseInterface {
+  
+  private:
+    
+      std::string response;
+    
+  public:
+    
+    StringResponse(std::string resp){
+      
+      response = resp;
+    }
+    
+    const void * GetData() {
+      
+      return response.c_str();
+      
+    };
+    
+    std::size_t GetLength() {
+      
+      return response.length();
+    };
+    
+    std::string GetTypeResponse(){
+      
+      std::string s = ("text/html");
+      return s;
+      
+    }
+  
+};
+
+class JsonResponse : public ResponseInterface {
+  
+  private:
+  
+      std::shared_ptr<StringBuffer> response;
+      
+  public:
+    
+      JsonResponse(std::shared_ptr<StringBuffer>& buffer){
+	
+	response = buffer;
+      } 
+      
+      const void * GetData() {
+	
+	return (const void*)response->GetString();
+      };
+      
+      std::size_t GetLength() {
+	
+	return response->GetLength();
+      };
+      
+      std::string GetTypeResponse(){
+	
+	std::string s ="application/json";
+	return s;
+      
+    }
+    
+};
+
+
+class HttpCivetHandler : public CivetHandler
 {
   
   private:
     
-    std::map<std::string,std::string>* status_map;
-    std::map<std::string,std::string>* switch_map;
-    std::map<std::string,std::string>* cmd_map;
-    
-    std::shared_ptr<Buffer> buffer;
- 
+    HttpInterface* http_interface;
+  
   public:
-          
-    SwitchHandler(std::map<std::string,std::string> &map,std::map<std::string,std::string> &switch_map, std::map<std::string,std::string> &cmd_map, std::shared_ptr<Buffer> buffer){
+    
+    HttpCivetHandler(HttpInterface& interface){
       
-      this->status_map = &map;
-      this->switch_map = &switch_map;
-      this->cmd_map = &cmd_map;
-      this->buffer = buffer;
-    } 
-      
+      http_interface = &interface;
+     
+    }  
     
     bool handleGet(CivetServer *server, struct mg_connection *conn);
 };
@@ -171,7 +244,42 @@ class WebSocketHandler : public CivetWebSocketHandler {
     virtual void handleClose(CivetServer *server, const struct mg_connection *conn);
 
 };
+
+class HttpInterface {
   
+  public:
+    
+      virtual void handleGet(std::shared_ptr<ResponseInterface>& response) = 0;
+      
+      void setUri(std::string& val){
+	uri = val;
+      }
+      
+      void setQuery(std::string& val){
+	query = val;
+      }
+      
+      void setKey(std::string& val){
+	key = val;
+      }
+      
+      void setVal(std::string& val){
+	this->val = val;
+      }
+      
+  protected:
+      std::string uri;
+      std::string query;
+      std::string key;
+      std::string val;
+      //TODO create object httpresponseparse
+    
+  
+};
+
+
+
+class HttpHandler;
 class CommunicationInterfaceWebServer : public CommunicationInterface {
 
   public:
@@ -193,15 +301,32 @@ class CommunicationInterfaceWebServer : public CommunicationInterface {
 
       virtual void advertiseStatus(const std::string& plugin_name);
       virtual bool setPluginStatus(const std::string& plugin_name, const std::string& status);
+      
+      
+      std::map<std::string, std::string>& getSwitchMap(){
+	
+	return _switch;
+      }
+      
+      std::map<std::string, std::string>& getStatusMap(){
+	
+	return _status;
+      }
+      
+      std::map<std::string, std::string>& getCmdMap(){
+	
+	return _cmd;
+      }
 
   protected:
 
   private:
 
     std::shared_ptr<CivetServer> server;
-    std::shared_ptr<SwitchHandler> s_handler;
+    std::shared_ptr<HttpCivetHandler> s_handler;
     std::shared_ptr<WebSocketHandler> ws_handler;
     
+    std::shared_ptr<HttpHandler> http_handler;
       
 
     static bool computeAbsolutePath ( const std::string& input_path,
@@ -228,6 +353,8 @@ class CommunicationInterfaceWebServer : public CommunicationInterface {
    
     std::map<int, double> _hand_value_map;
     
+    
+    //TODO to put in a shared object
     std::map<std::string, std::string> _switch;
     std::map<std::string, std::string> _status;
     std::map<std::string, std::string> _cmd;
@@ -236,6 +363,79 @@ class CommunicationInterfaceWebServer : public CommunicationInterface {
 
 };
 
+
+class HttpHandler : public HttpInterface{
+  
+  private:
+    
+    CommunicationInterface* comm; 
+    std::shared_ptr<Buffer> buffer;
+  
+  public:
+    
+    HttpHandler (CommunicationInterface& comm, std::shared_ptr<Buffer> buffer){
+      
+	this->comm = &comm;
+	this->buffer = buffer;
+    }
+    
+  
+    virtual void handleGet(std::shared_ptr<ResponseInterface>& response){
+      
+      CommunicationInterfaceWebServer* comm_web = reinterpret_cast<CommunicationInterfaceWebServer*>(this->comm);
+    
+    
+      if(uri.compare("/switch")==0){
+        auto& m= comm_web->getSwitchMap();
+        m[key]=val; 
+      }
+      else if(uri.compare("/cmd")==0) {
+        auto& m= comm_web->getCmdMap();
+        m[key]=val; 
+      }
+       
+      else if(uri.compare("/webmaster")==0){
+        buffer->setMaster(key);
+      }
+      
+      
+     
+//       std::string sresp="";
+//       sresp+="<html><body>\r\n";
+//       sresp+=("<h2>XBOTCORE </h2>\r\n");
+//       
+//       for( auto const &s : comm_web->getStatusMap()){                 
+// 	  auto const &outer_key = s.first;
+// 	  auto const &inner_map = s.second;
+// 	  std::string ss="<h3>"+ outer_key+ " "+ inner_map+ "</h3>\r\n";
+// 	  const char * w =const_cast<char*>( ss.c_str());
+// 	  sresp+=(w);
+//       }
+// 
+//       sresp+=("</body></html>\r\n");
+// 
+//       response = std::make_shared<StringResponse>(sresp);
+     
+      std::shared_ptr<StringBuffer> jsonresp = std::make_shared<StringBuffer>();
+      // 1. Parse a JSON string into DOM.
+      const char* json = "[{\"project\":\"rapidjson\",\"stars\":10}, {\"project\":\"rapidjson\",\"stars\":10}]";
+      Document d;
+      d.Parse(json);
+
+      // 2. Modify it by DOM.
+      Value& s = d["stars"];
+      s.SetInt(s.GetInt() + 1);
+
+      // 3. Stringify the DOM
+      Writer<StringBuffer> writer(*jsonresp);
+      d.Accept(writer);
+      
+      response = std::make_shared<JsonResponse>(jsonresp);
+     
+             
+  }
+  
+};
 
 }
 
