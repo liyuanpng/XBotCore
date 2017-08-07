@@ -24,8 +24,8 @@
 #include <XCM/XBotCommunicationInterface.h>
 #include <XBotCore-interfaces/XBotESC.h>
 #include "CivetServer.h"
-#include <boost/bind.hpp>
 
+#include <boost/bind.hpp>
 #include <boost/circular_buffer.hpp>
 
 #include "rapidjson/document.h"
@@ -33,7 +33,6 @@
 #include "rapidjson/stringbuffer.h"
 
 using namespace rapidjson;
-
 
 //192.168.0.100
 #define DOCUMENT_ROOT "./pages"
@@ -123,6 +122,26 @@ class JsonResponse : public ResponseInterface {
     
 };
 
+class RequestObject {
+  
+private:
+    
+    void *buff;
+  
+  public:
+    
+    void SetData(void* buff) {
+      
+        this->buff = buff;
+    }
+    
+    void* GetData() {
+     
+        return this->buff;
+        
+    }
+       
+};
 
 class HttpCivetHandler : public CivetHandler
 {
@@ -140,6 +159,7 @@ class HttpCivetHandler : public CivetHandler
     }  
     
     bool handleGet(CivetServer *server, struct mg_connection *conn);
+    bool handlePost(CivetServer* server, mg_connection* conn);
 };
 
 
@@ -147,43 +167,101 @@ class Buffer {
    
   public:
   
-    void add(std::vector<double>& vec) {       
-            std::lock_guard<std::mutex> locker(mutex);  
-            circular_buffer.push_back(vec);
-            return;       
+    Buffer(int capacity) {
+      circular_buffer.set_capacity(capacity);
     }
     
-    
+    void add(std::vector<double>& vec) {       
+        std::lock_guard<std::mutex> locker(mutex);  
+        circular_buffer.push_back(vec);
+        return;       
+    }
+        
     bool remove(std::vector<double>& vec) {
       
-            if(!circular_buffer.empty()){
-              std::lock_guard<std::mutex> locker(mutex);            
-              std::vector<double> back = circular_buffer.front();
-              circular_buffer.pop_front();
-              vec = back;
-              return true;
-            }
+        if(!circular_buffer.empty()){
+            std::lock_guard<std::mutex> locker(mutex);            
+            std::vector<double> back = circular_buffer.front();
+            circular_buffer.pop_front();
+            vec = back;
+            return true;
+        }
+        
         return false;
-    }
-    
+    }    
     
     void clear() {
       
-            if(!circular_buffer.empty()){
-              std::lock_guard<std::mutex> locker(mutex); 
-              //boost::circular_buffer<std::vector<double>> empty;
-              circular_buffer.clear();
-              //circular_buffer.swap(empty);
-            }
+        if(!circular_buffer.empty()){
+            std::lock_guard<std::mutex> locker(mutex);             
+            circular_buffer.clear();            
+        }
         return;
     }
+       
     
-    Buffer() {
+        
+  private:
+       
+    std::mutex mutex;    
+    boost::circular_buffer<std::vector<double>> circular_buffer;   
+
+};
+
+class SharedData {
+   
+  public:
+  
+     SharedData():master("") { 
+       num_client.store(0);
+       external_command = std::make_shared<Buffer>(5);
+    }    
+     
+     std::map<std::string, std::string> getAllStatus(){
+       std::lock_guard<std::mutex> locker(st_mutex); 
+       return _status;
+    }
       
-      num_client.store(0);
-      master = "";
-      circular_buffer.set_capacity(100);
-      
+    void insertSwitch(std::string key, std::string val){
+        std::lock_guard<std::mutex> locker(s_mutex); 
+        _switch[key] = val;
+    }
+    
+    std::string getSwitch(std::string key){
+        std::lock_guard<std::mutex> locker(s_mutex); 
+        return _switch[key];
+    }
+
+    void insertCmd(std::string key, std::string val){
+        std::lock_guard<std::mutex> locker(c_mutex); 
+        _cmd[key] = val;
+    }
+    
+    std::string getCmd(std::string key){
+        std::lock_guard<std::mutex> locker(c_mutex); 
+        return _cmd[key];
+    }
+
+    void insertStatus(std::string key, std::string val){
+        std::lock_guard<std::mutex> locker(st_mutex); 
+        _status[key] = val;
+    }
+    
+    std::string getStatus(std::string key){
+        std::lock_guard<std::mutex> locker(st_mutex); 
+        return _status[key];
+    }
+    
+    void setMaster(std::string& val) {       
+            std::lock_guard<std::mutex> locker(m_master);  
+            master = val;
+            return;       
+    }
+    
+    void getMaster(std::string& val) {       
+            std::lock_guard<std::mutex> locker(m_master);  
+            val = master;
+            return;       
     }
     
     void increaseNumClient(){      
@@ -200,37 +278,34 @@ class Buffer {
       return num_client;
     }
     
-     
-    void setMaster(std::string& val) {       
-            std::lock_guard<std::mutex> locker(m_master);  
-            master = val;
-            return;       
-    }
-    
-    void getMaster(std::string& val) {       
-            std::lock_guard<std::mutex> locker(m_master);  
-            val = master;
-            return;       
-    }
+    std::shared_ptr<Buffer> external_command;
     
   private:
        
-    std::mutex mutex;
-    std::atomic<int> num_client;
-    
-    boost::circular_buffer<std::vector<double>> circular_buffer;
     std::mutex m_master;
     std::string master;
-
+    std::atomic<int> num_client; 
+    
+    std::map<std::string, std::string> _switch;
+    std::mutex s_mutex;
+    std::map<std::string, std::string> _status;
+    std::mutex st_mutex;
+    std::map<std::string, std::string> _cmd;
+    std::mutex c_mutex;
+   
 };
 
 class CommunicationInterfaceWebServer;
 class WebSocketHandler : public CivetWebSocketHandler {
 
   public:
-  
-    std::shared_ptr<Buffer> buffer;
-        
+    
+    WebSocketHandler(std::shared_ptr<Buffer> buffer, std::shared_ptr<SharedData> sharedData){
+      
+      this->buffer = buffer;
+      this->sharedData = sharedData;      
+    }
+           
     virtual bool handleConnection(CivetServer *server, const struct mg_connection *conn);
 
     virtual void handleReadyState(CivetServer *server, struct mg_connection *conn);
@@ -243,13 +318,20 @@ class WebSocketHandler : public CivetWebSocketHandler {
 
     virtual void handleClose(CivetServer *server, const struct mg_connection *conn);
 
+  private:
+    std::shared_ptr<Buffer> buffer;
+    std::shared_ptr<SharedData> sharedData;
 };
 
 class HttpInterface {
   
   public:
     
+      HttpInterface():uri(""),query(""),key(""),val(""){};
+    
       virtual void handleGet(std::shared_ptr<ResponseInterface>& response) = 0;
+      
+      virtual void handlePost(std::shared_ptr<RequestObject>& request) = 0;
       
       void setUri(std::string& val){
 	uri = val;
@@ -277,8 +359,6 @@ class HttpInterface {
   
 };
 
-
-
 class HttpHandler;
 class CommunicationInterfaceWebServer : public CommunicationInterface {
 
@@ -294,38 +374,19 @@ class CommunicationInterfaceWebServer : public CommunicationInterface {
       virtual bool receiveFromSwitch(const std::string& port_name, std::string& message);
 
       virtual bool advertiseCmd(const std::string& port_name);
-      virtual bool receiveFromCmd(const std::string& port_name, std::string& message);  // TBD template message
+      virtual bool receiveFromCmd(const std::string& port_name, std::string& message);  
 
       virtual bool advertiseMasterCommunicationInterface();
       virtual bool receiveMasterCommunicationInterface(std::string& framework_name);
 
       virtual void advertiseStatus(const std::string& plugin_name);
-      virtual bool setPluginStatus(const std::string& plugin_name, const std::string& status);
-      
-      
-      std::map<std::string, std::string>& getSwitchMap(){
-	
-	return _switch;
-      }
-      
-      std::map<std::string, std::string>& getStatusMap(){
-	
-	return _status;
-      }
-      
-      std::map<std::string, std::string>& getCmdMap(){
-	
-	return _cmd;
-      }
-
-  protected:
+      virtual bool setPluginStatus(const std::string& plugin_name, const std::string& status);      
 
   private:
 
     std::shared_ptr<CivetServer> server;
-    std::shared_ptr<HttpCivetHandler> s_handler;
-    std::shared_ptr<WebSocketHandler> ws_handler;
-    
+    std::shared_ptr<HttpCivetHandler> http_civet_handler;
+    std::shared_ptr<WebSocketHandler> ws_civet_handler;    
     std::shared_ptr<HttpHandler> http_handler;
       
 
@@ -340,27 +401,16 @@ class CommunicationInterfaceWebServer : public CommunicationInterface {
     JointIdMap _joint_id_map;
     JointNameMap _joint_name_map;
 
-  
-    std::map<std::string, std::string> _plugin_status_map;
-   
-
     std::unordered_map<int, int> _jointid_to_command_msg_idx;
     std::unordered_map<int, int> _jointid_to_jointstate_msg_idx;
 
    
-    std::string _tf_prefix, _urdf_param_name;
-
-   
+    std::string _tf_prefix, _urdf_param_name;   
     std::map<int, double> _hand_value_map;
     
-    
-    //TODO to put in a shared object
-    std::map<std::string, std::string> _switch;
-    std::map<std::string, std::string> _status;
-    std::map<std::string, std::string> _cmd;
-    
     std::shared_ptr<Buffer> buffer;
-
+    std::shared_ptr<SharedData> sharedData;
+    
 };
 
 
@@ -368,71 +418,93 @@ class HttpHandler : public HttpInterface{
   
   private:
     
-    CommunicationInterface* comm; 
+    std::shared_ptr<SharedData> sharedData; 
     std::shared_ptr<Buffer> buffer;
   
   public:
     
-    HttpHandler (CommunicationInterface& comm, std::shared_ptr<Buffer> buffer){
+    HttpHandler (std::shared_ptr<SharedData>& sharedData, std::shared_ptr<Buffer>& buffer){
       
-	this->comm = &comm;
+	this->sharedData = sharedData;
 	this->buffer = buffer;
     }
     
   
     virtual void handleGet(std::shared_ptr<ResponseInterface>& response){
       
-      CommunicationInterfaceWebServer* comm_web = reinterpret_cast<CommunicationInterfaceWebServer*>(this->comm);
-    
-    
+         
       if(uri.compare("/switch")==0){
-        auto& m= comm_web->getSwitchMap();
-        m[key]=val; 
+        sharedData->insertSwitch(key, val);       
       }
       else if(uri.compare("/cmd")==0) {
-        auto& m= comm_web->getCmdMap();
-        m[key]=val; 
-      }
-       
+        sharedData->insertCmd(key, val);        
+      }       
       else if(uri.compare("/webmaster")==0){
-        buffer->setMaster(key);
+        sharedData->setMaster(key);
       }
       
       
      
-//       std::string sresp="";
-//       sresp+="<html><body>\r\n";
-//       sresp+=("<h2>XBOTCORE </h2>\r\n");
-//       
-//       for( auto const &s : comm_web->getStatusMap()){                 
-// 	  auto const &outer_key = s.first;
-// 	  auto const &inner_map = s.second;
-// 	  std::string ss="<h3>"+ outer_key+ " "+ inner_map+ "</h3>\r\n";
-// 	  const char * w =const_cast<char*>( ss.c_str());
-// 	  sresp+=(w);
-//       }
-// 
-//       sresp+=("</body></html>\r\n");
-// 
-//       response = std::make_shared<StringResponse>(sresp);
-     
-      std::shared_ptr<StringBuffer> jsonresp = std::make_shared<StringBuffer>();
-      // 1. Parse a JSON string into DOM.
-      const char* json = "[{\"project\":\"rapidjson\",\"stars\":10}, {\"project\":\"rapidjson\",\"stars\":10}]";
-      Document d;
-      d.Parse(json);
-
-      // 2. Modify it by DOM.
-      Value& s = d["stars"];
-      s.SetInt(s.GetInt() + 1);
-
-      // 3. Stringify the DOM
-      Writer<StringBuffer> writer(*jsonresp);
-      d.Accept(writer);
+      std::string sresp="";
+      sresp+="<html><body>\r\n";
+      sresp+=("<h2>XBOTCORE </h2>\r\n");
       
-      response = std::make_shared<JsonResponse>(jsonresp);
+      for( auto const &s : sharedData->getAllStatus()){                 
+	  auto const &outer_key = s.first;
+	  auto const &inner_map = s.second;
+	  std::string ss="<h3>"+ outer_key+ " "+ inner_map+ "</h3>\r\n";
+	  const char * w =const_cast<char*>( ss.c_str());
+	  sresp+=(w);
+      }
+
+      sresp+=("</body></html>\r\n");
+
+      response = std::make_shared<StringResponse>(sresp);
+     
+//       std::shared_ptr<StringBuffer> jsonresp = std::make_shared<StringBuffer>();
+//       // 1. Parse a JSON string into DOM.
+//       const char* json = "[{\"project\":\"rapidjson\",\"stars\":10}, {\"project\":\"rapidjson\",\"stars\":10}]";
+//       Document d;
+//       d.Parse(json);
+// 
+//       // 2. Modify it by DOM.
+//       Value& s = d["stars"];
+//       s.SetInt(s.GetInt() + 1);
+// 
+//       // 3. Stringify the DOM
+//       Writer<StringBuffer> writer(*jsonresp);
+//       d.Accept(writer);
+//       
+//       response = std::make_shared<JsonResponse>(jsonresp);
      
              
+  }
+  
+  virtual void handlePost(std::shared_ptr<RequestObject>& request){
+    
+      void * buff;
+      buff = request->GetData();     
+      StringStream stream((char*)buff);
+      //std::cout<<"pos"<<std::string((char*)buff)<<std::endl;
+      Document d;
+      d.ParseStream(stream);
+      
+      std::vector<double> vec;
+      if( d.HasMember("link_position")){        
+        assert(d["link_position"].isArray());
+        const Value& array = d["link_position"];
+        for (SizeType i = 0; i < array.Size(); i++){
+            double val = array[i].GetDouble();
+            vec.push_back(val);   
+        }
+        sharedData->external_command->add(vec);
+      }
+            
+      /*StringBuffer buffer;
+      Writer<StringBuffer> writer(buffer);
+      d.Accept(writer);
+      std::cout <<"stringify"<< std::string(buffer.GetString()) << std::endl;  */ 
+    
   }
   
 };

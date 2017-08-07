@@ -34,19 +34,18 @@ bool HttpCivetHandler::handleGet(CivetServer *server, struct mg_connection *conn
       
       const char* uri =mg_get_request_info(conn)->request_uri;
       std::string suri(uri);
+      http_interface->setUri(suri);
       
       const char* query = mg_get_request_info(conn)->query_string;
       if (query!=nullptr){
-	  std::string squery(query);
+          std::string squery(query);
+          http_interface->setQuery(squery);
 	  std::string key = squery.substr(0, squery.find("="));
 	  std::string val = squery.substr(squery.find("=")+1);
 	  http_interface->setKey(key);
 	  http_interface->setVal(val);
       }
-      std::string squery(query);
-        
-      http_interface->setUri(suri);
-      http_interface->setQuery(squery);
+          
       std::shared_ptr<ResponseInterface> resp_interface;
       http_interface->handleGet(resp_interface);
       std::string type = resp_interface->GetTypeResponse();
@@ -58,7 +57,38 @@ bool HttpCivetHandler::handleGet(CivetServer *server, struct mg_connection *conn
   
       return true;
 }  
+
+bool HttpCivetHandler::handlePost(CivetServer* server, mg_connection* conn){
   
+      const struct mg_request_info *req_info = mg_get_request_info(conn);
+      long long rlen = 0;
+      long long nlen = 0;
+      long long tlen = req_info->content_length;
+      //std::cout<<"tlen "<<tlen<<std::endl;
+      //NOTE fixed size
+      char buf[4096];
+  
+      memset(buf,0,4096);
+      while (nlen < tlen) {
+          rlen = tlen - nlen;
+          if (rlen > sizeof(buf)) {
+                  rlen = sizeof(buf);
+          }
+          rlen = mg_read(conn, buf, (size_t)rlen);
+          if (rlen <= 0) {
+                  break;
+          }
+         
+       }
+      
+      std::shared_ptr<RequestObject> req = std::make_shared<RequestObject>();
+      req->SetData(buf);
+      http_interface->handlePost(req);
+      
+      mg_printf(conn,"{\"response\":\"ok\"}");
+  
+      return true;
+}  
   
 bool WebSocketHandler::handleConnection(CivetServer *server, const struct mg_connection *conn) {
     
@@ -74,7 +104,7 @@ void WebSocketHandler::handleReadyState(CivetServer *server, struct mg_connectio
     const char *text = "Hello from XBotCore";
     mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, text, strlen(text));
     
-    buffer->increaseNumClient();
+    sharedData->increaseNumClient();
     
 } 
         
@@ -122,7 +152,7 @@ bool WebSocketHandler::handleData(CivetServer *server,
 
 void WebSocketHandler::handleClose(CivetServer *server, const struct mg_connection *conn) {
        std::cout<<"WS closed\n";
-       buffer->decreaseNumClient();
+       sharedData->decreaseNumClient();
 }        
         
 CommunicationInterfaceWebServer::CommunicationInterfaceWebServer():
@@ -143,22 +173,19 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
         cpp_options.push_back(options[i]);
     }      
     
-    
-    buffer = std::make_shared<Buffer>();
+    buffer = std::make_shared<Buffer>(50);    
+    sharedData = std::make_shared<SharedData>();
     server = std::make_shared<CivetServer>(cpp_options);  
-    ws_handler = std::make_shared<WebSocketHandler>();
-    ws_handler->buffer = buffer;
-    server->addWebSocketHandler("/websocket", *ws_handler);
-  
-    //creo oggetto che implementa interfaccia e lo passo all hanlder
+    ws_civet_handler = std::make_shared<WebSocketHandler>(buffer, sharedData);   
+    server->addWebSocketHandler("/websocket", *ws_civet_handler);  
+    
     std::cout<<"XBotCore server running at http://"<<PORT<<std::endl;        
 }
-
 
 void CommunicationInterfaceWebServer::sendRobotState()
 {
 
-  if(buffer->getNumClient().load() <= 0) return;
+  if(sharedData->getNumClient().load() <= 0) return;
   
   //read from robot
   //write to a buffer that the callback handleData will use
@@ -181,58 +208,60 @@ void CommunicationInterfaceWebServer::sendRobotState()
 
 void CommunicationInterfaceWebServer::receiveReference()
 {
-    //use buffer
-    //TODO in the case of hololens (we just send position goal), so the client makes a GET
-  //and we save in a thread safe structure that this method will use
-  
-  //std::cout<<"RECEIVE WEB"<<std::endl;
- 
+    std::vector<double> vec;
+    bool resp = sharedData->external_command->remove(vec);    
+    
+    if (resp){       
+      Eigen::VectorXd eigVec;
+      eigVec.resize(31);
+      for (int i=0; i< vec.size(); i++){
+         eigVec(i) = vec[i];
+      }     
+      _robot->setPositionReference(eigVec);
+      
+      
+    }
 }
 
 bool CommunicationInterfaceWebServer::advertiseSwitch(const std::string& port_name)
 {
-    http_handler = std::make_shared<HttpHandler>(*this, buffer);
-    s_handler = std::make_shared<HttpCivetHandler>(*http_handler);
-    server->addHandler(SWITCH_URI, *s_handler);
-    server->addHandler(CMD_URI, *s_handler);
-    server->addHandler(MASTER_URI, *s_handler);
-    _switch[port_name] = "";
-
+    http_handler = std::make_shared<HttpHandler>(sharedData, buffer);
+    http_civet_handler = std::make_shared<HttpCivetHandler>(*http_handler);
+    server->addHandler(SWITCH_URI, *http_civet_handler);
+    server->addHandler(CMD_URI, *http_civet_handler);
+    server->addHandler(MASTER_URI, *http_civet_handler);
+    sharedData->insertSwitch(port_name, "");
+    
     return true;
 }
 
 void XBot::CommunicationInterfaceWebServer::advertiseStatus(const std::string& plugin_name)
 {
-     _status[plugin_name] = "";
+    sharedData->insertStatus(plugin_name, "");
 
 }
-
 
 bool XBot::CommunicationInterfaceWebServer::setPluginStatus(const std::string& plugin_name, const std::string& status)
 {
-    _status[plugin_name] = status;
+    sharedData->insertStatus(plugin_name, status);
     return true;
 }
-
 
 bool XBot::CommunicationInterfaceWebServer::advertiseCmd(const std::string& port_name)
 {
-    _cmd[port_name] = "";
+    sharedData->insertCmd(port_name, "");
     return true;
 }
-
 
 bool XBot::CommunicationInterfaceWebServer::advertiseMasterCommunicationInterface()
 {
     return true;
 }
 
-
-
 bool CommunicationInterfaceWebServer::receiveFromSwitch(const std::string& port_name, std::string& message)
 {
-    message = _switch[port_name];
-    _switch[port_name] = "";
+    message = sharedData->getSwitch(port_name);
+    sharedData->insertSwitch(port_name, "");
     if (message.compare("")==0) return false;
     return true;
     
@@ -241,8 +270,8 @@ bool CommunicationInterfaceWebServer::receiveFromSwitch(const std::string& port_
 bool XBot::CommunicationInterfaceWebServer::receiveFromCmd(const std::string& port_name, std::string& message)
 {
     
-    message = _cmd[port_name];
-    _cmd[port_name] = "";
+    message = sharedData->getCmd(port_name);   
+    sharedData->insertCmd(port_name, "");
     if (message.compare("")==0) return false;
     return true;
     
@@ -251,13 +280,11 @@ bool XBot::CommunicationInterfaceWebServer::receiveFromCmd(const std::string& po
 bool XBot::CommunicationInterfaceWebServer::receiveMasterCommunicationInterface(std::string& framework_name)
 { 
     std::string master = "";
-    buffer->getMaster(framework_name);
-    buffer->setMaster(master);
+    sharedData->getMaster(framework_name);
+    sharedData->setMaster(master);
     return true;
    
 }
-
-
 
 bool CommunicationInterfaceWebServer::computeAbsolutePath (  const std::string& input_path,
                                                  const std::string& middle_path,
@@ -285,6 +312,5 @@ bool CommunicationInterfaceWebServer::computeAbsolutePath (  const std::string& 
     absolute_path = input_path;
     return true;
 }
-
 
 }
