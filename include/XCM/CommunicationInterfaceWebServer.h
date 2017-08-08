@@ -32,6 +32,7 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
+
 using namespace rapidjson;
 
 //192.168.0.100
@@ -40,9 +41,12 @@ using namespace rapidjson;
 #define PORT "127.0.0.1:8081"
 #define SWITCH_URI "/switch"
 #define CMD_URI "/cmd"
+#define ALLJOINT_URI "/alljoints"
+#define SINGLEJOINT_URI "/singlejoint"
 #define MASTER_URI "/webmaster"
 
 namespace XBot {
+template <class T>
 class Buffer;
 class HttpInterface;
 
@@ -162,7 +166,7 @@ class HttpCivetHandler : public CivetHandler
     bool handlePost(CivetServer* server, mg_connection* conn);
 };
 
-
+template <class T>
 class Buffer {
    
   public:
@@ -171,17 +175,17 @@ class Buffer {
       circular_buffer.set_capacity(capacity);
     }
     
-    void add(std::vector<double>& vec) {       
+    void add(T& vec) {       
         std::lock_guard<std::mutex> locker(mutex);  
         circular_buffer.push_back(vec);
         return;       
     }
         
-    bool remove(std::vector<double>& vec) {
+    bool remove(T& vec) {
       
         if(!circular_buffer.empty()){
             std::lock_guard<std::mutex> locker(mutex);            
-            std::vector<double> back = circular_buffer.front();
+            T back = circular_buffer.front();
             circular_buffer.pop_front();
             vec = back;
             return true;
@@ -204,7 +208,7 @@ class Buffer {
   private:
        
     std::mutex mutex;    
-    boost::circular_buffer<std::vector<double>> circular_buffer;   
+    boost::circular_buffer<T> circular_buffer;   
 
 };
 
@@ -214,7 +218,7 @@ class SharedData {
   
      SharedData():master("") { 
        num_client.store(0);
-       external_command = std::make_shared<Buffer>(5);
+       external_command = std::make_shared<Buffer<std::vector<double>>>(5);
     }    
      
      std::map<std::string, std::string> getAllStatus(){
@@ -278,7 +282,7 @@ class SharedData {
       return num_client;
     }
     
-    std::shared_ptr<Buffer> external_command;
+    std::shared_ptr<Buffer<std::vector<double>>> external_command;
     
   private:
        
@@ -295,12 +299,72 @@ class SharedData {
    
 };
 
+class WebRobotState {
+  
+  public:
+    
+    std::vector<std::string> joint_name;
+    std::vector<int> joint_id;
+    std::vector<double> link_position;
+    std::vector<double> motor_position;
+    std::vector<double> link_vel;
+    std::vector<double> motor_vel;
+    std::vector<double> temperature;
+    
+    //XBot::RobotState::pdo_rx pdo_rx;
+    //IMU
+    //FT
+  
+    void serialize(StringBuffer& buffer){
+      
+        Writer<StringBuffer> writer(buffer);
+        writer.StartObject();  
+        serializeArray(writer,"joint_id",joint_id);
+        serializeArray(writer,"link_position",link_position);
+        serializeArray(writer,"motor_position", motor_position);
+        serializeArray(writer,"link_velocity",link_vel);
+        serializeArray(writer,"motor_velocity",motor_vel);
+        serializeArray(writer,"temperature",temperature);      
+        writer.EndObject();  
+    }
+    
+  private:
+    
+    //template <typename T>
+    void serializeArray(Writer<StringBuffer>& writer, std::string key, std::vector<double>& array){
+      
+       // writer.StartObject();              
+        writer.Key(key.c_str());   
+        writer.StartArray();
+        for( double val : array ){  
+          writer.Double(val);
+        }
+
+        writer.EndArray();
+       // writer.EndObject();  
+    }
+    
+    void serializeArray(Writer<StringBuffer>& writer, std::string key, std::vector<int>& array){
+      
+       // writer.StartObject();              
+        writer.Key(key.c_str());   
+        writer.StartArray();
+        for( int val : array ){  
+          writer.Int(val);
+        }
+
+        writer.EndArray();
+       // writer.EndObject();  
+    }
+  
+};
+
 class CommunicationInterfaceWebServer;
 class WebSocketHandler : public CivetWebSocketHandler {
 
   public:
     
-    WebSocketHandler(std::shared_ptr<Buffer> buffer, std::shared_ptr<SharedData> sharedData){
+    WebSocketHandler(std::shared_ptr<Buffer<WebRobotState>> buffer, std::shared_ptr<SharedData> sharedData){
       
       this->buffer = buffer;
       this->sharedData = sharedData;      
@@ -319,7 +383,7 @@ class WebSocketHandler : public CivetWebSocketHandler {
     virtual void handleClose(CivetServer *server, const struct mg_connection *conn);
 
   private:
-    std::shared_ptr<Buffer> buffer;
+    std::shared_ptr<Buffer<WebRobotState>> buffer;
     std::shared_ptr<SharedData> sharedData;
 };
 
@@ -384,32 +448,32 @@ class CommunicationInterfaceWebServer : public CommunicationInterface {
 
   private:
 
-    std::shared_ptr<CivetServer> server;
-    std::shared_ptr<HttpCivetHandler> http_civet_handler;
-    std::shared_ptr<WebSocketHandler> ws_civet_handler;    
-    std::shared_ptr<HttpHandler> http_handler;
-      
+      std::shared_ptr<CivetServer> server;
+      std::shared_ptr<HttpCivetHandler> http_civet_handler;
+      std::shared_ptr<WebSocketHandler> ws_civet_handler;    
+      std::shared_ptr<HttpHandler> http_handler;
+        
 
-    static bool computeAbsolutePath ( const std::string& input_path,
-                                       const std::string& middle_path,
-                                       std::string& absolute_path );
+      static bool computeAbsolutePath ( const std::string& input_path,
+                                        const std::string& middle_path,
+                                        std::string& absolute_path );
 
-    bool _send_robot_state_ok, _receive_commands_ok;
+      bool _send_robot_state_ok, _receive_commands_ok;
 
-    std::string _path_to_cfg;
+      std::string _path_to_cfg;
 
-    JointIdMap _joint_id_map;
-    JointNameMap _joint_name_map;
+      JointIdMap _joint_id_map;
+      JointNameMap _joint_name_map;
 
-    std::unordered_map<int, int> _jointid_to_command_msg_idx;
-    std::unordered_map<int, int> _jointid_to_jointstate_msg_idx;
+      std::unordered_map<int, int> _jointid_to_command_msg_idx;
+      std::unordered_map<int, int> _jointid_to_jointstate_msg_idx;
 
-   
-    std::string _tf_prefix, _urdf_param_name;   
-    std::map<int, double> _hand_value_map;
     
-    std::shared_ptr<Buffer> buffer;
-    std::shared_ptr<SharedData> sharedData;
+      std::string _tf_prefix, _urdf_param_name;   
+      std::map<int, double> _hand_value_map;
+      
+      std::shared_ptr<Buffer<WebRobotState>> buffer;
+      std::shared_ptr<SharedData> sharedData;
     
 };
 
@@ -419,19 +483,18 @@ class HttpHandler : public HttpInterface{
   private:
     
     std::shared_ptr<SharedData> sharedData; 
-    std::shared_ptr<Buffer> buffer;
+    std::shared_ptr<Buffer<WebRobotState>> buffer;
   
   public:
     
-    HttpHandler (std::shared_ptr<SharedData>& sharedData, std::shared_ptr<Buffer>& buffer){
+    HttpHandler (std::shared_ptr<SharedData>& sharedData, std::shared_ptr<Buffer<WebRobotState>>& buffer){
       
 	this->sharedData = sharedData;
 	this->buffer = buffer;
     }
     
   
-    virtual void handleGet(std::shared_ptr<ResponseInterface>& response){
-      
+    virtual void handleGet(std::shared_ptr<ResponseInterface>& response){      
          
       if(uri.compare("/switch")==0){
         sharedData->insertSwitch(key, val);       
@@ -443,8 +506,6 @@ class HttpHandler : public HttpInterface{
         sharedData->setMaster(key);
       }
       
-      
-     
       std::string sresp="";
       sresp+="<html><body>\r\n";
       sresp+=("<h2>XBOTCORE </h2>\r\n");
@@ -490,16 +551,23 @@ class HttpHandler : public HttpInterface{
       d.ParseStream(stream);
       
       std::vector<double> vec;
-      if( d.HasMember("link_position")){        
-        assert(d["link_position"].isArray());
-        const Value& array = d["link_position"];
-        for (SizeType i = 0; i < array.Size(); i++){
-            double val = array[i].GetDouble();
-            vec.push_back(val);   
+      if(uri.compare("/alljoints")==0){     
+        if( d.HasMember("link_position")){        
+          assert(d["link_position"].isArray());
+          const Value& array = d["link_position"];
+          for (SizeType i = 0; i < array.Size(); i++){
+              double val = array[i].GetDouble();
+              vec.push_back(val);   
+          }
+          sharedData->external_command->add(vec);
+          //HACK simulation of holding value for longer time
+          sharedData->external_command->add(vec);
         }
-        sharedData->external_command->add(vec);
-        //HACK simulation of holding value for longer time
-        sharedData->external_command->add(vec);
+      }else if(uri.compare("/singlejoint")==0){
+        
+        //add value to map(id,joint) in shared data
+        
+        
       }
             
       /*StringBuffer buffer;

@@ -60,6 +60,10 @@ bool HttpCivetHandler::handleGet(CivetServer *server, struct mg_connection *conn
 
 bool HttpCivetHandler::handlePost(CivetServer* server, mg_connection* conn){
   
+      const char* uri =mg_get_request_info(conn)->request_uri;
+      std::string suri(uri);
+      http_interface->setUri(suri);
+      
       const struct mg_request_info *req_info = mg_get_request_info(conn);
       long long rlen = 0;
       long long nlen = 0;
@@ -93,19 +97,15 @@ bool HttpCivetHandler::handlePost(CivetServer* server, mg_connection* conn){
 bool WebSocketHandler::handleConnection(CivetServer *server, const struct mg_connection *conn) {
     
     std::cout<<"WS connected\n";
-    return true;
-
-  
+    return true;  
 }
 
 void WebSocketHandler::handleReadyState(CivetServer *server, struct mg_connection *conn) {
    
     std::cout<<"WS ready\n";
     const char *text = "Hello from XBotCore";
-    mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, text, strlen(text));
-    
-    sharedData->increaseNumClient();
-    
+    mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, text, strlen(text));    
+    sharedData->increaseNumClient();    
 } 
         
 bool WebSocketHandler::handleData(CivetServer *server,
@@ -115,37 +115,19 @@ bool WebSocketHandler::handleData(CivetServer *server,
                                 size_t data_len) {
                 
     //read robot state
-    std::vector<double> vec;
-    bool resp = buffer->remove(vec);
+    WebRobotState rstate;
+    bool resp = buffer->remove(rstate);
         
     StringBuffer buffer;
-    
-    //vec.serialize(buffer);
-    
-    Writer<StringBuffer> writer(buffer);
-    const char* btosend = nullptr;
-    
-    //send robot state
+    const char* btosend = nullptr;    
     buffer.Clear();
-    if(resp){
-      
-        writer.StartObject();              
-        writer.Key("link_position");   
-        writer.StartArray();
-        for( double val : vec ){  
-          writer.Double(val);
-        }
-        
-        writer.EndArray();
-        writer.EndObject();  
-        
+    if(resp){      
+        rstate.serialize(buffer);
         btosend = buffer.GetString();
     }
-    
-    
+        
     if( btosend!=nullptr)
-      mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, btosend, buffer.GetLength());
-
+        mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, btosend, buffer.GetLength());
         
     return true;
 }  
@@ -173,7 +155,7 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
         cpp_options.push_back(options[i]);
     }      
     
-    buffer = std::make_shared<Buffer>(50);    
+    buffer = std::make_shared<Buffer<WebRobotState>>(50);    
     sharedData = std::make_shared<SharedData>();
     server = std::make_shared<CivetServer>(cpp_options);  
     ws_civet_handler = std::make_shared<WebSocketHandler>(buffer, sharedData);   
@@ -185,25 +167,37 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
 void CommunicationInterfaceWebServer::sendRobotState()
 {
 
-  if(sharedData->getNumClient().load() <= 0) return;
-  
-  //read from robot
-  //write to a buffer that the callback handleData will use
-  _robot->getJointPosition(_joint_id_map);
-  //TBD create object that encapsulate all robot info and push it to the buffer
-  //std::vector<XBot::RobotState::pdo_tx> rstate;
-  
-  std::vector<double> vec;
-  for( int id : _robot->getEnabledJointId() ){       
-      double val= _joint_id_map.at(id);
-      vec.push_back(val);
-      //XBot::RoboState::pdo_tx tmp;
-      //tmp.pos_ref = val;
-      //rstate.push_back(XBot::RoboState::pdo_tx
-  }
-
-  buffer->add(vec);
-  
+    if(sharedData->getNumClient().load() <= 0) return;
+    
+    //read from robot
+    //write to a buffer that the callback handleData will use
+    JointIdMap _joint_id_map, _motor_id_map,
+    _jvel_id_map,_mvel_id_map, _temp_id_map;
+    
+    _robot->getJointPosition(_joint_id_map);
+    _robot->getMotorPosition(_motor_id_map);
+    _robot->getJointVelocity(_jvel_id_map);
+    _robot->getMotorVelocity(_mvel_id_map);
+    _robot->getTemperature(_temp_id_map);
+    
+    WebRobotState rstate;  
+    
+    for( int id : _robot->getEnabledJointId() ){       
+        double jval= _joint_id_map.at(id);
+        double mval= _motor_id_map.at(id);
+        double jvelval= _jvel_id_map.at(id);
+        double mvelval= _mvel_id_map.at(id);
+        double tempval= _temp_id_map.at(id);
+                 
+        rstate.joint_id.push_back(id);
+        rstate.link_position.push_back(jval);
+        rstate.motor_position.push_back(mval);
+        rstate.link_vel.push_back(jvelval);
+        rstate.motor_vel.push_back(mvelval); 
+        rstate.temperature.push_back(tempval);        
+    }
+    
+    buffer->add(rstate);   
 }
 
 void CommunicationInterfaceWebServer::receiveReference()
@@ -211,7 +205,7 @@ void CommunicationInterfaceWebServer::receiveReference()
     std::vector<double> vec;
     bool resp = sharedData->external_command->remove(vec);    
     
-    if (resp){       
+    if (resp){ 
       Eigen::VectorXd eigVec;
       eigVec.resize(31);
       for (int i=0; i< vec.size(); i++){
@@ -264,6 +258,8 @@ bool CommunicationInterfaceWebServer::advertiseSwitch(const std::string& port_na
     server->addHandler(SWITCH_URI, *http_civet_handler);
     server->addHandler(CMD_URI, *http_civet_handler);
     server->addHandler(MASTER_URI, *http_civet_handler);
+    server->addHandler(ALLJOINT_URI, *http_civet_handler);
+    server->addHandler(SINGLEJOINT_URI, *http_civet_handler);
     sharedData->insertSwitch(port_name, "");
     
     return true;
@@ -272,7 +268,6 @@ bool CommunicationInterfaceWebServer::advertiseSwitch(const std::string& port_na
 void XBot::CommunicationInterfaceWebServer::advertiseStatus(const std::string& plugin_name)
 {
     sharedData->insertStatus(plugin_name, "");
-
 }
 
 bool XBot::CommunicationInterfaceWebServer::setPluginStatus(const std::string& plugin_name, const std::string& status)
@@ -297,8 +292,7 @@ bool CommunicationInterfaceWebServer::receiveFromSwitch(const std::string& port_
     message = sharedData->getSwitch(port_name);
     sharedData->insertSwitch(port_name, "");
     if (message.compare("")==0) return false;
-    return true;
-    
+    return true;    
 }
 
 bool XBot::CommunicationInterfaceWebServer::receiveFromCmd(const std::string& port_name, std::string& message)
@@ -307,8 +301,7 @@ bool XBot::CommunicationInterfaceWebServer::receiveFromCmd(const std::string& po
     message = sharedData->getCmd(port_name);   
     sharedData->insertCmd(port_name, "");
     if (message.compare("")==0) return false;
-    return true;
-    
+    return true;    
 }
 
 bool XBot::CommunicationInterfaceWebServer::receiveMasterCommunicationInterface(std::string& framework_name)
@@ -316,8 +309,7 @@ bool XBot::CommunicationInterfaceWebServer::receiveMasterCommunicationInterface(
     std::string master = "";
     sharedData->getMaster(framework_name);
     sharedData->setMaster(master);
-    return true;
-   
+    return true;   
 }
 
 bool CommunicationInterfaceWebServer::computeAbsolutePath (  const std::string& input_path,
