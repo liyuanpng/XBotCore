@@ -498,6 +498,8 @@ class HttpHandler : public HttpInterface{
             vec.push_back(val);   
         }
         sharedData->external_command->add(vec);
+        //HACK simulation of holding value for longer time
+        sharedData->external_command->add(vec);
       }
             
       /*StringBuffer buffer;
