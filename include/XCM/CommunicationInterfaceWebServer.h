@@ -203,13 +203,11 @@ class Buffer {
         return;
     }
        
-    
         
   private:
        
     std::mutex mutex;    
     boost::circular_buffer<T> circular_buffer;   
-
 };
 
 class SharedData {
@@ -221,11 +219,31 @@ class SharedData {
        external_command = std::make_shared<Buffer<std::vector<double>>>(5);
     }    
      
-     std::map<std::string, std::string> getAllStatus(){
+    std::map<std::string, std::string> getAllStatus(){
        std::lock_guard<std::mutex> locker(st_mutex); 
        return _status;
     }
-      
+    
+    std::map<int, double> getJointMap(){
+       std::lock_guard<std::mutex> locker(j_mutex); 
+       return _joint_map;
+    }
+    
+    void insertJoint(int key, double val){
+        std::lock_guard<std::mutex> locker(j_mutex); 
+        _joint_map[key] = val;
+    }
+    
+    double getJoint(int key){
+        std::lock_guard<std::mutex> locker(j_mutex); 
+        return _joint_map[key];
+    }
+    
+    void clearJointMap(){
+      std::lock_guard<std::mutex> locker(j_mutex); 
+      _joint_map.clear();      
+    }
+    
     void insertSwitch(std::string key, std::string val){
         std::lock_guard<std::mutex> locker(s_mutex); 
         _switch[key] = val;
@@ -296,6 +314,9 @@ class SharedData {
     std::mutex st_mutex;
     std::map<std::string, std::string> _cmd;
     std::mutex c_mutex;
+    
+    std::map<int,double> _joint_map;
+    std::mutex j_mutex;
    
 };
 
@@ -319,6 +340,7 @@ class WebRobotState {
       
         Writer<StringBuffer> writer(buffer);
         writer.StartObject();  
+        serializeArray(writer,"joint_name",joint_name);
         serializeArray(writer,"joint_id",joint_id);
         serializeArray(writer,"link_position",link_position);
         serializeArray(writer,"motor_position", motor_position);
@@ -339,7 +361,6 @@ class WebRobotState {
         for( double val : array ){  
           writer.Double(val);
         }
-
         writer.EndArray();
        // writer.EndObject();  
     }
@@ -352,7 +373,18 @@ class WebRobotState {
         for( int val : array ){  
           writer.Int(val);
         }
-
+        writer.EndArray();
+       // writer.EndObject();  
+    }
+    
+    void serializeArray(Writer<StringBuffer>& writer, std::string key, std::vector<std::string>& array){
+      
+       // writer.StartObject();              
+        writer.Key(key.c_str());   
+        writer.StartArray();
+        for( std::string& val : array ){  
+          writer.String(val.c_str());
+        }
         writer.EndArray();
        // writer.EndObject();  
     }
@@ -550,6 +582,8 @@ class HttpHandler : public HttpInterface{
       Document d;
       d.ParseStream(stream);
       
+      sharedData->clearJointMap();
+      
       std::vector<double> vec;
       if(uri.compare("/alljoints")==0){     
         if( d.HasMember("link_position")){        
@@ -565,15 +599,24 @@ class HttpHandler : public HttpInterface{
         }
       }else if(uri.compare("/singlejoint")==0){
         
-        //add value to map(id,joint) in shared data
-        
+        //{"joint":[{"id": 15, "val": 0},{"id": 16, "val": 0}]}
+        if( d.HasMember("joint")){          
+          assert(d["joint"].isArray());
+          const Value& array = d["joint"];
+          for (SizeType i = 0; i < array.Size(); i++){
+              const Value& obj = array[i];
+              int id = obj["id"].GetInt();
+              double val = obj["val"].GetDouble();
+              sharedData->insertJoint(id,val);              
+          }        
+        }
         
       }
             
       /*StringBuffer buffer;
       Writer<StringBuffer> writer(buffer);
       d.Accept(writer);
-      std::cout <<"stringify"<< std::string(buffer.GetString()) << std::endl;  */ 
+      std::cout <<"stringify"<< std::string(buffer.GetString()) << std::endl;*/ 
     
   }
   

@@ -113,7 +113,33 @@ bool WebSocketHandler::handleData(CivetServer *server,
                                 int bits,
                                 char *data,
                                 size_t data_len) {
-                
+    
+  
+  
+    data[data_len] = 0;
+    std::shared_ptr<RequestObject> req = std::make_shared<RequestObject>();
+    req->SetData(data);
+    
+    //TODO move in abstraction interface
+    void * buff;
+    buff = req->GetData();     
+    StringStream stream((char*)buff);
+    //std::cout<<"pos"<<std::string((char*)buff)<<std::endl;
+    Document d;
+    d.ParseStream(stream);
+    
+    sharedData->clearJointMap();      
+    if( d.HasMember("joint")){          
+        assert(d["joint"].isArray());
+        const Value& array = d["joint"];
+        for (SizeType i = 0; i < array.Size(); i++){
+            const Value& obj = array[i];
+            int id = obj["id"].GetInt();
+            double val = obj["val"].GetDouble();
+            sharedData->insertJoint(id,val);              
+        }        
+      }    
+        
     //read robot state
     WebRobotState rstate;
     bool resp = buffer->remove(rstate);
@@ -182,6 +208,10 @@ void CommunicationInterfaceWebServer::sendRobotState()
     
     WebRobotState rstate;  
     
+    for ( auto s: _robot->getEnabledJointNames()) {      
+        rstate.joint_name.push_back(s);      
+    }
+    
     for( int id : _robot->getEnabledJointId() ){       
         double jval= _joint_id_map.at(id);
         double mval= _motor_id_map.at(id);
@@ -212,43 +242,20 @@ void CommunicationInterfaceWebServer::receiveReference()
          eigVec(i) = vec[i];
       }     
       _robot->setPositionReference(eigVec);
-      
-      //damping: [80.0, 10.0, 80.0, 80.0, 80.0, 80.0, 80.0, 10.0, 80.0, 80.0, 80.0, 80.0, 30.0, 30.0, 30.0, 30.0, 30.0, 25.0, 25.0, 1.0, 10.0, 1.0, 1.0, 1.0, 30.0, 30.0, 20.0, 20.0, 1.0, 10.0, 1.0]
-     // velocity_reference: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-
-      //stiffness: [15000.0, 3000.0, 15000.0, 15000.0, 15000.0, 15000.0, 15000.0, 3000.0, 15000.0, 15000.0, 15000.0, 15000.0, 8000.0, 10000.0, 8000.0, 4000.0, 3000.0, 3000.0, 3000.0, 300.0, 1500.0, 300.0, 300.0, 300.0, 4000.0, 3000.0, 3000.0, 3000.0, 300.0, 1500.0, 300.0]
-
-      /*double stif[]={15000.0, 3000.0, 15000.0, 15000.0, 15000.0, 15000.0, 15000.0, 3000.0, 15000.0, 
-        15000.0, 15000.0, 15000.0, 8000.0, 10000.0, 8000.0, 4000.0, 3000.0, 3000.0, 3000.0, 300.0, 1500.0,
-        300.0, 300.0, 300.0, 4000.0, 3000.0, 3000.0, 3000.0, 300.0, 8000.0, 300.0};
-      //effort_reference: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-
-        double dam[]={80.0, 10.0, 80.0, 80.0, 80.0, 80.0, 80.0, 10.0, 80.0, 80.0, 80.0, 80.0,
-          30.0, 30.0, 30.0, 30.0, 30.0, 25.0, 25.0, 1.0, 10.0, 1.0, 1.0, 1.0, 30.0, 30.0, 20.0, 20.0, 1.0,0, 1.0};
-      //Eigen::VectorXd eigVec;
-      eigVec.resize(31);
-      for (int i=0; i< vec.size(); i++){
-         eigVec(i) = 0;
-      }       
-      
-      _robot->setVelocityReference(eigVec);
-      
-      _robot->setEffortReference(eigVec);
-      
-      for (int i=0; i< 31; i++){
-         eigVec(i) = stif[i];
-      } 
-
-      _robot->setStiffness(eigVec);
-      
-       for (int i=0; i< 31; i++){
-         eigVec(i) = dam[i];
-      } 
-
-      _robot->setDamping(eigVec);*/
-      
-      
     }
+    
+      //set single joint value      
+      JointIdMap tmp;
+      _robot->getPositionReference(tmp);
+      std::map<int,double> map = sharedData->getJointMap();
+      for( auto& m : map){
+        int id = m.first;
+        double val = m.second;
+        tmp.at(id)= val;      
+      } 
+      if(!map.empty())
+        _robot->setPositionReference(tmp);  
+    
 }
 
 bool CommunicationInterfaceWebServer::advertiseSwitch(const std::string& port_name)
