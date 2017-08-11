@@ -114,6 +114,7 @@ endif()
 include_directories(include ${XBotInterface_INCLUDE_DIRS}
                             ${XBotCore-interfaces_INCLUDE_DIRS}
                             ${kdl_parser_INCLUDE_DIRS}
+                            include/Civet/
                             include/Web/
                             )
 
@@ -188,8 +189,13 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/CommunicationInterfaceWebServer.cpp
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES}
                         ${RT_NRT_SRC}
-                        src/Web/CivetServer.cpp
-                        src/Web/civetweb.c
+                        src/Civet/CivetServer.cpp
+                        src/Civet/civetweb.c
+                        src/Web/HttpCivetHandler.cpp
+                        src/Web/HttpHandler.cpp
+                        src/Web/SharedData.cpp
+                        src/Web/WebRobotState.cpp
+                        src/Web/WebSocketCivetHandler.cpp
                         )
                         
 add_library(XCM_no_xeno SHARED ${XBotInterface_INCLUDES}
@@ -206,8 +212,13 @@ add_library(XCM_no_xeno SHARED ${XBotInterface_INCLUDES}
                         src/XBotPluginStatus.cpp
                         src/CommunicationInterfaceWebServer.cpp
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES}
-                        src/Web/CivetServer.cpp
-                        src/Web/civetweb.c
+                        src/Civet//CivetServer.cpp
+                        src/Civet/civetweb.c
+                        src/Web/HttpCivetHandler.cpp
+                        src/Web/WebSocketCivetHandler.cpp
+                        src/Web/HttpHandler.cpp
+                        src/Web/SharedData.cpp
+                        src/Web/WebRobotState.cpp
                         src/XBotNRT_thread.cpp
                         )                        
 
