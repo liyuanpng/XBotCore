@@ -61,6 +61,7 @@ private:
     std::string _path_to_config;
 
     std::string _master_communication_interface_name;
+    bool _enable_ref_read;
     int xbot_communication_idx;
 
     std::vector<std::string> _plugin_names;

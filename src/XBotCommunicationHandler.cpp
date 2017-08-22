@@ -70,13 +70,23 @@ void XBot::CommunicationHandler::th_init(void*)
     }
     else {
         if(!root_cfg["MasterCommunicationInterface"]["framework_name"]){
-            std::cerr << "ERROR in " << __func__ << "! framework_name node does NOT contain mandatory node plugins!" << std::endl;
+            std::cerr << "ERROR in " << __func__ << "! MasterCommunicationInterface node does NOT contain mandatory node framework_name!" << std::endl;
             return;
         }
         else{
             _master_communication_interface_name = root_cfg["MasterCommunicationInterface"]["framework_name"].as<std::string>();
         }
+        
+        _enable_ref_read = true;
+        
+        if(!root_cfg["MasterCommunicationInterface"]["enable_ref_read"]){
+            std::cerr << "WARNING in " << __func__ << "! MasterCommunicationInterface node does NOT contain optional node enable_ref_read: I will assume it to TRUE" << std::endl;
+        }
+        else{
+            _enable_ref_read = root_cfg["MasterCommunicationInterface"]["enable_ref_read"].as<bool>();
+        }
     }
+    
 
 
     int plugin_idx = 0;
@@ -104,13 +114,12 @@ void XBot::CommunicationHandler::th_init(void*)
     std::shared_ptr<XBot::IXBotFT> xbot_ft = _xddp_handler;
     std::shared_ptr<XBot::IXBotIMU> xbot_imu = _xddp_handler;
     std::shared_ptr<XBot::IXBotHand> xbot_hand = _xddp_handler;
-    bool enable_ref_read = true;
 
     (*anymap)["XBotJoint"] = boost::any(xbot_joint);
     (*anymap)["XBotFT"] = boost::any(xbot_ft);
     (*anymap)["XBotIMU"] = boost::any(xbot_imu);
     (*anymap)["XBotHand"] = boost::any(xbot_hand);
-    (*anymap)["EnableReferenceReading"] = boost::any(enable_ref_read);
+    (*anymap)["EnableReferenceReading"] = boost::any(_enable_ref_read);
 
     _robot = XBot::RobotInterface::getRobot(_path_to_config, anymap, "XBotRT");
 
@@ -146,7 +155,7 @@ void XBot::CommunicationHandler::th_init(void*)
         _master_communication_ifc = _yarp_communication;
     }
 
-#endif
+#endif 
 
     // check on master communication interface
     if( _master_communication_ifc == nullptr ) {
