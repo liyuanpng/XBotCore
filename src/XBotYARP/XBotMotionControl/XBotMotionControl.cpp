@@ -454,17 +454,17 @@ bool XBot::dev::XBotMotionControl::getInteractionModes(yarp::dev::InteractionMod
 
 bool XBot::dev::XBotMotionControl::setInteractionModes(yarp::dev::InteractionModeEnum* modes)
 {
-    return false;
+    return true;
 }
 
 bool XBot::dev::XBotMotionControl::setInteractionMode(int j, yarp::dev::InteractionModeEnum _mode)
 {
-    return false;
+    return true;
 }
 
 bool XBot::dev::XBotMotionControl::setInteractionModes(int n_joints, int* joints, yarp::dev::InteractionModeEnum* modes)
 {
-    return false;
+    return true;
 }
 
 
