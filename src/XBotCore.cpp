@@ -287,9 +287,12 @@ bool XBot::XBotCore::set_vel_ref(int joint_id, const double& vel_ref)
     // check if the joint requested exists
     if( motors.count(rid2Pos(joint_id)) ) {
         // set the data
+        motors[rid2Pos(joint_id)]->set_velRef(vel_ref * _conversion.vel_ref);
+/*        
         last_pdo_tx = motors[rid2Pos(joint_id)]->getTxPDO();
         last_pdo_tx.vel_ref = vel_ref * _conversion.vel_ref;
-        motors[rid2Pos(joint_id)]->setTxPDO(last_pdo_tx);
+        motors[rid2Pos(joint_id)]->setTxPDO(last_pdo_tx);*/
+        
         return true;
     }
     
