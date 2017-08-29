@@ -146,6 +146,45 @@ void CommunicationInterfaceYARP::YARP_configuration()
         multi_wrapper->attachAll(poly_list);
         
     }
+    
+    // iterate over the actual robot IMU in order to define dynamic wrappers
+    for(auto& imu_j : _robot->getImu()) {
+        
+        // open motion control device with chain joint map
+        yarp::os::Property imu_config;
+        imu_config.put("device","VN100");   
+//         imu_config.put("channels", 6);  
+        imu_config.put("imu_name", imu_j.first); 
+        _imu_map[imu_j.first].open(imu_config);
+        
+        // init
+        _imu_map.at(imu_j.first).view(xbot_init);
+        xbot_init->init(_robot);
+
+        // defining control board wrapper
+        yarp::os::Property wr_config;    
+        std::string aux = imu_j.first;
+//         aux = aux.substr(0, aux.size() - 6);
+        
+        wr_config.put("device","inertial"); 
+        wr_config.put("robot_name", "bigman"); // TBD GET FROM SOMEWHERE 
+        wr_config.put("name", "/" + wr_config.find("robot_name").asString() + "/" + aux + "/" + "inertial");
+        wr_config.put("period", ANALOG_SERVER_RATE);            // TBD do it from config YAML
+        _inertial_map[imu_j.first].open(wr_config);
+        
+        // view on the wrapper and attach the poly driver
+        yarp::dev::PolyDriverDescriptor poly_descriptor;
+        yarp::dev::PolyDriverList poly_list;
+        yarp::dev::IMultipleWrapper* multi_wrapper;
+        
+        poly_descriptor.key = imu_j.first;
+        poly_descriptor.poly = &_imu_map.at(imu_j.first);
+        poly_list.push(poly_descriptor);
+        
+        _inertial_map.at(imu_j.first).view(multi_wrapper);
+        multi_wrapper->attachAll(poly_list);
+        
+    }
 }
 
 

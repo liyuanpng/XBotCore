@@ -3,14 +3,13 @@ yarp_prepare_device(VN100 TYPE yarp::dev::VN100 INCLUDE VN100.hpp WRAPPER inerti
 
 if(ENABLE_VN100)
 
-    add_subdirectory(library)
     message(INFO " Compiling VN_100 YARP device")
 
     include_directories(library/include ${CMAKE_CURRENT_SOURCE_DIR})
     include_directories(${YARP_INCLUDE_DIRS})
 
     yarp_add_plugin(VN100 VN100.cpp VN100.hpp)
-    target_link_libraries(VN100 VN100_lib ${YARP_LIBRARIES})
+    target_link_libraries(VN100 ${YARP_LIBRARIES})
 
     yarp_install(TARGETS VN100
                  COMPONENT runtime

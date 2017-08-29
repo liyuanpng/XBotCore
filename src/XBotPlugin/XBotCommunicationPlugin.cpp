@@ -47,7 +47,18 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
     _filter_q = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
     _filter_k = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
     _filter_d = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
-    _filter_enabled = false;
+    
+    // NOTE filter ON by default
+    _filter_enabled = true;
+    _robot->getMotorPosition(_qref);
+    _robot->getStiffness(_kref);
+    _robot->getDamping(_dref);
+
+    _filter_q.reset(_qref);
+    _filter_k.reset(_kref);
+    _filter_d.reset(_dref);
+    
+    DPRINTF("Filter ON by default\n");
 
     for (auto& p: _robot->getHand())
     {

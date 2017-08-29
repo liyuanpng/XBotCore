@@ -19,6 +19,8 @@
 //#ifndef __YARP_VN100__
 //#define __YARP_VN100__
 
+#include <XBotCore-interfaces/IXBotInit.h>
+
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/GenericSensorInterfaces.h>
 #include <yarp/os/Stamp.h>
@@ -28,8 +30,6 @@
 #include <yarp/os/RateThread.h>
 #include <string.h>
 #include <termios.h> // terminal io (serial port) interface
-
-#include "vn100.h"
 
 namespace yarp{
     namespace dev{
@@ -46,32 +46,34 @@ namespace yarp{
  * @author Alberto Cardellino
  */
 class yarp::dev::VN100 :       public yarp::dev::IGenericSensor,
-                                public yarp::dev::IPreciselyTimed,
-                                public yarp::dev::DeviceDriver
+                               public yarp::dev::IPreciselyTimed,
+                               public yarp::dev::DeviceDriver,
+                               public yarp::dev::ServerInertial,
+                               public XBot::IXBotInit
+ 
 {
 private:
-    // communication data
-    int             fd_serial_port;
-    std::string     comPortName;
-    int             com_baudrate;
 
     int             counter;
     int             nchannels;
-
-    // data specific for this imu
-    Vn100 vn100;
-    VN_ERROR_CODE   errorCode;
-    VnDeviceCompositeData  imu_data;
     
     // Data structure specific for each command
     yarp::os::Semaphore data_mutex;
     yarp::os::Semaphore sync_mutex;
 
     yarp::os::Stamp     lastStamp;
+    
+    /**
+     * @brief XBotInterface pointer
+     * 
+     */
+    XBot::XBotInterface::Ptr _robot;
 
 public:
     VN100();
     ~VN100();
+    
+    virtual bool init(XBot::XBotInterface::Ptr robot);
 
     // Device Driver interface
     virtual bool open(yarp::os::Searchable &config);

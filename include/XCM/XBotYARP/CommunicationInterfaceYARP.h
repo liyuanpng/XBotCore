@@ -65,6 +65,8 @@ private:
     std::map<std::string, yarp::dev::PolyDriver > _wrapper_map;
     std::map<std::string, yarp::dev::PolyDriver > _ft_map;
     std::map<std::string, yarp::dev::PolyDriver > _analog_server_map;
+    std::map<std::string, yarp::dev::PolyDriver > _imu_map;
+    std::map<std::string, yarp::dev::PolyDriver > _inertial_map;
 
 };
 

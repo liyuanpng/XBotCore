@@ -132,7 +132,7 @@ void XBot::CommunicationHandler::th_init(void*)
 
     /* Get a vector of communication interfaces to/from NRT frameworks like ROS, YARP, ... */
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
-    std::cout << "USE_ROS_COMMUNICATION_INTERFACE found! " << std::endl;
+    std::cerr << "USE_ROS_COMMUNICATION_INTERFACE found! " << std::endl;
     _ros_communication = std::make_shared<XBot::CommunicationInterfaceROS>(_robot);
     _communication_ifc_vector.push_back( _ros_communication );
 
@@ -145,7 +145,7 @@ void XBot::CommunicationHandler::th_init(void*)
 #endif
 
 #ifdef USE_YARP_COMMUNICATION_INTERFACE
-    std::cout << "USE_YARP_COMMUNICATION_INTERFACE found! " << std::endl;
+    std::cerr << "USE_YARP_COMMUNICATION_INTERFACE found! " << std::endl;
     _yarp_communication = std::make_shared<XBot::CommunicationInterfaceYARP>(_robot);
     _communication_ifc_vector.push_back( _yarp_communication );
 
