@@ -32,7 +32,7 @@
 
 #include <XBotCore/XBotCore.h>
 
-extern void main_common(__sighandler_t sig_handler);
+//extern void main_common(__sighandler_t sig_handler);
 
 static int main_loop = 1;
 
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) try {
         return 0;
     }
 
-    main_common(shutdown);
+   // main_common(shutdown);
     
     threads["boards_ctrl"] = new XBot::XBotCore(argv[1]);
     threads["boards_ctrl"]->create(true, 2);

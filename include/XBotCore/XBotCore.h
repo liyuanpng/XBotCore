@@ -28,17 +28,19 @@
 #ifndef __X_BOT_CORE_H__
 #define __X_BOT_CORE_H__
 
-#include <iit/ecat/advr/esc.h>
+//#include <iit/ecat/advr/esc.h>
 
-#include <XBotCore/XBotEcat.h>
+// #include <XBotCore/XBotEcat.h>
 
-#include <XBotCore-interfaces/IXBotJoint.h>
-#include <XBotCore-interfaces/IXBotFT.h>
+// #include <XBotCore-interfaces/IXBotJoint.h>
+// #include <XBotCore-interfaces/IXBotFT.h>
 #include <XBotCore-interfaces/XBotPipes.h>
 
 #include <XBotInterface/RobotInterface.h>
 
 #include <XCM/XBotPluginHandler.h>
+#include <XCM/XBotThread.h>
+#include <RobotControlInterface.h>
 
 namespace XBot
 {
@@ -77,17 +79,17 @@ struct XBot::XBotConversion {
  * @brief XBotCore: RT EtherCAT thread and RT (shared-memory) XBotCore interfaces implementation.
  * 
  */
-class XBot::XBotCore : public   XBot::XBotEcat,
-                       public   XBot::IXBotJoint,
-                       public   XBot::IXBotFT,
-                       public   XBot::IXBotIMU,
-                       public   XBot::IXBotHand
+class XBot::XBotCore : public Thread_hook
                         
 {
 public:
     
     XBotCore(const char * config_yaml);
     virtual ~XBotCore();
+    
+    
+    virtual void th_init ( void * );
+    virtual void th_loop ( void * );
     
     /**
      * @brief initialization function called before the control_loop
@@ -105,24 +107,26 @@ public:
      */
     virtual int control_loop(void) final;
     
-    // NOTE IXBotHand getters/setters
-    virtual double get_grasp_state(int hand_id);
-    virtual bool   grasp(int hand_id, double grasp_percentage);
-    
-    // NOTE IXBotFT getters
-    virtual bool get_ft(int ft_id, std::vector< double >& ft, int channels = 6) final;
-    virtual bool get_ft_fault(int ft_id, double& fault) final;
-    virtual bool get_ft_rtt(int ft_id, double& rtt) final;
-    
-    // NOTE IXBotIMU getters
-    virtual bool get_imu(int imu_id, std::vector< double >& lin_acc, std::vector< double >& ang_vel, std::vector< double >& quaternion);
-    virtual bool get_imu_fault(int imu_id, double& fault);
-    virtual bool get_imu_rtt(int imu_id, double& rtt);
+//     // NOTE IXBotHand getters/setters
+//     virtual double get_grasp_state(int hand_id);
+//     virtual bool   grasp(int hand_id, double grasp_percentage);
+//     
+//     // NOTE IXBotFT getters
+//     virtual bool get_ft(int ft_id, std::vector< double >& ft, int channels = 6) final;
+//     virtual bool get_ft_fault(int ft_id, double& fault) final;
+//     virtual bool get_ft_rtt(int ft_id, double& rtt) final;
+//     
+//     // NOTE IXBotIMU getters
+//     virtual bool get_imu(int imu_id, std::vector< double >& lin_acc, std::vector< double >& ang_vel, std::vector< double >& quaternion);
+//     virtual bool get_imu_fault(int imu_id, double& fault);
+//     virtual bool get_imu_rtt(int imu_id, double& rtt);
 
     
     double get_time();
 
 private:
+  
+    RobotControlInterface* robotInterface;
      
     /**
      * @brief Path to YAML config file
@@ -134,7 +138,7 @@ private:
      * @brief aux buffer for the last TX PDO
      * 
      */
-    iit::ecat::advr::McEscPdoTypes::pdo_tx last_pdo_tx;
+//     iit::ecat::advr::McEscPdoTypes::pdo_tx last_pdo_tx;
     
     // xbot robot
     XBot::RobotInterface::Ptr _robot;
@@ -150,44 +154,44 @@ private:
     int _iter = 0;
     
     // NOTE IXBotJoint getters
-    virtual bool get_link_pos(int joint_id, double& link_pos) final;
-    
-    virtual bool get_motor_pos(int joint_id, double& motor_pos) final;
-    
-    virtual bool get_link_vel(int joint_id, double& link_vel) final;
-    
-    virtual bool get_motor_vel(int joint_id, double& motor_vel) final;
-    
-    virtual bool get_torque(int joint_id, double& torque) final;
-    
-    virtual bool get_temperature(int joint_id, double& temperature) final;
-    
-    virtual bool get_fault(int joint_id, double& fault) final;
-    
-    virtual bool get_rtt(int joint_id, double& rtt) final;
-    
-    virtual bool get_op_idx_ack(int joint_id, double& op_idx_ack) final;
-    
-    virtual bool get_aux(int joint_id, double& aux) final;
-    
-    virtual bool get_gains(int joint_id, std::vector< double >& gain_vector) final;
-    
-    // NOTE IXBotJoint setters
-    virtual bool set_pos_ref(int joint_id, const double& pos_ref) final;
-    
-    virtual bool set_vel_ref(int joint_id, const double& vel_ref) final;
-    
-    virtual bool set_tor_ref(int joint_id, const double& tor_ref) final;
-    
-    virtual bool set_gains(int joint_id, const std::vector<double>& gains) final;
-    
-    virtual bool set_fault_ack(int joint_id, const double& fault_ack) final;
-    
-    virtual bool set_ts(int joint_id, const double& ts) final;
-    
-    virtual bool set_op_idx_aux(int joint_id, const double& op_idx_aux) final;
-    
-    virtual bool set_aux(int joint_id, const double& aux) final;
+//     virtual bool get_link_pos(int joint_id, double& link_pos) final;
+//     
+//     virtual bool get_motor_pos(int joint_id, double& motor_pos) final;
+//     
+//     virtual bool get_link_vel(int joint_id, double& link_vel) final;
+//     
+//     virtual bool get_motor_vel(int joint_id, double& motor_vel) final;
+//     
+//     virtual bool get_torque(int joint_id, double& torque) final;
+//     
+//     virtual bool get_temperature(int joint_id, double& temperature) final;
+//     
+//     virtual bool get_fault(int joint_id, double& fault) final;
+//     
+//     virtual bool get_rtt(int joint_id, double& rtt) final;
+//     
+//     virtual bool get_op_idx_ack(int joint_id, double& op_idx_ack) final;
+//     
+//     virtual bool get_aux(int joint_id, double& aux) final;
+//     
+//     virtual bool get_gains(int joint_id, std::vector< double >& gain_vector) final;
+//     
+//     // NOTE IXBotJoint setters
+//     virtual bool set_pos_ref(int joint_id, const double& pos_ref) final;
+//     
+//     virtual bool set_vel_ref(int joint_id, const double& vel_ref) final;
+//     
+//     virtual bool set_tor_ref(int joint_id, const double& tor_ref) final;
+//     
+//     virtual bool set_gains(int joint_id, const std::vector<double>& gains) final;
+//     
+//     virtual bool set_fault_ack(int joint_id, const double& fault_ack) final;
+//     
+//     virtual bool set_ts(int joint_id, const double& ts) final;
+//     
+//     virtual bool set_op_idx_aux(int joint_id, const double& op_idx_aux) final;
+//     
+//     virtual bool set_aux(int joint_id, const double& aux) final;
 
     
 

@@ -27,32 +27,51 @@
 #include <XBotCore/XBotCore.h>
 
 #include <boost/bind.hpp>
+#include <XBotEcat.h>
+#include <Ethernet.h>
 
 XBot::XBotCore::XBotCore(const char* config_yaml) : 
-    XBotEcat(config_yaml), 
+//     XBotEcat(config_yaml), 
     _path_to_config(config_yaml)
 {
 
+  //TODO use FactoryPattern
+  //robotInterface = new XBot::Ethernet(_path_to_config.c_str()); 
+  robotInterface = new XBot::XBotEcat(_path_to_config.c_str());
+}
+
+void XBot::XBotCore::th_init( void * ){
+  
+  std::cout<<"INIT Thread"<<std::endl;
+  robotInterface->init();
+  control_init();
 }
 
 
+void XBot::XBotCore::th_loop( void * ){
+  
+  robotInterface->recv_from_slave();
+  control_loop();
+  robotInterface->send_to_slave();
+  
+}
 
 void XBot::XBotCore::control_init(void) 
 {
     
     // create robot from config file and any map
     XBot::AnyMapPtr anymap = std::make_shared<XBot::AnyMap>();
-    std::shared_ptr<XBot::IXBotJoint> xbot_joint(this);
-    std::shared_ptr<XBot::IXBotFT> xbot_ft(this);
-    std::shared_ptr<XBot::IXBotIMU> xbot_imu(this);
-    std::shared_ptr<XBot::IXBotHand> xbot_hand(this);
+    std::shared_ptr<XBot::IXBotJoint> xbot_joint(robotInterface);
+    std::shared_ptr<XBot::IXBotFT> xbot_ft(robotInterface);
+    std::shared_ptr<XBot::IXBotIMU> xbot_imu(robotInterface);
+    std::shared_ptr<XBot::IXBotHand> xbot_hand(robotInterface);
     
     (*anymap)["XBotJoint"] = boost::any(xbot_joint);
     (*anymap)["XBotFT"] = boost::any(xbot_ft);
     (*anymap)["XBotIMU"] = boost::any(xbot_imu);
     (*anymap)["XBotHand"] = boost::any(xbot_hand);
     
-    _robot = XBot::RobotInterface::getRobot(_path_to_config, anymap, "XBotRT");
+    _robot = XBot::RobotInterface::getRobot(_path_to_config, anymap, "XBotRT");//TODO use isRT from RobotControlInterface robotInterface.IsRt()
     
     // create time provider function
     boost::function<double()> time_func = boost::bind(&XBot::XBotCore::get_time, this);
@@ -60,7 +79,7 @@ void XBot::XBotCore::control_init(void)
     auto time_provider = std::make_shared<XBot::TimeProviderFunction<boost::function<double()>>>(time_func);
     
     // create plugin handler
-    _pluginHandler = std::make_shared<XBot::PluginHandler>(_robot, time_provider, "XBotRTPlugins");
+    _pluginHandler = std::make_shared<XBot::PluginHandler>(_robot, time_provider, "NRTPlugins");  //"XBotRTPlugins"
     
     // define the XBotCore shared_memory for the RT plugins
     XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
@@ -74,12 +93,14 @@ void XBot::XBotCore::control_init(void)
 
 double XBot::XBotCore::get_time()
 {
-    return iit::ecat::get_time_ns() / 1e9;
+//     return iit::ecat::get_time_ns() / 1e9;
+  return 0;
 }
 
 
 int XBot::XBotCore::control_loop(void) 
 {    
+  std::cout<<"loop Thread"<<std::endl;
 //     std::cout << "laurenzi" << std::endl;
     _iter++;
     _pluginHandler->run();
@@ -92,7 +113,7 @@ int XBot::XBotCore::control_loop(void)
 // SINGLE JOINT PRIVATE FUNCTIONS //
 ////////////////////////////////////
 ////////////////////////////////////
-
+/*
 bool XBot::XBotCore::get_link_pos(int joint_id, double& link_pos)
 {
     
@@ -556,7 +577,7 @@ double XBot::XBotCore::get_grasp_state(int hand_id)
     // we don't touch the value that you passed
     DPRINTF("Trying to get_grasp_state() on joint with joint_id : %d that does not exists\n", hand_id);
     return -1;   
-}
+}*/
 
 
 

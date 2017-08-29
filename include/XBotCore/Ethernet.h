@@ -1,81 +1,34 @@
-/*
-   Copyright (C) 2016 Italian Institute of Technology
 
-   Developer:
-       Luca Muratore (2016-, luca.muratore@iit.it)
-       
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>       
-   
-*/
+#ifndef __X_BOT_ETHERNET_H__
+#define __X_BOT_ETHERNET_H__
 
-/**
- *
- * @author Luca Muratore (2016-, luca.muratore@iit.it)
-*/
-
-#ifndef __X_BOT_ECAT_H__
-#define __X_BOT_ECAT_H__
-
-//#include <iit/advr/ec_boards_base.h>
 #include <XBotCore-interfaces/XBotESC.h>
-#include <ec_boards_base.h>
-// #include <XBotCore-interfaces/IXBotJoint.h>
-// #include <XBotCore-interfaces/IXBotFT.h>
-// #include <XBotCore-interfaces/IXBotIMU.h>
-// #include <XBotInterface/RobotInterface.h>
-// #include <XBotCore-interfaces/IXBotHand.h>
-
+#include <RobotControlInterface.h>
+#include <iostream>
 namespace XBot
 {
-    class XBotEcat;
+    class Ethernet;
 }
 
 /**
  * @brief XBotCore EtherCAT class.
  * 
  */
-class XBot::XBotEcat : public Ec_Thread_Boards_base
+class XBot::Ethernet : public RobotControlInterface
                       
 {
 public:
     
-    XBotEcat(const char * config_yaml);
-    virtual ~XBotEcat();
+    Ethernet(const char * config_yaml);
+    virtual ~Ethernet();
    
-    /**
-     * @brief initialization function called before the EtherCAT OPERATIONAL state : overridden from Ec_Thread_Boards_base
-     * 
-     * @param  void
-     * @return void
-     */
-    virtual void init_preOP(void) final;
-    
-    /**
-     * @brief initialization function called just after the EtherCAT OPERATIONAL state , it calls the control_init function: overridden from Ec_Thread_Boards_base
-     * 
-     * @param  void
-     * @return void
-     */
-    virtual void init_OP(void) final;
-     
-    /**
-     * @brief Simply call the control loop function that will be implemented by the derived class: overridden from Ec_Thread_Boards_base
-     * 
-     * @param  void
-     * @return 1 on plugin_handler_loop() success. 0 otherwise
-     */
-//     virtual int user_loop(void) final;
+    virtual void init() {
+          std::cout<<"init ethernet"<<std::endl;
+          
+          
+    };
+      virtual int recv_from_slave(){std::cout<<"recvfrom ethernet"<<std::endl;};
+      virtual int send_to_slave(){std::cout<<"sendto ethernet"<<std::endl;};
         
     /**
      * @brief Getter for the thread name
@@ -174,7 +127,7 @@ private:
 
     
     // NOTE IXBotJoint getters
-    virtual bool get_link_pos(int joint_id, double& link_pos) {std::cout<<"getlinkpos ECAT"<<std::endl;};
+    virtual bool get_link_pos(int joint_id, double& link_pos) {std::cout<<"getlinkpos ETHERNET"<<std::endl;};
     
     virtual bool get_motor_pos(int joint_id, double& motor_pos) {};
     
