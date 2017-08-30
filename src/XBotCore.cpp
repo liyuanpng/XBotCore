@@ -98,7 +98,6 @@ double XBot::XBotCore::get_time()
     return iit::ecat::get_time_ns() / 1e9;
 }
 
-
 int XBot::XBotCore::control_loop(void) 
 {    
   std::cout<<"loop Thread"<<std::endl;
