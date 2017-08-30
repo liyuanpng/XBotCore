@@ -169,7 +169,7 @@ void CommunicationInterfaceYARP::YARP_configuration()
         wr_config.put("device","inertial"); 
         wr_config.put("robot_name", "bigman"); // TBD GET FROM SOMEWHERE 
         wr_config.put("name", "/" + wr_config.find("robot_name").asString() + "/" + aux + "/" + "inertial");
-        wr_config.put("period", ANALOG_SERVER_RATE);            // TBD do it from config YAML
+//         wr_config.put("period", ANALOG_SERVER_RATE);            // TBD do it from config YAML
         _inertial_map[imu_j.first].open(wr_config);
         
         // view on the wrapper and attach the poly driver

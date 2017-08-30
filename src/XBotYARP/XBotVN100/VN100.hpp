@@ -48,7 +48,6 @@ namespace yarp{
 class yarp::dev::VN100 :       public yarp::dev::IGenericSensor,
                                public yarp::dev::IPreciselyTimed,
                                public yarp::dev::DeviceDriver,
-                               public yarp::dev::ServerInertial,
                                public XBot::IXBotInit
  
 {
@@ -62,6 +61,8 @@ private:
     yarp::os::Semaphore sync_mutex;
 
     yarp::os::Stamp     lastStamp;
+    
+    std::string imu_name;
     
     /**
      * @brief XBotInterface pointer

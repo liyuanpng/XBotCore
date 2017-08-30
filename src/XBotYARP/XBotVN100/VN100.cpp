@@ -3,6 +3,9 @@
 #include <unistd.h>
 #include <time.h>
 
+#include <XCM/XBotUtils.h>
+
+#include <yarp/os/LogStream.h>
 #include <VN100.hpp>
 
 /* The serial device to use in the vn100_connect function is /dev/ttyUSB[n] with n is a progressive number starting from 0.
@@ -34,6 +37,16 @@ VN100::~VN100() { }
 bool VN100::open(yarp::os::Searchable &config)
 {
 
+    // check for imu name
+    if( config.check("imu_name") ) {
+        imu_name = config.find("imu_name").asString();
+    }
+    else {
+        DPRINTF("ERROR : VN100::open - imu_name not found\n");
+        std::fflush(stdout);
+        return false;
+    }
+    
     return true;
 }
 
@@ -45,19 +58,35 @@ bool VN100::init(XBot::XBotInterface::Ptr robot)
 
 bool VN100::read(yarp::sig::Vector &out)
 { 
-//     out[0] = (double) imu_data.ypr.yaw;
-//     out[1] = (double) imu_data.ypr.pitch;
-//     out[2] = (double) imu_data.ypr.roll;
-//     out[3] = (double) imu_data.acceleration.c0;
-//     out[4] = (double) imu_data.acceleration.c1;
-//     out[5] = (double) imu_data.acceleration.c2;
-//     out[6] = (double) imu_data.velocity.c0;
-//     out[7] = (double) imu_data.velocity.c1;
-//     out[8] = (double) imu_data.velocity.c2;
-//     out[9] = (double) imu_data.magnetic.c0;
-//     out[10] = (double) imu_data.magnetic.c1;
-//     out[11] = (double) imu_data.magnetic.c2;
-    memset(&out, 0, sizeof(double) * 12);
+    // get IMU pointer
+    XBot::ImuSensor::ConstPtr imu =  _robot->getImu().at(imu_name);
+    
+    Eigen::Quaterniond orientation;
+    Eigen::Vector3d acc, vel, euler_rpy;
+    
+    imu->getOrientation(orientation);
+        
+    Eigen::AngleAxisd::RotationMatrixType aa_rot(orientation);
+    euler_rpy = aa_rot.eulerAngles(0,1,2);
+    
+    imu->getLinearAcceleration(acc);
+    
+    imu->getAngularVelocity(vel);
+    
+    out.resize(12);
+    out[0] = (double) euler_rpy(0);
+    out[1] = (double) euler_rpy(1);
+    out[2] = (double) euler_rpy(2);
+    out[3] = (double) acc(0);
+    out[4] = (double) acc(1);
+    out[5] = (double) acc(2);
+    out[6] = (double) vel(0);
+    out[7] = (double) vel(1);
+    out[8] = (double) vel(2);
+    out[9] = (double) 0.0;
+    out[10] = (double) 0.0;
+    out[11] = (double) 0.0;
+
     // update the counter
     counter++;
     return true;
