@@ -28,6 +28,13 @@ XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config) :
 
 void XBot::CommunicationHandler::th_init(void*)
 {
+    // check that config file exists
+    std::ifstream fin(_path_to_config);
+    if (fin.fail()) {
+        XBot::ConsoleLogger::getLogger()->error() << "ERROR in " << __func__ << "! Can NOT open config file " << _path_to_config << "!" << XBot::ConsoleLogger::getLogger()->endl();
+        exit(0);
+    }
+    
     /* Get plugin vector from config file, save switch names, start pipe publishers */
     YAML::Node root_cfg = YAML::LoadFile(_path_to_config);
 
