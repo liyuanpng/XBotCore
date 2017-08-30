@@ -22,7 +22,7 @@
 #include <iit/ecat/advr/pipes.h>
 #include <iit/advr/trajectory.h>
 
-#include <RobotControlInterface.h>
+#include <XBotCore/RobotControlInterface.h>
 #include <queue>
 #include <iostream>
 #define ECAT_PTHREAD_STACK_SIZE (16*1024*1024) // 16MB
@@ -32,7 +32,7 @@
 
 
 class Ec_Boards_base : public RobotControlInterface,
-                              public iit::ecat::advr::Ec_Boards_ctrl 
+                       public iit::ecat::advr::Ec_Boards_ctrl 
 {
 public:
 

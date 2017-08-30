@@ -35,7 +35,37 @@
 namespace XBot
 {
     class XBotEcat;
+    struct XBotConversion;
 }
+
+
+struct XBot::XBotConversion {
+    
+    // RX
+    double link_pos    = 1;
+    double motor_pos   = 1;
+    double link_vel    = 0.001;
+    double motor_vel   = 0.001;
+    double torque      = 1;
+    double temperature = 1;
+    double fault       = 1;
+    double rtt         = 1;
+    double op_idx_ack  = 1;
+    
+    // TX
+    double pos_ref     = 1;
+    double vel_ref     = 1;
+    double tor_ref     = 100;
+    double gains       = 1;
+    double fault_ack   = 1;
+    double ts          = 1;
+    double op_idx_aux  = 1;
+    
+    // RX/TX
+    double aux         = 1;
+    
+};
+
 
 /**
  * @brief XBotCore EtherCAT class.
@@ -64,14 +94,6 @@ public:
      * @return void
      */
     virtual void init_OP(void) final;     
-   
-    /**
-     * @brief Getter for the thread name
-     * 
-     * @param  void
-     * @return std::string the thread name
-     */
-    std::string get_thread_name(void);
 
     // NOTE IXBotHand getters/setters
     virtual double get_grasp_state(int hand_id);
@@ -89,11 +111,7 @@ public:
 
 private:   
     
-    /**
-     * @brief The thread name
-     * 
-     */
-    std::string thread_name;
+    
     
     /**
      * @brief SDO info XDDP Pipes
@@ -114,30 +132,15 @@ private:
      * @return void
      */
     void write_sdo_info();
-        
-    /**
-     * @brief Setter for the thread name
-     * 
-     * @param  std::string the thread name
-     * @return void
-     */
-    void set_thread_name(std::string);
-        
-    /**
-     * @brief Setter for the thread period
-     * 
-     * @param  t the task period
-     * @return void
-     */
-    void set_thread_period(task_period_t t);
+    
+    XBot::XBotConversion _conversion;
     
     /**
-     * @brief Setter for the thread priority: RT thread
+     * @brief aux buffer for the last TX PDO
      * 
-     * @param void
-     * @return void
      */
-    void set_thread_priority();
+    iit::ecat::advr::McEscPdoTypes::pdo_tx last_pdo_tx;
+    
     
     //NOTE IXBotJoint getters
     virtual bool get_link_pos(int joint_id, double& link_pos) final;

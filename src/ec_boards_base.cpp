@@ -14,7 +14,7 @@
 */
 
 //#include <iit/advr/ec_boards_base.h>
-#include <ec_boards_base.h>
+#include <XBotCore/ec_boards_base.h>
 
 Ec_Boards_base::Ec_Boards_base ( const char * config_yaml ) : Ec_Boards_ctrl(config_yaml) {
 }
@@ -114,12 +114,13 @@ int Ec_Boards_base::recv_from_slave(){
         if ( recv_from_slaves ( timing ) != iit::ecat::advr::EC_BOARD_OK ) {
             // TODO
             DPRINTF ( "recv_from_slaves FAIL !\n" );
-            return;
+           
         }
          } catch ( iit::ecat::EscWrpError &e ) {
         std::cout << e.what() << std::endl;
+        return 1;
     }
-    
+     return 0;
 }
 
 int Ec_Boards_base::send_to_slave(){
@@ -130,8 +131,9 @@ int Ec_Boards_base::send_to_slave(){
         
         } catch ( iit::ecat::EscWrpError &e ) {
             std::cout << e.what() << std::endl;
+            return 1;
         }
-    
+    return 0;
 }
 
 void Ec_Boards_base::xddps_init ( void ) {

@@ -38,41 +38,14 @@
 #include <XBotInterface/RobotInterface.h>
 
 #include <XCM/XBotPluginHandler.h>
-#include <XCM/XBotThread.h>
+//#include <XCM/XBotThread.h>
+#include <iit/advr/thread_util.h>
 #include <RobotControlInterface.h>
 
 namespace XBot
 {
-    class XBotCore;
-    struct XBotConversion;
+    class XBotCore;  
 }
-
-struct XBot::XBotConversion {
-    
-    // RX
-    double link_pos    = 1;
-    double motor_pos   = 1;
-    double link_vel    = 0.001;
-    double motor_vel   = 0.001;
-    double torque      = 1;
-    double temperature = 1;
-    double fault       = 1;
-    double rtt         = 1;
-    double op_idx_ack  = 1;
-    
-    // TX
-    double pos_ref     = 1;
-    double vel_ref     = 1;
-    double tor_ref     = 100;
-    double gains       = 1;
-    double fault_ack   = 1;
-    double ts          = 1;
-    double op_idx_aux  = 1;
-    
-    // RX/TX
-    double aux         = 1;
-    
-};
 
 /**
  * @brief XBotCore: RT EtherCAT thread and RT (shared-memory) XBotCore interfaces implementation.
@@ -107,8 +80,46 @@ public:
     virtual int control_loop(void) final;
     
     double get_time();
+    
+    /**
+     * @brief Getter for the thread name
+     * 
+     * @param  void
+     * @return std::string the thread name
+     */
+    std::string get_thread_name(void);
 
 private:
+    
+    /**
+     * @brief The thread name
+     * 
+     */
+    std::string thread_name;
+    
+    /**
+     * @brief Setter for the thread name
+     * 
+     * @param  std::string the thread name
+     * @return void
+     */
+    void set_thread_name(std::string);
+        
+    /**
+     * @brief Setter for the thread period
+     * 
+     * @param  t the task period
+     * @return void
+     */
+    void set_thread_period(task_period_t t);
+    
+    /**
+     * @brief Setter for the thread priority: RT thread
+     * 
+     * @param void
+     * @return void
+     */
+    void set_thread_priority();
   
     RobotControlInterface* robotControlInterface;
      
@@ -118,12 +129,6 @@ private:
      */
     std::string _path_to_config;
     
-    /**
-     * @brief aux buffer for the last TX PDO
-     * 
-     */
-    iit::ecat::advr::McEscPdoTypes::pdo_tx last_pdo_tx;
-    
     // xbot robot
     XBot::RobotInterface::Ptr _robot;
     
@@ -132,8 +137,6 @@ private:
      * 
      */
     XBot::PluginHandler::Ptr _pluginHandler;
-    
-    XBot::XBotConversion _conversion;
     
     int _iter = 0;
 

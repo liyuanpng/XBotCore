@@ -68,6 +68,7 @@ include_directories(include ${XBotCoreModel_INCLUDE_DIRS}
                             ${ecat_test_utils${LIB_TYPE}_INCLUDE_DIRS}
                             ${sharedlibpp_INCLUDE_DIRS}
                             ${XCM_INCLUDE_DIRS}
+                            include/XBotCore/
                     )
                             
 
