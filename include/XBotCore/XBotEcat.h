@@ -29,7 +29,7 @@
 #ifndef __X_BOT_ECAT_H__
 #define __X_BOT_ECAT_H__
 
-#include <iit/advr/ec_boards_base.h>
+#include <ec_boards_base.h>
 #include <XBotCore-interfaces/XBotESC.h>
 
 namespace XBot
@@ -41,7 +41,7 @@ namespace XBot
  * @brief XBotCore EtherCAT class.
  * 
  */
-class XBot::XBotEcat : public Ec_Thread_Boards_base
+class XBot::XBotEcat : public Ec_Boards_base
                       
 {
 public:
@@ -63,7 +63,7 @@ public:
      * @param  void
      * @return void
      */
-//     virtual void init_OP(void) final;     
+    virtual void init_OP(void) final;     
    
     /**
      * @brief Getter for the thread name

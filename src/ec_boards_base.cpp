@@ -1,32 +1,34 @@
 /*
-   Copyright (C) 2012 Italian Institute of Technology
+   Copyright (C) Italian Institute of Technology
 
    Developer:
        Alessio Margan (2015-, alessio.margan@iit.it)
+       Giuseppe Rigano (2017, giuseppe.rigano@iit.it)
 
 */
 
 /**
  *
  * @author Alessio Margan (2015-, alessio.margan@iit.it)
+ * @author Giuseppe Rigano (2017-, giuseppe.rigano@iit.it)
 */
 
 //#include <iit/advr/ec_boards_base.h>
 #include <ec_boards_base.h>
 
-Ec_Thread_Boards_base::Ec_Thread_Boards_base ( const char * config_yaml ) /*: Ec_Boards_ctrl(config_yaml)*/ {
+Ec_Boards_base::Ec_Boards_base ( const char * config_yaml ) : Ec_Boards_ctrl(config_yaml) {
 }
 
-Ec_Thread_Boards_base::~Ec_Thread_Boards_base() {
+Ec_Boards_base::~Ec_Boards_base() {
 
-//     std::cout << "~" << typeid ( this ).name() << std::endl;
-//     stop_motors();
-//     iit::ecat::print_stat ( s_loop );
+    std::cout << "~" << typeid ( this ).name() << std::endl;
+    stop_motors();
+    iit::ecat::print_stat ( s_loop );
     
 }
 
-/*
-void Ec_Thread_Boards_base::th_init ( void * ) {
+
+void Ec_Boards_base::init_internal () {
 
     const YAML::Node config = get_config_YAML_Node();
 
@@ -94,8 +96,15 @@ void Ec_Thread_Boards_base::th_init ( void * ) {
     init_OP();
 }
 
-void Ec_Thread_Boards_base::th_loop ( void * ) {
+void Ec_Boards_base::init(){
+    
+    init_internal();
+    
+    return;
+}
 
+int Ec_Boards_base::recv_from_slave(){
+    
     tNow = iit::ecat::get_time_ns();
     s_loop ( tNow - tPre );
     tPre = tNow;
@@ -107,21 +116,25 @@ void Ec_Thread_Boards_base::th_loop ( void * ) {
             DPRINTF ( "recv_from_slaves FAIL !\n" );
             return;
         }
-
-//         xddps_loop();
-        
-        user_loop();
-
-        send_to_slaves();
-
-    } catch ( iit::ecat::EscWrpError &e ) {
+         } catch ( iit::ecat::EscWrpError &e ) {
         std::cout << e.what() << std::endl;
     }
-
+    
 }
 
+int Ec_Boards_base::send_to_slave(){
+    
+    try {          
+       
+            send_to_slaves();
+        
+        } catch ( iit::ecat::EscWrpError &e ) {
+            std::cout << e.what() << std::endl;
+        }
+    
+}
 
-void Ec_Thread_Boards_base::xddps_init ( void ) {
+void Ec_Boards_base::xddps_init ( void ) {
 
     int slave_pos;
     iit::ecat::advr::Motor * moto;
@@ -167,7 +180,7 @@ void Ec_Thread_Boards_base::xddps_init ( void ) {
 
 }
 
-void Ec_Thread_Boards_base::xddps_loop ( void ) {
+void Ec_Boards_base::xddps_loop ( void ) {
 
     int 	slave_pos;
     uint16_t	esc_type;
@@ -205,14 +218,14 @@ void Ec_Thread_Boards_base::xddps_loop ( void ) {
             break;
         }
     }
-}*/
+}
 
 /**
  * NOTE this is a step reference !!!
  * LoPowerMotor (i.e. Coman) has a trajectory generator with max speed 0.5 rad/s
  * HiPowerMotor does NOT have it
- *//*
-bool Ec_Thread_Boards_base::go_there ( const std::map<int, iit::ecat::advr::Motor*> &motor_set,
+ */
+bool Ec_Boards_base::go_there ( const std::map<int, iit::ecat::advr::Motor*> &motor_set,
                                        const std::map<int,float> &target_pos,
                                        float eps, bool debug ) {
 
@@ -269,9 +282,9 @@ bool Ec_Thread_Boards_base::go_there ( const std::map<int, iit::ecat::advr::Moto
     }
 
     return ( cond_cnt == cond_sum );
-}*/
-/*
-void Ec_Thread_Boards_base::remove_rids_intersection(std::vector<int> &start_dest, const std::vector<int> &to_remove)
+}
+
+void Ec_Boards_base::remove_rids_intersection(std::vector<int> &start_dest, const std::vector<int> &to_remove)
 {
     start_dest.erase(
         std::remove_if(start_dest.begin(), start_dest.end(),
@@ -280,7 +293,7 @@ void Ec_Thread_Boards_base::remove_rids_intersection(std::vector<int> &start_des
         start_dest.end()
     );
     
-}*/
+}
 
 
 // kate: indent-mode cstyle; indent-width 4; replace-tabs on; 

@@ -131,16 +131,16 @@ void XBot::XBotEcat::init_preOP(void)
     return;
 }
 
-// void XBot::XBotEcat::init_OP(void)
-// {
-//     // open SDO XDDP
-// //     init_sdo_xddp();
-//     // write SDO info
-// //     write_sdo_info(); 
-//     // control init implemented by the derived classes
-// //     control_init();
-//     return;
-// }
+void XBot::XBotEcat::init_OP(void)
+{
+    // open SDO XDDP
+//     init_sdo_xddp();
+    // write SDO info
+//     write_sdo_info(); 
+    // control init implemented by the derived classes
+//     control_init();
+    return;
+}
 
 // int XBot::XBotEcat::user_loop(void) 
 // {

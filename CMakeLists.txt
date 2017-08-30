@@ -80,6 +80,7 @@ add_executable(${PROJECT_NAME}
 add_library(XBotCoreThread SHARED
     src/XBotEcat.cpp
     src/XBotCore.cpp
+    src/ec_boards_base.cpp
 #     src/Ethernet.cpp
 )
 
