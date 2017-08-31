@@ -30,7 +30,7 @@
 #ifndef __X_BOT_CORE_H__
 #define __X_BOT_CORE_H__
 
-#include <iit/ecat/advr/esc.h>
+#include <XCM/XBotUtils.h>
 
 // #include <XBotCore/XBotEcat.h>
 #include <XBotCore-interfaces/XBotPipes.h>
@@ -38,9 +38,8 @@
 #include <XBotInterface/RobotInterface.h>
 
 #include <XCM/XBotPluginHandler.h>
-//#include <XCM/XBotThread.h>
-#include <iit/advr/thread_util.h>
-#include <RobotControlInterface.h>
+#include <XCM/XBotThread.h>
+#include <HALInterface.h>
 
 namespace XBot
 {

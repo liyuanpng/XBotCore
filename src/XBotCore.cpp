@@ -28,7 +28,7 @@
 
 #include <XBotCore/XBotCore.h>
 #include <boost/bind.hpp>
-#include <XBotEcat.h>
+//#include <XBotEcat.h>
 //#include <Ethernet.h>
 
 XBot::XBotCore::XBotCore(const char* config_yaml) : 
@@ -53,7 +53,7 @@ XBot::XBotCore::XBotCore(const char* config_yaml) :
     //TODO use FactoryPattern
     //use shared library
     //robotInterface = new XBot::Ethernet(_path_to_config.c_str()); 
-    robotControlInterface = new XBot::XBotEcat(_path_to_config.c_str());
+    //robotControlInterface = new XBot::XBotEcat(_path_to_config.c_str());
 }
 
 void XBot::XBotCore::set_thread_name(std::string thread_name)
@@ -142,7 +142,7 @@ void XBot::XBotCore::control_init(void)
 
 double XBot::XBotCore::get_time()
 {
-    return iit::ecat::get_time_ns() / 1e9;
+    return XBot::get_time_ns() / 1e9;
 }
 
 int XBot::XBotCore::control_loop(void) 
