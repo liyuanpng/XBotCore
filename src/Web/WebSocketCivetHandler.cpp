@@ -55,7 +55,7 @@ bool WebSocketHandler::handleData(CivetServer *server,
     
     sharedData->clearJointMap();      
     if( d.HasMember("joint")){          
-        assert(d["joint"].isArray());
+        //assert(d["joint"].isArray());
         const Value& array = d["joint"];
         for (SizeType i = 0; i < array.Size(); i++){
             const Value& obj = array[i];

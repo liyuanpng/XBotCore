@@ -72,50 +72,33 @@ void HttpHandler::handleGet(std::shared_ptr<ResponseInterface>& response){
              
 }
   
-void HttpHandler::handlePost(std::shared_ptr<RequestObject>& request){
+void HttpHandler::handlePost(std::shared_ptr<RequestObject>& binary_request){
     
-      void * buff;
-      buff = request->GetData();     
-      StringStream stream((char*)buff);
-      //std::cout<<"pos"<<std::string((char*)buff)<<std::endl;
-      Document d;
-      d.ParseStream(stream);
-      
+      std::unique_ptr<JsonRequest> getter = std::unique_ptr<JsonRequest>(new JsonRequest(binary_request));
+//       void* buff = request->GetData();     
+//       std::cout<<"pos"<<std::string((char*)buff)<<std::endl;
+
       sharedData->clearJointMap();
       
       std::vector<double> vec;
+      std::map<int, double> map;
       if(uri.compare("/alljoints")==0){     
-        if( d.HasMember("link_position")){        
-          assert(d["link_position"].isArray());
-          const Value& array = d["link_position"];
-          for (SizeType i = 0; i < array.Size(); i++){
-              double val = array[i].GetDouble();
-              vec.push_back(val);   
-          }
+        
+        if(getter->GetDoubleArray("link_position", vec)){       
           sharedData->external_command->add(vec);
           //HACK simulation of holding value for longer time
           sharedData->external_command->add(vec);
         }
+        
       }else if(uri.compare("/singlejoint")==0){
         
         //{"joint":[{"id": 15, "val": 0},{"id": 16, "val": 0}]}
-        if( d.HasMember("joint")){          
-          assert(d["joint"].isArray());
-          const Value& array = d["joint"];
-          for (SizeType i = 0; i < array.Size(); i++){
-              const Value& obj = array[i];
-              int id = obj["id"].GetInt();
-              double val = obj["val"].GetDouble();
-              sharedData->insertJoint(id,val);              
-          }        
-        }
-        
+        if(getter->GetIntDoubleMap("link_position", map)){
+          for( auto& ref : map){
+            sharedData->insertJoint(ref.first,ref.second);
+          }
+        }        
       }
-            
-      /*StringBuffer buffer;
-      Writer<StringBuffer> writer(buffer);
-      d.Accept(writer);
-      std::cout <<"stringify"<< std::string(buffer.GetString()) << std::endl;*/ 
     
 }
   
