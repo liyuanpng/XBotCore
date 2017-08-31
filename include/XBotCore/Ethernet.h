@@ -3,7 +3,7 @@
 #define __X_BOT_ETHERNET_H__
 
 #include <XBotCore-interfaces/XBotESC.h>
-#include <RobotControlInterface.h>
+#include <HALInterface.h>
 #include <iostream>
 namespace XBot
 {
@@ -14,7 +14,7 @@ namespace XBot
  * @brief XBotCore EtherCAT class.
  * 
  */
-class XBot::Ethernet : public RobotControlInterface
+class XBot::Ethernet : public HALInterface
                       
 {
 public:

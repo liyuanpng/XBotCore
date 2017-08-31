@@ -121,7 +121,7 @@ private:
      */
     void set_thread_priority();
   
-    RobotControlInterface* robotControlInterface;
+    HALInterface* robotControlInterface;
      
     /**
      * @brief Path to YAML config file
