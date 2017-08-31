@@ -47,15 +47,23 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
     _filter_q = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
     _filter_k = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
     _filter_d = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
-    _filter_enabled = false;
     
-    int rh = _robot->getHand()["r_handj"]->getHandId();
-    int lh = _robot->getHand()["l_handj"]->getHandId();
+    // NOTE filter ON by default
+    _filter_enabled = true;
+    _robot->getMotorPosition(_qref);
+    _robot->getStiffness(_kref);
+    _robot->getDamping(_dref);
+
+    _filter_q.reset(_qref);
+    _filter_k.reset(_kref);
+    _filter_d.reset(_dref);
     
+    DPRINTF("Filter ON by default\n");
+
     for (auto& p: _robot->getHand())
     {
-      XBot::Hand::Ptr hand = p.second;
-      _hand_map[hand->getHandId()] =  hand;
+        XBot::Hand::Ptr hand = p.second;
+        _hand_map[hand->getHandId()] =  hand;
     }
     
     
@@ -109,9 +117,11 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
     for( auto& p: _sub_map) {
         if( p.second.read(_pdo_tx) ) {
           
-          if( _hand_map[p.first] != nullptr){            
-            _hand_map[p.first]->grasp(_pdo_tx.pos_ref);
-          }          
+            if( _hand_map[p.first] != nullptr){                
+                // HACK scaling back based on 9.0 max range
+                _hand_map[p.first]->grasp(_pdo_tx.pos_ref / 9.0);
+            }          
+            
             _pos_ref_map[p.first] = _pdo_tx.pos_ref;
             _vel_ref_map[p.first] = _pdo_tx.vel_ref;
             _tor_ref_map[p.first] = _pdo_tx.tor_ref;

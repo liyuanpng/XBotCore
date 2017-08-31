@@ -7,7 +7,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-void * rt_periodic_thread ( Thread_hook_Ptr th_hook ) {
+void * XBot::rt_periodic_thread ( Thread_hook_Ptr th_hook ) {
     int             ret = 0;
     struct timespec starttp, periodtp;
     unsigned long   overruns;
@@ -84,7 +84,7 @@ void * rt_periodic_thread ( Thread_hook_Ptr th_hook ) {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-void * rt_non_periodic_thread ( Thread_hook_Ptr th_hook ) {
+void * XBot::rt_non_periodic_thread ( Thread_hook_Ptr th_hook ) {
     int ret = 0;
 
     // thread specific initialization

@@ -109,8 +109,6 @@ bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::Gener
         }
 
         _joint_names_srv = nh.advertiseService(joint_service_name, &XBot::CommandAdvr::service_callback, this);
-
-
     }
 
 
@@ -133,7 +131,6 @@ bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::Gener
             _msg.stiffness.push_back(0);
             _msg.velocity.push_back(0);
         }
-
     }
 
     // Populate _idx_map
@@ -145,6 +142,8 @@ bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::Gener
         }
 
     }
+    
+    return true;
 
 }
 

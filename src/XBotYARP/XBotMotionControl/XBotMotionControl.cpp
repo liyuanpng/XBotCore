@@ -186,6 +186,7 @@ bool XBot::dev::XBotMotionControl::setEncoders(const double* vals)
 bool XBot::dev::XBotMotionControl::setPosition(int j, double ref)
 {
     _robot->getChainMap().at(chain_name)->setPositionReference(j, DEG2RAD(ref));
+    
     // save to last ref buff
     xbot_last_ref_pos[j] = DEG2RAD(ref);
     return true;
@@ -208,6 +209,7 @@ bool XBot::dev::XBotMotionControl::setPositions(const double* refs)
     bool success = true;
     for( int i = 0; i < joints_num; i++ ) {
         _robot->getChainMap().at(chain_name)->setPositionReference(i, DEG2RAD(refs[i]));
+        
         // save to last ref buff
         xbot_last_ref_pos[i] = DEG2RAD(refs[i]);
     }
@@ -452,17 +454,17 @@ bool XBot::dev::XBotMotionControl::getInteractionModes(yarp::dev::InteractionMod
 
 bool XBot::dev::XBotMotionControl::setInteractionModes(yarp::dev::InteractionModeEnum* modes)
 {
-    return false;
+    return true;
 }
 
 bool XBot::dev::XBotMotionControl::setInteractionMode(int j, yarp::dev::InteractionModeEnum _mode)
 {
-    return false;
+    return true;
 }
 
 bool XBot::dev::XBotMotionControl::setInteractionModes(int n_joints, int* joints, yarp::dev::InteractionModeEnum* modes)
 {
-    return false;
+    return true;
 }
 
 
@@ -892,6 +894,96 @@ bool XBot::dev::XBotMotionControl::setMotorEncoderCountsPerRevolution(int m, con
 {
     return false;
 }
+
+
+bool XBot::dev::XBotMotionControl::disableAmp(int j)
+{
+    return false;
+}
+
+bool XBot::dev::XBotMotionControl::enableAmp(int j)
+{
+    return false;
+}
+
+bool XBot::dev::XBotMotionControl::getAmpStatus(int* st)
+{
+    return false;
+}
+
+bool XBot::dev::XBotMotionControl::getCurrent(int j, double* val)
+{
+    return false;
+}
+
+bool XBot::dev::XBotMotionControl::getAmpStatus(int j, int* v)
+{
+    return false;
+}
+
+bool XBot::dev::XBotMotionControl::getCurrents(double* vals)
+{
+    return false;
+}
+
+bool XBot::dev::XBotMotionControl::getMaxCurrent(int j, double* v)
+{
+    return false;
+}
+
+bool XBot::dev::XBotMotionControl::getPWM(int j, double* val)
+{
+    return true;
+}
+
+bool XBot::dev::XBotMotionControl::setMaxCurrent(int j, double v)
+{
+    return false;
+}
+
+bool XBot::dev::XBotMotionControl::getDutyCycle(int m, double* val)
+{
+    return true;
+}
+
+bool XBot::dev::XBotMotionControl::getDutyCycles(double* vals)
+{
+    return true;
+}
+
+bool XBot::dev::XBotMotionControl::getNumberOfMotors(int* number)
+{
+    return false;
+}
+
+bool XBot::dev::XBotMotionControl::getRefDutyCycle(int m, double* ref)
+{
+    return false;
+}
+
+bool XBot::dev::XBotMotionControl::getRefDutyCycles(double* refs)
+{
+    return false;
+}
+
+bool XBot::dev::XBotMotionControl::setRefDutyCycle(int m, double ref)
+{
+    return false;
+}
+
+bool XBot::dev::XBotMotionControl::setRefDutyCycles(const double* refs)
+{
+    return false;
+}
+
+
+
+
+
+
+
+
+
 
 XBot::dev::XBotMotionControl::~XBotMotionControl() 
 {

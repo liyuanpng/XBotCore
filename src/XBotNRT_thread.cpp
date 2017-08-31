@@ -7,7 +7,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-void * nrt_thread ( Thread_hook_Ptr th_hook ) {
+void * XBot::nrt_thread ( Thread_hook_Ptr th_hook ) {
     timespec    t;
 
     // INIT

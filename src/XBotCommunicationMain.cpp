@@ -72,7 +72,7 @@ int main ( int argc, char *argv[] ) try {
     
     int num_iters = 0;
 
-    std::map<std::string, Thread_hook*> threads;
+    std::map<std::string, XBot::Thread_hook*> threads;
     if ( argc != 2 ) {
         printf ( "Usage: %s config.yaml\n", argv[0] );
         return 0;

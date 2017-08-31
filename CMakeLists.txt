@@ -159,6 +159,7 @@ if(${YARP_FOUND} AND ${ENABLE_YARP})
 
     add_subdirectory(src/XBotYARP/XBotMotionControl)
     add_subdirectory(src/XBotYARP/XBotFT)
+    add_subdirectory(src/XBotYARP/XBotVN100)
 
     YARP_END_PLUGIN_LIBRARY(XBotYarp)
 
