@@ -1,133 +1,54 @@
+/*
+   Boards_ctrl_basic.h
+
+   Copyright (C) 2012 Italian Institute of Technology
+
+   Developer:
+       Alessio Margan (2013-, alessio.margan@iit.it)
+   
+*/
+
+/**
+ *
+ * @author Alessio Margan (2013-, alessio.margan@iit.it)
+*/
+
 
 #ifndef __X_BOT_ETHERNET_H__
 #define __X_BOT_ETHERNET_H__
 
-#include <XBotCore-interfaces/XBotESC.h>
-#include <HALInterface.h>
-#include <iostream>
-namespace XBot
-{
-    class Ethernet;
-}
+
+#include <utils.h>
+#include <thread_util.h>
+
+#include <Boards_ctrl_ext.h>
+#include <XBotCore/HALInterface.h>
 
 /**
- * @brief XBotCore EtherCAT class.
- * 
+ * @class Boards_ctrl_basic
+ * @defgroup Boards_controller Boards_controller
+ * @ingroup RoboLLI
+ * @brief Boards_ctrl_basic class
  */
-class XBot::Ethernet : public HALInterface
-                      
-{
-public:
-    
-    Ethernet(const char * config_yaml);
-    virtual ~Ethernet();
-   
-    virtual void init() {
-          std::cout<<"init ethernet"<<std::endl;
-          
-          
-    };
-      virtual int recv_from_slave(){std::cout<<"recvfrom ethernet"<<std::endl;};
-      virtual int send_to_slave(){std::cout<<"sendto ethernet"<<std::endl;};
-        
-    /**
-     * @brief Getter for the thread name
-     * 
-     * @param  void
-     * @return std::string the thread name
-     */
-//     std::string get_thread_name(void);
 
+class Ethernet : /*public Thread_hook,*/ 
+                          public HALInterface,
+                          public Boards_ctrl_ext  {
 
-protected:
-    
-    /**
-     * @brief Robot control initialization function: called by the init_OP, before the ECAT thread loop: we are in OPERATIE state
-     * 
-     * @param  void
-     * @return void
-     */
-//     virtual void control_init(void) = 0;
+private:
+    uint64_t g_tStart;
+    uint8_t trj_flag;
 
-    /**
-     * @brief Robot control loop
-     * 
-     * @param  void
-     * @return 1 on success. 0 otherwise
-     */
-//     virtual int control_loop(void) = 0;
-        
+    group_ref_t pos_group;
+    group_ref_comp_t pos_vel_group;
 
+    double control_old, vel_old;
 
-private:   
+    Write_XDDP_pipe * xddp_test;
     
-    /**
-     * @brief The thread name
-     * 
-     */
-//     std::string thread_name;
     
-    /**
-     * @brief SDO info XDDP Pipes
-     * 
-     */
-//     std::map<int, std::shared_ptr<XDDP_pipe> > sdo_xddps;
-    
-    /**
-     * @brief initialize the SDO XDDP pipes
-     * 
-     * @return void
-     */
-//     void init_sdo_xddp();
-    
-    /**
-     * @brief write the sdo_info of the motor boards to the SDP XDDP pipes
-     * 
-     * @return void
-     */
-//     void write_sdo_info();
-        
-    /**
-     * @brief Setter for the thread name
-     * 
-     * @param  std::string the thread name
-     * @return void
-     */
-//     void set_thread_name(std::string);
-        
-    /**
-     * @brief Setter for the thread period
-     * 
-     * @param  t the task period
-     * @return void
-     */
-//     void set_thread_period(task_period_t t);
-    
-    /**
-     * @brief Setter for the thread priority: RT thread
-     * 
-     * @param void
-     * @return void
-     */
-//     void set_thread_priority();
-    
-    //     // NOTE IXBotHand getters/setters
-    virtual double get_grasp_state(int hand_id){};
-    virtual bool   grasp(int hand_id, double grasp_percentage){};
-//     
-//     // NOTE IXBotFT getters
-    virtual bool get_ft(int ft_id, std::vector< double >& ft, int channels = 6) {};
-    virtual bool get_ft_fault(int ft_id, double& fault) {};
-    virtual bool get_ft_rtt(int ft_id, double& rtt) {};
-//     
-//     // NOTE IXBotIMU getters
-    virtual bool get_imu(int imu_id, std::vector< double >& lin_acc, std::vector< double >& ang_vel, std::vector< double >& quaternion){};
-    virtual bool get_imu_fault(int imu_id, double& fault){};
-    virtual bool get_imu_rtt(int imu_id, double& rtt){};
-
-    
-    // NOTE IXBotJoint getters
-    virtual bool get_link_pos(int joint_id, double& link_pos) {std::cout<<"getlinkpos ETHERNET"<<std::endl;};
+    //NOTE IXBotJoint getters
+    virtual bool get_link_pos(int joint_id, double& link_pos) {};
     
     virtual bool get_motor_pos(int joint_id, double& motor_pos) {};
     
@@ -148,8 +69,8 @@ private:
     virtual bool get_aux(int joint_id, double& aux) {};
     
     virtual bool get_gains(int joint_id, std::vector< double >& gain_vector) {};
-//     
-//     // NOTE IXBotJoint setters
+    
+    // NOTE IXBotJoint setters
     virtual bool set_pos_ref(int joint_id, const double& pos_ref) {};
     
     virtual bool set_vel_ref(int joint_id, const double& vel_ref) {};
@@ -166,6 +87,40 @@ private:
     
     virtual bool set_aux(int joint_id, const double& aux) {};
 
+public:
+    Ethernet(const char * config);
+    virtual ~Ethernet();
+
+//     virtual void th_init(void *);
+//     virtual void th_loop(void *);
+
+//     int user_input(uint8_t &cmd);
+//     int user_loop(void);
+    
+    void init_internal();
+    
+    
+    virtual void init();
+    virtual int recv_from_slave();
+    virtual int send_to_slave();
+    
+     // NOTE IXBotHand getters/setters
+    virtual double get_grasp_state(int hand_id){};
+    virtual bool   grasp(int hand_id, double grasp_percentage){};
+    
+    // NOTE IXBotFT getters
+    virtual bool get_ft(int ft_id, std::vector< double >& ft, int channels = 6) {};
+    virtual bool get_ft_fault(int ft_id, double& fault) {};
+    virtual bool get_ft_rtt(int ft_id, double& rtt) {};
+    
+    // NOTE IXBotIMU getters
+    virtual bool get_imu(int imu_id, std::vector< double >& lin_acc, std::vector< double >& ang_vel, std::vector< double >& quaternion){};
+    virtual bool get_imu_fault(int imu_id, double& fault){};
+    virtual bool get_imu_rtt(int imu_id, double& rtt){};
+
+
 };
 
-#endif //__X_BOT_ECAT_H__
+
+
+#endif 

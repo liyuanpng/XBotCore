@@ -1,273 +1,322 @@
-//#include <iit/advr/ec_boards_base.h>
-#include <Ethernet.h>
-
-XBot::Ethernet::Ethernet ( const char * config_yaml ) /*: Ec_Boards_ctrl(config_yaml)*/ {
-}
-
-XBot::Ethernet::~Ethernet() {
-
-//     std::cout << "~" << typeid ( this ).name() << std::endl;
-//     stop_motors();
-//     iit::ecat::print_stat ( s_loop );
-    
-}
-
 /*
-void Ec_Thread_Boards_base::th_init ( void * ) {
+   Boards_ctrl_basic.cpp
 
-    const YAML::Node config = get_config_YAML_Node();
+   Copyright (C) 2012 Italian Institute of Technology
 
-    // init Ec_Boards_ctrl
-    if ( Ec_Boards_ctrl::init() != iit::ecat::advr::EC_BOARD_OK ) {
-        throw "something wrong";
-    }
+   Developer:
+       Alessio Margan (2013-, alessio.margan@iit.it)
 
-    get_esc_map_byclass ( pows );
-    DPRINTF ( "found %lu pows\n", pows.size() );
-    get_esc_map_byclass ( powCmns );
-    DPRINTF ( "found %lu powCmns\n", powCmns.size() );
-    
-    // walkman power/battery board turn on all ESCs
-    if ( pows.size() == 1 && slaves.size() == 1 ) {
-        
-        while ( ! pows[1]->power_on_ok() ) {
-            osal_usleep(1000000);
-            pows[1]->readSDO_byname("status");
-            pows[1]->handle_status();
-        }
-        // power on
-        Ec_Boards_ctrl::shutdown(false);
-        // wait boards boot up
-        sleep(6);
-        // init Ec_Boards_ctrl
-        if ( Ec_Boards_ctrl::init() != iit::ecat::advr::EC_BOARD_OK ) {
-            throw "something wrong";
-        }
+*/
 
-    }
+/**
+ *
+ * @author Alessio Margan (2013-, alessio.margan@iit.it)
+*/
 
-    get_esc_map_byclass ( motors );
-    DPRINTF ( "found %lu motors\n", motors.size() );
-    get_esc_map_byclass ( fts );
-    DPRINTF ( "found %lu fts\n", fts.size() );
-    get_esc_map_byclass ( foot_sensors );
-    DPRINTF ( "found %lu foot_sensors\n", foot_sensors.size() );
-    get_esc_map_byclass ( imus );
-    DPRINTF ( "found %lu imus\n", imus.size() );
-    get_esc_map_byclass ( tests );
-    DPRINTF ( "found %lu tests\n", tests.size() );
 
-    for ( auto const& item : motors ) {
-        DPRINTF ("pos %d == %d rid2Pos() rid %d ==  %d pos2Rid()\n",
-                 item.first, rid2Pos(item.second->get_robot_id()),
-                 item.second->get_robot_id(), pos2Rid(item.first) );
-        assert( item.first == rid2Pos(item.second->get_robot_id()) && item.second->get_robot_id() == pos2Rid(item.first) );
-    }
+#include <string.h>
 
-    
-    init_preOP();
+#include <Ethernet.h>
+#include <Boards_exception.h>
 
-    if ( set_operative() <= 0 ) {
-        throw "something else wrong";
-    }
+static const std::vector<float> homeVel(25,25);
 
-    start_time = iit::ecat::get_time_ns();
-    tNow, tPre = start_time;
+static const std::vector<float> homePos = {
+    // lower body #15
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+//  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15
+    // upper body #10
+    0, 87,  0, -3,  0,-87,  0, -3,  0,  0};
+// 16, 17, 18, 19, 20, 21, 22, 23, 24, 25
 
-//     if ( config["ec_boards_base"]["create_pipes"].as<bool>() ) {
-//         //xddps_init();
-//     }
 
-    init_OP();
+// boards ID
+std::vector<int> r_leg = {  4,  6,  7,  8,  9, 10};
+std::vector<int> l_leg = {  5, 11, 12, 13, 14, 15};
+std::vector<int> waist = {  1,  2, 3};
+std::vector<int> r_arm = { 16, 17, 18 ,19};
+std::vector<int> l_arm = { 20, 21, 22, 23};
+std::vector<int> neck  = {}; //{ 24, 25};
+
+
+Ethernet::Ethernet(const char * config): Boards_ctrl_ext(config) {
+
+    name = "boards_ctrl_basic";
+    period.period = {0,1000};
+
+#ifdef __XENO__
+    schedpolicy = SCHED_FIFO;
+#else
+    schedpolicy = SCHED_OTHER;
+#endif
+    priority = sched_get_priority_max(schedpolicy);
+    stacksize = PTHREAD_STACK_MIN;
+
+    xddp_test = new Write_XDDP_pipe(std::string(name), 4096);
+
 }
 
-void Ec_Thread_Boards_base::th_loop ( void * ) {
+Ethernet::~Ethernet() {
 
-    tNow = iit::ecat::get_time_ns();
-    s_loop ( tNow - tPre );
-    tPre = tNow;
+    delete xddp_test;
+
+    std::cout << "~" << typeid(this).name() << std::endl;
+}
+
+
+void Ethernet::init_internal() {
+
+    // configure dsp and start bc data
+    // NOT start motor controller
+    init();
+    // read current position and set as homing
+    homing();
+    test();
+    trj_flag = 0;
+
+}
+
+void Ethernet::init(){
+    
+    init_internal();
+    
+}
+
+int Ethernet::recv_from_slave(){
+    
+     uint8_t cmd;
+    static char user_data[1024];
 
     try {
 
-        if ( recv_from_slaves ( timing ) != iit::ecat::advr::EC_BOARD_OK ) {
-            // TODO
-            DPRINTF ( "recv_from_slaves FAIL !\n" );
-            return;
-        }
-
-//         xddps_loop();
+        sense();
         
-        user_loop();
+        user_input(cmd);
+        return 1;
+        
+        } catch ( boards_error &e ) {
+        DPRINTF("FATAL ERROR in %s ... %s\n", __FUNCTION__, e.what());
+        // handle error .... exit thread
+        // exit {rt,nrt}_periodic_thread function
+        _run_loop = 0;
 
-        send_to_slaves();
-
-    } catch ( iit::ecat::EscWrpError &e ) {
-        std::cout << e.what() << std::endl;
+    } catch ( boards_warn &e ) {
+        DPRINTF("WARNING in %s ... %s\n", __FUNCTION__, e.what());
+        // handle warning
     }
-
+     return 0;
 }
 
+int Ethernet::send_to_slave(){
+    
+    try {          
+       
+            sprintf(user_data, "%ld\n", get_time_ns());
+            xddp_test->write((void*)user_data, strlen(user_data));
+        
+            return 1;
+        } catch ( boards_error &e ) {
+        DPRINTF("FATAL ERROR in %s ... %s\n", __FUNCTION__, e.what());
+        // handle error .... exit thread
+        // exit {rt,nrt}_periodic_thread function
+        _run_loop = 0;
 
-void Ec_Thread_Boards_base::xddps_init ( void ) {
-
-    int slave_pos;
-    iit::ecat::advr::Motor * moto;
-    iit::ecat::advr::Ft6ESC * ft;
-    XDDP_pipe * xddp;
-
-    for ( auto const& item : motors ) {
-        slave_pos = item.first;
-        moto = item.second;
-        xddp = new XDDP_pipe();
-        xddp->init ( "Motor_id_"+std::to_string ( moto->get_robot_id() ) );
-        xddps[slave_pos] = xddp;
-    }
-
-    for ( auto const& item : fts ) {
-        slave_pos = item.first;
-        ft = item.second;
-        xddp = new XDDP_pipe();
-        xddp->init ( "Ft_id_"+std::to_string ( ft->get_robot_id() ) );
-        xddps[slave_pos] = xddp;
-    }
-
-    for ( auto const& item : pows ) {
-        slave_pos = item.first;
-        xddp = new XDDP_pipe();
-        xddp->init ( "Pow_pos_"+std::to_string ( slave_pos ) );
-        xddps[slave_pos] = xddp;
-    }
-
-    for ( auto const& item : powCmns ) {
-        slave_pos = item.first;
-        xddp = new XDDP_pipe();
-        xddp->init ( "PowCmn_pos_"+std::to_string ( slave_pos ) );
-        xddps[slave_pos] = xddp;
-    }
-
-    for ( auto const& item : tests ) {
-        slave_pos = item.first;
-        xddp = new XDDP_pipe();
-        xddp->init ( "Test_pos_"+std::to_string ( slave_pos ) );
-        xddps[slave_pos] = xddp;
-    }
-
+        } catch ( boards_warn &e ) {
+            DPRINTF("WARNING in %s ... %s\n", __FUNCTION__, e.what());
+            // handle warning
+        }
+    return 0;
 }
 
-void Ec_Thread_Boards_base::xddps_loop ( void ) {
+// int Ethernet::user_loop(void) {
+// 
+//     int bId;
+//     static double freq_Hz = 1;
+//     if ( g_tStart <= 0 ) {
+//         g_tStart = get_time_ns();
+//     }
+//     uint64_t dt_ns = get_time_ns() - g_tStart;
+//     double  trj = sin((2.0 * M_PI * freq_Hz * dt_ns)/1e9); // -1 .. 1
+//     if ( trj_flag == 1 ) {
+//         for ( auto it = _mcs.begin(); it != _mcs.end(); it++ ) {
+//             bId = it->first;
+//             _pos[bId-1] = _home[bId-1] + (DEG2mRAD(10) * trj);
+//         }
+//         //
+//         move(MV_POS|MV_VEL|MV_TOR|MV_STF);
+//     }
+// 
+//     return 0;
+// }
 
-    int 	slave_pos;
-    uint16_t	esc_type;
+int Ethernet::user_input(uint8_t &cmd) {
 
-    for ( auto const& item : xddps ) {
+    static int toggle = 1;
+    McBoard * b;
 
-        slave_pos = item.first;
-        esc_type = slaves[slave_pos]->get_ESC_type();
-        switch ( esc_type ) {
-        case iit::ecat::advr::LO_PWR_DC_MC :
-        case iit::ecat::advr::HI_PWR_AC_MC :
-        case iit::ecat::advr::HI_PWR_DC_MC :
-            item.second->xddp_write ( motors[slave_pos]->getRxPDO() );
-            //item.second->xddp_write(getRxPDO<iit::ecat::advr::Motor::motor_pdo_rx_t, iit::ecat::advr::Motor>(slave_pos));
+    // fakes ids ... used for test group functions
+    uint8_t bIds[2] = { 88, 99};
+    int pos[2];
+    short vel[2];
+
+    int nbytes = Boards_ctrl_ext::user_input((void*)&cmd, sizeof(cmd));
+
+    if ( nbytes <= 0 ) {
+        return nbytes;
+    }
+
+    switch ( cmd ) {
+        case 'S':
+            DPRINTF("Start control ...r_arm\n");
+            start_stop_set_control(r_arm,true);
+            DPRINTF("Start control ...r_leg\n");
+            start_stop_set_control(r_leg,true);
+            DPRINTF("Start control ...l_arm\n");
+            start_stop_set_control(l_arm,true);
+            DPRINTF("Start control ...l_leg\n");
+            start_stop_set_control(l_leg,true);
+            DPRINTF("Start control ...waist\n");
+            start_stop_set_control(waist,true);
             break;
-        case iit::ecat::advr::FT6 :
-            item.second->xddp_write ( fts[slave_pos]->getRxPDO() );
-            //item.second->xddp_write(getRxPDO<iit::ecat::advr::Ft6ESC::pdo_rx_t, iit::ecat::advr::Ft6ESC>(slave_pos));
+        case '1':
+            //DPRINTF("Start control single \n");
+            //start_stop_single_control(8,true);
+            DPRINTF("Start control single \n");
+            start_stop_single_control(15,true);
             break;
-        case iit::ecat::advr::POW_BOARD :
-            item.second->xddp_write ( pows[slave_pos]->getRxPDO() );
-            //item.second->xddp_write(getRxPDO<iit::ecat::advr::PowESC::pdo_rx_t, iit::ecat::advr::PowESC>(slave_pos));
+        case '2':
+            DPRINTF("Start control ...l_arm\n");
+            start_stop_set_control(l_arm,true);
+            DPRINTF("Start control ...r_arm\n");
+            start_stop_set_control(r_arm,true);
             break;
-        case iit::ecat::advr::POW_CMN_BOARD :
-            item.second->xddp_write ( powCmns[slave_pos]->getRxPDO() );
-            //item.second->xddp_write(getRxPDO<iit::ecat::advr::PowComanESC::pdo_rx_t, iit::ecat::advr::PowComanESC>(slave_pos));
+        case '3':
+            DPRINTF("Start control ...l_leg\n");
+            start_stop_set_control(l_leg,true);
+            DPRINTF("Start control ...r_leg\n");
+            start_stop_set_control(r_leg,true);
             break;
-        case iit::ecat::advr::EC_TEST :
-            item.second->xddp_write ( tests[slave_pos]->getRxPDO() );
-            //item.second->xddp_write ( getRxPDO<iit::ecat::advr::TestEscPdoTypes::pdo_rx,iit::ecat::advr::TestESC>(slave_pos) );
+        case 'h':
+            DPRINTF("Set home pos\n");
+            homing(homePos, homeVel);
+            //test();
             break;
+        case 'A':
+            DPRINTF("Set pos ref to median point of range pos\n");
+            for ( auto it = _mcs.begin(); it != _mcs.end(); it++ ) {
+                b = it->second;
+                _pos[b->bId-1] = (b->_max_pos + b->_min_pos) / 2;
+            }
+            move();
+            break;
+        case 'a':
+            DPRINTF("Do something else\n");
+            toggle *= -1;
+            for ( auto it = _mcs.begin(); it != _mcs.end(); it++ ) {
+                b = it->second;
+                _pos[b->bId-1] = _home[b->bId-1] + DEG2mRAD(5) * toggle;
+            }
+            move();
+            break;
+        case '[':
+            DPRINTF("Do something ++++ \n");
+            for ( auto it = _mcs.begin(); it != _mcs.end(); it++ ) {
+                b = it->second;
+                _pos[b->bId-1] = _ts_bc_data[b->bId-1].raw_bc_data.mc_bc_data.Position + DEG2mRAD(0.5);
+            }
+            move();
+            break;
+        case ']':
+            DPRINTF("Do something ----\n");
+            for ( auto it = _mcs.begin(); it != _mcs.end(); it++ ) {
+                b = it->second;
+                _pos[b->bId-1] = _ts_bc_data[b->bId-1].raw_bc_data.mc_bc_data.Position - DEG2mRAD(0.5);
+            }
+            move();
+            break;
+
+        case 't':
+
+            DPRINTF("trajectory\n");
+            homing();
+            g_tStart = get_time_ns();
+            trj_flag = ! trj_flag;
+            break;
+
+        case 'X':
+            pos_group.clear();
+            pos_group[88] = 0x00DEAD00;
+            pos_group[99] = 0x11BEEF11;
+            set_position_group(pos_group);
+            pos_vel_group.clear();
+            pos_vel_group[88] = std::make_pair(0x00DEAD00, 0xCACA);
+            pos_vel_group[99] = std::make_pair(0x11BEEF11, 0x7777);
+            set_position_velocity_group(pos_vel_group);
+            break;
+
+        case 'x':
+            pos[88] = 0x00DEAD00;
+            pos[99] = 0x11BEEF11;
+            set_position_group(bIds,pos,2);
+            vel[88] = 0xCACA;
+            vel[99] = 0x7777;
+            set_position_velocity_group(bIds,pos,vel,2);
+            break;
+
+        case 'j':
+            pos[88] = 0x00DEAD00;
+            pos[99] = 0x11BEEF11;
+            set_gravity_compensation(pos,sizeof(pos));
+            break;
+
+        case 'P':
+            _mcs[19]->set_PID_increment(POSITION_GAINS, 1000, 0, 0);
+            break;
+        case 'p':
+            _mcs[19]->set_PID_increment(POSITION_GAINS, -1000, 0, 0);
+            break;
+        case 'I':
+            _mcs[19]->set_PID_increment(POSITION_GAINS, 0, 1, 0);
+            break;
+        case 'i':
+            _mcs[19]->set_PID_increment(POSITION_GAINS, 0, -1, 0);
+            break;
+        case 'D':
+            _mcs[19]->set_PID_increment(POSITION_GAINS, 0, 0, 50);
+            break;
+        case 'd':
+            _mcs[19]->set_PID_increment(POSITION_GAINS, 0, 0, -50);
+            break;
+
+
+        case 'U':
+            // works !!! need to handle dsp reboot ... exit app 
+            _mcs[1]->setItem(CMD_UPGRADE, 0, 0);
+            break;
+
+
+        case '@':
+            throw(boards_warn(std::string("Hi this is a boards warning")));
+            // ... never break .....
+            //break;
+
+        case '#':
+            throw(boards_error(std::string("Hi this is an boards error")));
+            // ... never break .....
+            //break;
+
+        case '!':
+            throw(std::runtime_error(std::string("Hi this is a not handled except")));
+            // ... never break .....
+            //break;
 
         default:
-            DPRINTF ( "[WARN] ESC type %d NOT handled %s\n", esc_type, __PRETTY_FUNCTION__ );
+            DPRINTF("Stop control ...\n");
+            start_stop_control(false);
+            clear_mcs_faults();
             break;
-        }
-    }
-}*/
-
-/**
- * NOTE this is a step reference !!!
- * LoPowerMotor (i.e. Coman) has a trajectory generator with max speed 0.5 rad/s
- * HiPowerMotor does NOT have it
- *//*
-bool Ec_Thread_Boards_base::go_there ( const std::map<int, iit::ecat::advr::Motor*> &motor_set,
-                                       const std::map<int,float> &target_pos,
-                                       float eps, bool debug ) {
-
-    int cond, cond_cnt, cond_sum;
-    float pos_ref, motor_err, link_err, motor_link_err;
-    int slave_pos;
-    iit::ecat::advr::Motor * moto;
-    iit::ecat::advr::Motor::motor_pdo_rx_t motor_pdo_rx;
-    std::vector<int> truth_vect;
-
-    cond = cond_cnt = cond_sum = 0;
-
-    for ( auto const& item : motor_set ) {
-        slave_pos = item.first;
-        moto =  item.second;
-
-        // check in the target_pos map if the current slave_pos exist
-        try {
-            pos_ref = target_pos.at ( slave_pos );
-        } catch ( const std::out_of_range& oor ) {
-            continue;
-        }
-
-        motor_pdo_rx = moto->getRxPDO();
-        //getRxPDO(slave_pos, motor_pdo_rx);
-        moto->set_posRef ( pos_ref );
-
-        link_err = fabs ( motor_pdo_rx.link_pos  - pos_ref );
-        motor_err = fabs ( motor_pdo_rx.motor_pos - pos_ref );
-        motor_link_err = fabs ( motor_pdo_rx.motor_pos - motor_pdo_rx.link_pos );
-
-        cond = ( link_err <= eps || motor_err <= eps ) ? 1 : 0;
-        cond_cnt++;
-        cond_sum += cond;
-
-        if ( debug ) {
-            truth_vect.push_back ( cond );
-            if ( ! cond ) {
-                DPRINTF ( "rId %d\tposRef %f \t link %f{%f} \t motor %f{%f} \t |motor-link|{%f}\n",
-                          pos2Rid ( slave_pos ), pos_ref,
-                          motor_pdo_rx.link_pos, link_err,
-                          motor_pdo_rx.motor_pos, motor_err,
-                          motor_link_err );
-            }
-        }
     }
 
-    if ( debug ) {
-        DPRINTF ( "---\n" );
-        for ( auto b : truth_vect ) {
-            DPRINTF ( "%d ",b );
-        }
-        DPRINTF ( "\n=^=\n" );
-    }
+    return nbytes;
+}
 
-    return ( cond_cnt == cond_sum );
-}*/
-/*
-void Ec_Thread_Boards_base::remove_rids_intersection(std::vector<int> &start_dest, const std::vector<int> &to_remove)
-{
-    start_dest.erase(
-        std::remove_if(start_dest.begin(), start_dest.end(),
-            [to_remove](const int &rid) {
-                return ( std::find(to_remove.begin(),to_remove.end(),rid) != to_remove.end()); }), 
-        start_dest.end()
-    );
-    
-}*/
-
-
-// kate: indent-mode cstyle; indent-width 4; replace-tabs on; 
