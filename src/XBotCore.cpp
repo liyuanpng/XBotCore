@@ -28,7 +28,7 @@
 
 #include <XBotCore/XBotCore.h>
 #include <boost/bind.hpp>
-//#include <XBotEcat.h>
+#include <XBotEcat.h>
 //#include <Ethernet.h>
 
 XBot::XBotCore::XBotCore(const char* config_yaml) : 
@@ -52,8 +52,8 @@ XBot::XBotCore::XBotCore(const char* config_yaml) :
     
     //TODO use FactoryPattern
     //use shared library
-    //robotInterface = new XBot::Ethernet(_path_to_config.c_str()); 
-    //robotControlInterface = new XBot::XBotEcat(_path_to_config.c_str());
+    //halInterface= new XBot::Ethernet(_path_to_config.c_str()); 
+    halInterface = new XBot::XBotEcat(_path_to_config.c_str());
 }
 
 void XBot::XBotCore::set_thread_name(std::string thread_name)
@@ -92,15 +92,15 @@ void XBot::XBotCore::set_thread_priority()
 
 void XBot::XBotCore::th_init( void * ){
   
-  robotControlInterface->init();
+  halInterface->init();
   control_init();
 }
 
 void XBot::XBotCore::th_loop( void * ){
   
-  robotControlInterface->recv_from_slave();
+  halInterface->recv_from_slave();
   control_loop();
-  robotControlInterface->send_to_slave();
+  halInterface->send_to_slave();
   
 }
 
@@ -109,10 +109,10 @@ void XBot::XBotCore::control_init(void)
     
     // create robot from config file and any map
     XBot::AnyMapPtr anymap = std::make_shared<XBot::AnyMap>();
-    std::shared_ptr<XBot::IXBotJoint> xbot_joint(robotControlInterface);
-    std::shared_ptr<XBot::IXBotFT> xbot_ft(robotControlInterface);
-    std::shared_ptr<XBot::IXBotIMU> xbot_imu(robotControlInterface);
-    std::shared_ptr<XBot::IXBotHand> xbot_hand(robotControlInterface);
+    std::shared_ptr<XBot::IXBotJoint> xbot_joint(halInterface);
+    std::shared_ptr<XBot::IXBotFT> xbot_ft(halInterface);
+    std::shared_ptr<XBot::IXBotIMU> xbot_imu(halInterface);
+    std::shared_ptr<XBot::IXBotHand> xbot_hand(halInterface);
     
     (*anymap)["XBotJoint"] = boost::any(xbot_joint);
     (*anymap)["XBotFT"] = boost::any(xbot_ft);

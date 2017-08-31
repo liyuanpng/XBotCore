@@ -50,7 +50,7 @@ void shutdown(int sig __attribute__((unused)))
 
 int main(int argc, char *argv[]) try {
 
-    std::map<std::string, Thread_hook*> threads;
+    std::map<std::string, XBot::Thread_hook*> threads;
     if ( argc != 2) {
         printf("Usage: %s config.yaml\n", argv[0]);
         return 0;

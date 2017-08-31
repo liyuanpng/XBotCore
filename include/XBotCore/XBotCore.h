@@ -50,7 +50,7 @@ namespace XBot
  * @brief XBotCore: RT EtherCAT thread and RT (shared-memory) XBotCore interfaces implementation.
  * 
  */
-class XBot::XBotCore : public Thread_hook
+class XBot::XBotCore : public XBot::Thread_hook
                         
 {
 public:
@@ -120,7 +120,7 @@ private:
      */
     void set_thread_priority();
   
-    HALInterface* robotControlInterface;
+    HALInterface* halInterface;
      
     /**
      * @brief Path to YAML config file
