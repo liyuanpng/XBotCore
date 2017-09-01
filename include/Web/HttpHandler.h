@@ -26,9 +26,6 @@
 #include <Request.h>
 #include <memory>
 
-#include "rapidjson/document.h"
-using namespace rapidjson;
-
 class WebRobotState;
 
 class HttpHandler : public HttpInterface{

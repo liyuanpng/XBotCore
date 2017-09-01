@@ -93,7 +93,7 @@ void HttpHandler::handlePost(std::shared_ptr<RequestObject>& binary_request){
       }else if(uri.compare("/singlejoint")==0){
         
         //{"joint":[{"id": 15, "val": 0},{"id": 16, "val": 0}]}
-        if(getter->GetIntDoubleMap("link_position", map)){
+        if(getter->GetIntDoubleMap("joint", map)){
           for( auto& ref : map){
             sharedData->insertJoint(ref.first,ref.second);
           }
