@@ -123,7 +123,7 @@ include_directories(include ${XBotInterface_INCLUDE_DIRS}
 file(GLOB_RECURSE XCM_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include" *.h*)
 
 set(COMMUNICATION_INTERFACE_SOURCE_FILES)
-set(COMMUNICATION_INTERFACE_LIBRARIES)
+# set(COMMUNICATION_INTERFACE_LIBRARIES)
 
 option(ENABLE_YARP "Enable YARP Communication Interface" FALSE)
 
@@ -175,6 +175,18 @@ message(${COMMUNICATION_INTERFACE_SOURCE_FILES})
 
 add_definitions(-DUSE_WEBSOCKET)
 
+#webserver
+add_library(webserver SHARED
+                        src/CommunicationInterfaceWebServer.cpp
+                        src/Civet/CivetServer.cpp
+                        src/Civet/civetweb.c
+                        src/Web/HttpCivetHandler.cpp
+                        src/Web/HttpHandler.cpp
+                        src/Web/SharedData.cpp
+                        src/Web/WebRobotState.cpp
+                        src/Web/WebSocketCivetHandler.cpp
+                        )
+
 add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/XDomainCommunication.cpp
                         src/XBotPlugin.cpp
@@ -186,17 +198,9 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/XBotXDDP.cpp
                         src/XBotESCUtils.cpp
                         src/IOPlugin.cpp
-                        src/XBotPluginStatus.cpp
-                        src/CommunicationInterfaceWebServer.cpp
+                        src/XBotPluginStatus.cpp    
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES}
-                        ${RT_NRT_SRC}
-                        src/Civet/CivetServer.cpp
-                        src/Civet/civetweb.c
-                        src/Web/HttpCivetHandler.cpp
-                        src/Web/HttpHandler.cpp
-                        src/Web/SharedData.cpp
-                        src/Web/WebRobotState.cpp
-                        src/Web/WebSocketCivetHandler.cpp
+                        ${RT_NRT_SRC}                        
                         )
                         
 add_library(XCM_no_xeno SHARED ${XBotInterface_INCLUDES}
@@ -210,25 +214,17 @@ add_library(XCM_no_xeno SHARED ${XBotInterface_INCLUDES}
                         src/XBotXDDP.cpp
                         src/XBotESCUtils.cpp
                         src/IOPlugin.cpp
-                        src/XBotPluginStatus.cpp
-                        src/CommunicationInterfaceWebServer.cpp
-                        ${COMMUNICATION_INTERFACE_SOURCE_FILES}
-                        src/Civet//CivetServer.cpp
-                        src/Civet/civetweb.c
-                        src/Web/HttpCivetHandler.cpp
-                        src/Web/WebSocketCivetHandler.cpp
-                        src/Web/HttpHandler.cpp
-                        src/Web/SharedData.cpp
-                        src/Web/WebRobotState.cpp
+                        src/XBotPluginStatus.cpp                       
+                        ${COMMUNICATION_INTERFACE_SOURCE_FILES}       
                         src/XBotNRT_thread.cpp
                         )                        
 
 if(${catkin_FOUND})
     add_dependencies(XCM AdvrJointStateMessage)
-    add_dependencies(XCM AdvrCommandMessage)
-    
+    add_dependencies(XCM AdvrCommandMessage)    
     add_dependencies(XCM_no_xeno XCM)
 endif()
+
 
 
 target_link_libraries(XCM PUBLIC ${XBotInterface_LIBRARIES}
@@ -259,6 +255,7 @@ endif()
 
 add_executable(DummyMain src/DummyMain.cpp)
 target_link_libraries(DummyMain XCM)
+target_link_libraries(DummyMain webserver )
 
 install(TARGETS DummyMain
         EXPORT  DummyMain
@@ -266,6 +263,7 @@ install(TARGETS DummyMain
 
 add_executable(CommunicationHandler src/XBotCommunicationMain.cpp)
 target_link_libraries(CommunicationHandler XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
+target_link_libraries(CommunicationHandler webserver )
 
 install(TARGETS CommunicationHandler
         EXPORT  CommunicationHandler
@@ -273,6 +271,7 @@ install(TARGETS CommunicationHandler
 
 add_executable(NRTDeployer src/NRTDeployer.cpp src/NRTDeployerMain.cpp)
 target_link_libraries(NRTDeployer XCM_no_xeno)
+target_link_libraries(NRTDeployer webserver )
 
 install(TARGETS NRTDeployer
         EXPORT  NRTDeployer
@@ -315,6 +314,13 @@ install(TARGETS XCM
         ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
         RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
         LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
+     
+#webserver     
+install(TARGETS webserver
+EXPORT webserver
+ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
+RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
+LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
 
 
 
