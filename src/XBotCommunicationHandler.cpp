@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2017 IIT-ADVR
- * Author: Arturo Laurenzi, Luca Muratore
- * email:  arturo.laurenzi@iit.it, luca.muratore@iit.it
+ * Author: Arturo Laurenzi, Luca Muratore, Giuseppe Rigano
+ * email:  arturo.laurenzi@iit.it, luca.muratore@iit.it, giuseppe.rigano@iit.it
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -149,11 +149,10 @@ void XBot::CommunicationHandler::th_init(void*)
     }
 
 #endif
-
-
-    /********************************WEB INTERFACE********************************************/    
+    
     char *error;  
     std::string path_to_so;
+    /********************************WEB INTERFACE********************************************/    
     computeAbsolutePath("libwebserver", "/build/install/lib/", path_to_so);
     path_to_so += std::string(".so");
     lib_handle = dlopen(path_to_so.c_str(), RTLD_NOW);
@@ -169,11 +168,72 @@ void XBot::CommunicationHandler::th_init(void*)
         exit(1);
     }
     
-    CommunicationInterface* instance =(CommunicationInterface*)create(_robot);   
-    _web_communication = std::shared_ptr<XBot::CommunicationInterface>(instance);
-    _communication_ifc_vector.push_back( _web_communication );
+    CommunicationInterface* instance =(CommunicationInterface*)create(_robot);
+    if( instance != nullptr){
+      _web_communication = std::shared_ptr<XBot::CommunicationInterface>(instance);
+      _communication_ifc_vector.push_back( _web_communication );
+    }
     /****************************************************************************************/
+    
+    /********************************ROS INTERFACE********************************************/  
+//     computeAbsolutePath("libros", "/build/install/lib/", path_to_so);
+//     path_to_so += std::string(".so");
+//     lib_handle = dlopen(path_to_so.c_str(), RTLD_NOW);
+//     if (!lib_handle) {
+//         std::cout << "ROS_COMMUNICATION_INTERFACE NOT found! " << std::endl;
+//         fprintf(stderr, "%s\n", dlerror());
+//         //exit(1);
+//     }
+//     std::cout << "USE_ROS_COMMUNICATION_INTERFACE found! " << std::endl;
+//     create = (XBot::CommunicationInterface* (*)(XBot::RobotInterface::Ptr))dlsym(lib_handle, "create_instance");
+//     if ((error = dlerror()) != NULL) {
+//         fprintf(stderr, "%s\n", error);
+//         exit(1);
+//     }
+//     
+//     CommunicationInterface* instance =(CommunicationInterface*)create(_robot);
+//     if( instance != nullptr){
+//       _ros_communication  = std::shared_ptr<XBot::CommunicationInterface>(instance);
+//       _communication_ifc_vector.push_back( _ros_communication );
+//     }
+//     
+//     if ( _master_communication_interface_name == "ROS" ||
+//          _master_communication_interface_name == "ros"
+//     ) {
+//         _master_communication_ifc = _ros_communication;
+//     }
 
+    /****************************************************************************************/
+    
+    /********************************YARP INTERFACE********************************************/  
+//     computeAbsolutePath("libyarp", "/build/install/lib/", path_to_so);
+//     path_to_so += std::string(".so");
+//     lib_handle = dlopen(path_to_so.c_str(), RTLD_NOW);
+//     if (!lib_handle) {
+//         std::cout << "YARP_COMMUNICATION_INTERFACE NOT found! " << std::endl;
+//         fprintf(stderr, "%s\n", dlerror());
+//         //exit(1);
+//     }
+//     std::cout << "USE_YARP_COMMUNICATION_INTERFACE found! " << std::endl;
+//     create = (XBot::CommunicationInterface* (*)(XBot::RobotInterface::Ptr))dlsym(lib_handle, "create_instance");
+//     if ((error = dlerror()) != NULL) {
+//         fprintf(stderr, "%s\n", error);
+//         exit(1);
+//     }
+//     
+//     CommunicationInterface* instance =(CommunicationInterface*)create(_robot);
+//     if( instance != nullptr){
+//       _yarp_communication  = std::shared_ptr<XBot::CommunicationInterface>(instance);
+//       _communication_ifc_vector.push_back( _yarp_communication );
+//     }
+//     
+//     if ( _master_communication_interface_name == "YARP" ||
+//          _master_communication_interface_name == "yarp"
+//     ) {
+//         _master_communication_ifc = _yarp_communication;
+//     }
+
+    /****************************************************************************************/
 #ifdef USE_YARP_COMMUNICATION_INTERFACE
     std::cerr << "USE_YARP_COMMUNICATION_INTERFACE found! " << std::endl;
     _yarp_communication = std::make_shared<XBot::CommunicationInterfaceYARP>(_robot);

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2017 IIT-ADVR
- * Author: Arturo Laurenzi, Luca Muratore
- * email:  arturo.laurenzi@iit.it, luca.muratore@iit.it
+ * Author: Arturo Laurenzi, Luca Muratore, Giuseppe Rigano
+ * email:  arturo.laurenzi@iit.it, luca.muratore@iit.it, giuseppe.rigano@iit.it
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
