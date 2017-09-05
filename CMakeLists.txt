@@ -255,7 +255,7 @@ endif()
 
 add_executable(DummyMain src/DummyMain.cpp)
 target_link_libraries(DummyMain XCM)
-target_link_libraries(DummyMain webserver )
+# target_link_libraries(DummyMain webserver )
 
 install(TARGETS DummyMain
         EXPORT  DummyMain
@@ -263,7 +263,7 @@ install(TARGETS DummyMain
 
 add_executable(CommunicationHandler src/XBotCommunicationMain.cpp)
 target_link_libraries(CommunicationHandler XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
-target_link_libraries(CommunicationHandler webserver )
+# target_link_libraries(CommunicationHandler webserver )
 
 install(TARGETS CommunicationHandler
         EXPORT  CommunicationHandler
@@ -271,7 +271,7 @@ install(TARGETS CommunicationHandler
 
 add_executable(NRTDeployer src/NRTDeployer.cpp src/NRTDeployerMain.cpp)
 target_link_libraries(NRTDeployer XCM_no_xeno)
-target_link_libraries(NRTDeployer webserver )
+# target_link_libraries(NRTDeployer webserver )
 
 install(TARGETS NRTDeployer
         EXPORT  NRTDeployer

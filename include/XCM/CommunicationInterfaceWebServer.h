@@ -36,6 +36,7 @@
 #define SINGLEJOINT_URI "/singlejoint"
 #define MASTER_URI "/webmaster"
 
+
 namespace XBot {
 
 class CommunicationInterfaceWebServer : public CommunicationInterface {
@@ -59,18 +60,13 @@ class CommunicationInterfaceWebServer : public CommunicationInterface {
 
       virtual void advertiseStatus(const std::string& plugin_name);
       virtual bool setPluginStatus(const std::string& plugin_name, const std::string& status);      
-
+      
   private:
 
       std::shared_ptr<CivetServer> server;
       std::shared_ptr<HttpCivetHandler> http_civet_handler;
       std::shared_ptr<WebSocketHandler> ws_civet_handler;    
-      std::shared_ptr<HttpHandler> http_handler;
-        
-
-      static bool computeAbsolutePath ( const std::string& input_path,
-                                        const std::string& middle_path,
-                                        std::string& absolute_path );
+      std::shared_ptr<HttpHandler> http_handler;     
 
       bool _send_robot_state_ok, _receive_commands_ok;
 
@@ -81,7 +77,6 @@ class CommunicationInterfaceWebServer : public CommunicationInterface {
 
       std::unordered_map<int, int> _jointid_to_command_msg_idx;
       std::unordered_map<int, int> _jointid_to_jointstate_msg_idx;
-
     
       std::string _tf_prefix, _urdf_param_name;   
       std::map<int, double> _hand_value_map;
