@@ -33,7 +33,7 @@ void HttpHandler::handleGet(std::shared_ptr<ResponseInterface>& response){
       else if(uri.compare("/cmd")==0) {
         sharedData->insertCmd(key, val);        
       }       
-      else if(uri.compare("/webmaster")==0){
+      else if(uri.compare("/master")==0){
         sharedData->setMaster(key);
       }
       

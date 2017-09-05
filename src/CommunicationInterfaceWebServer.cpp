@@ -54,6 +54,7 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
         cpp_options.push_back(options[i]);
     }      
     
+    numjoint = _robot->getJointNum();
     buffer = std::make_shared<Buffer<WebRobotState>>(50);    
     sharedData = std::make_shared<SharedData>();
     server = std::make_shared<CivetServer>(cpp_options);  
@@ -107,10 +108,11 @@ void CommunicationInterfaceWebServer::receiveReference()
 {
     std::vector<double> vec;
     bool resp = sharedData->external_command->remove(vec);    
-    
+      
+    int numjoint = _robot->getJointNum();
     if (resp){ 
       Eigen::VectorXd eigVec;
-      eigVec.resize(31);
+      eigVec.resize(numjoint);
       for (int i=0; i< vec.size(); i++){
          eigVec(i) = vec[i];
       }     
@@ -134,7 +136,7 @@ void CommunicationInterfaceWebServer::receiveReference()
 bool CommunicationInterfaceWebServer::advertiseSwitch(const std::string& port_name)
 {
     http_handler = std::make_shared<HttpHandler>(sharedData, buffer);
-    http_civet_handler = std::make_shared<HttpCivetHandler>(*http_handler);
+    http_civet_handler = std::make_shared<HttpCivetHandler>(http_handler);
     server->addHandler(SWITCH_URI, *http_civet_handler);
     server->addHandler(CMD_URI, *http_civet_handler);
     server->addHandler(MASTER_URI, *http_civet_handler);

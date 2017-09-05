@@ -34,7 +34,7 @@
 #define CMD_URI "/cmd"
 #define ALLJOINT_URI "/alljoints"
 #define SINGLEJOINT_URI "/singlejoint"
-#define MASTER_URI "/webmaster"
+#define MASTER_URI "/master"
 
 
 namespace XBot {
@@ -74,6 +74,7 @@ class CommunicationInterfaceWebServer : public CommunicationInterface {
 
       JointIdMap _joint_id_map;
       JointNameMap _joint_name_map;
+      int numjoint;
 
       std::unordered_map<int, int> _jointid_to_command_msg_idx;
       std::unordered_map<int, int> _jointid_to_jointstate_msg_idx;

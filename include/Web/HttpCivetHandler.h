@@ -28,13 +28,13 @@ class HttpCivetHandler : public CivetHandler
   
   private:
     
-    HttpInterface* http_interface;
+    std::shared_ptr<HttpInterface> http_interface;
   
   public:
     
-    HttpCivetHandler(HttpInterface& interface){
+    HttpCivetHandler(std::shared_ptr<HttpInterface> interface){
       
-      http_interface = &interface;
+      http_interface = interface;
      
     }  
     
