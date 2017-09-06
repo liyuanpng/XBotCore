@@ -28,8 +28,9 @@
 
 #include <XBotCore/XBotCore.h>
 #include <boost/bind.hpp>
-#include <XBotEcat.h>
+// #include <XBotEcat.h>
 //#include <Ethernet.h>
+#include <Kuka.h>
 
 XBot::XBotCore::XBotCore(const char* config_yaml) : 
     _path_to_config(config_yaml)
@@ -53,7 +54,8 @@ XBot::XBotCore::XBotCore(const char* config_yaml) :
     //TODO use FactoryPattern
     //use shared library
     //halInterface= new XBot::Ethernet(_path_to_config.c_str()); 
-    halInterface = new XBot::XBotEcat(_path_to_config.c_str());
+//     halInterface = new XBot::XBotEcat(_path_to_config.c_str());
+    halInterface = new XBot::Kuka(_path_to_config.c_str());
 }
 
 void XBot::XBotCore::set_thread_name(std::string thread_name)

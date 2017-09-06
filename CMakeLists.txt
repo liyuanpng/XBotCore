@@ -43,10 +43,10 @@ endif()
 find_package(XBotCoreModel REQUIRED)
 find_package(XCM REQUIRED)
 
-find_package(soem${LIB_TYPE} REQUIRED)
-find_package(iitecat_iface${LIB_TYPE} REQUIRED)
-find_package(walkman_master${LIB_TYPE} REQUIRED)
-find_package(ecat_test_utils${LIB_TYPE} REQUIRED)
+# find_package(soem${LIB_TYPE} REQUIRED)
+# find_package(iitecat_iface${LIB_TYPE} REQUIRED)
+# find_package(walkman_master${LIB_TYPE} REQUIRED)
+# find_package(ecat_test_utils${LIB_TYPE} REQUIRED)
 find_package(sharedlibpp REQUIRED)
 
 # communication packages
@@ -69,9 +69,12 @@ include_directories(include ${XBotCoreModel_INCLUDE_DIRS}
                             ${sharedlibpp_INCLUDE_DIRS}
                             ${XCM_INCLUDE_DIRS}
                             include/XBotCore/
+                            ${CMAKE_CURRENT_SOURCE_DIR}/../FRI_Remote
+
                     )
                             
 
+add_definitions(-DHAVE_SOCKLEN_T)                            
 # exe
 add_executable(${PROJECT_NAME}
     src/XBotMain.cpp
@@ -79,10 +82,13 @@ add_executable(${PROJECT_NAME}
 
 # lib
 add_library(XBotCoreThread SHARED
-    src/XBotEcat.cpp
+#     src/XBotEcat.cpp
     src/XBotCore.cpp
-    src/ec_boards_base.cpp
+#     src/ec_boards_base.cpp
 #     src/Ethernet.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../FRI_Remote/friudp.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../FRI_Remote/friremote.cpp
+    src/Kuka.cpp
 )
 
 
