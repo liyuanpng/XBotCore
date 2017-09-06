@@ -34,6 +34,18 @@ Kuka::~Kuka() {
     
 }
 
+bool Kuka::getState(){
+  
+  bool b;
+  b = (friInst->getState() == FRI_STATE_CMD) && ( friInst->isPowerOn() );
+  
+  return b;
+}
+float Kuka::getSampleTime(){
+  
+  return friInst->getSampleTime();
+}
+
 void Kuka::init_internal() {
 
       cout << "Opening FRI Version " 
@@ -54,28 +66,12 @@ void Kuka::init_internal() {
           }
         }
         
-                
+        
+      friInst = new friRemote(49948,IPROBOT);        
       lastQuality = FRI_QUALITY_BAD;
       timeCounter=0;
       
-      /// perform some arbitrary handshake to KRL -- possible in monitor mode already
-      // send to krl int a value
-      friInst.setToKRLInt(0,1);
-      if ( friInst.getQuality() >= FRI_QUALITY_OK)
-      {
-              // send a second marker
-              friInst.setToKRLInt(0,10);
-      }
-
-      //
-      // just mirror the real value..
-      //
-      friInst.setToKRLReal(0,friInst.getFrmKRLReal(1));
-      for (int i = 0; i < LBR_MNJ; i++)
-      {
-          JntVals[i] = friInst.getMsrCmdJntPosition()[i];
-      }
-
+      
   
 }
 
@@ -87,20 +83,49 @@ void Kuka::init(){
 
 int Kuka::recv_from_slave(){
     
-    for (int i = 0; i < LBR_MNJ; i++) {
+  /// perform some arbitrary handshake to KRL -- possible in monitor mode already
+      // send to krl int a value
+      friInst->setToKRLInt(0,1);
+      if ( friInst->getQuality() >= FRI_QUALITY_OK)
+      {
+              // send a second marker
+              friInst->setToKRLInt(0,10);
+      }
+
+      //
+      // just mirror the real value..
+      //
+      friInst->setToKRLReal(0,friInst->getFrmKRLReal(1));
+      for (int i = 0; i < LBR_MNJ; i++)
+      {
+	  JntVals[i] = friInst->getMsrMsrJntPosition()[i];
+      }
       
-         JntVals[i] = friInst.getMsrCmdJntPosition()[i];
-     }
-     
+      //TODO put here getSTate()
      return 0;
 }
 
 int Kuka::send_to_slave(){
     
     
-    friInst.doPositionControl(JntVals);
+    friInst->doPositionControl(JntVals);
+    
+    // have some debug information every n.th. step
+    int divider = (int)( (1./friInst->getSampleTime()) *2.0);
+    
+    if ( friInst->getSequenceCount() % divider == 0)
+    {
+	    cout << "krl interaction \n";
+	    cout << friInst->getMsrBuf().krl;
+	    cout << "intf stat interaction \n";
+	    cout << friInst->getMsrBuf().intf.stat;
+	    cout << "smpl " << friInst->getSampleTime();
+
+	    cout << endl;
+    }
+// //     friInst->doSendData();
     // Stop request is issued from the other side
-    if ( friInst.getFrmKRLInt(0) == -1) 
+    if ( friInst->getFrmKRLInt(0) == -1) 
     {
             cout << "leaving \n";
             return 1;
@@ -109,12 +134,12 @@ int Kuka::send_to_slave(){
     // Quality change leads to output of statistics
     // for informational reasons
     //
-    if ( friInst.getQuality() != lastQuality)
+    if ( friInst->getQuality() != lastQuality)
     {
-            cout << "quality change detected "<< friInst.getQuality()<< " \n";
-            cout << friInst.getMsrBuf().intf;
+            cout << "quality change detected "<< friInst->getQuality()<< " \n";
+            cout << friInst->getMsrBuf().intf;
             cout << endl;
-            lastQuality=friInst.getQuality();
+            lastQuality=friInst->getQuality();
     }
   
     return 0;
@@ -129,6 +154,7 @@ int Kuka::send_to_slave(){
 bool XBot::Kuka::get_link_pos(int joint_id, double& link_pos)
 {
 
+    link_pos = JntVals[joint_id];
     return false;   
 }
 
@@ -195,7 +221,7 @@ bool XBot::Kuka::get_gains(int joint_id, std::vector< double >& gain_vector)
 bool XBot::Kuka::set_pos_ref(int joint_id, const double& pos_ref)
 {
     
-
+    JntVals[joint_id] = pos_ref;
     return false; 
 }
 

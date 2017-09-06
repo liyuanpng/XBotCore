@@ -32,6 +32,10 @@
 //#include <Ethernet.h>
 #include <Kuka.h>
 
+//TODO example
+float JntVals[7];
+bool first=false;
+
 XBot::XBotCore::XBotCore(const char* config_yaml) : 
     _path_to_config(config_yaml)
 {
@@ -95,7 +99,13 @@ void XBot::XBotCore::set_thread_priority()
 void XBot::XBotCore::th_init( void * ){
   
   halInterface->init();
-  control_init();
+  //halInterface->get_link_pos(0,val);
+  //control_init();
+//    for(int i=0;i<LBR_MNJ;i++){
+//      double val;
+//       halInterface->get_link_pos(i,val);
+//       JntVals[i] = val;
+//     }
 }
 
 void XBot::XBotCore::th_loop( void * ){
@@ -151,7 +161,33 @@ int XBot::XBotCore::control_loop(void)
 {    
 //     std::cout << "laurenzi" << std::endl;
     _iter++;
-    _pluginHandler->run();
+   // _pluginHandler->run();  
+     //TODO ask if ok or to move 
+    if(!halInterface->getState()){ val = 0; return 0;}
+    ////////////////
+    //EXample
+    //read value joints once
+    if(!first){
+      first=true;
+    for(int i=0;i<LBR_MNJ;i++){
+     double val;
+      halInterface->get_link_pos(i,val);
+      JntVals[i] = val;
+    }
+    }
+   
+    val+=halInterface->getSampleTime()*0.01;
+    for (int i = 0; i < LBR_MNJ; i++)
+    {
+	// perform some sort of sine wave motion
+	JntVals[i]+=(float)sin( val * M_PI * 0.02) * (float)(10./180.*M_PI);
+    }  
+    
+    for(int i=0;i<LBR_MNJ;i++){
+      halInterface->set_pos_ref(i,JntVals[i]);
+    }
+    /////////////
+
 }
 
 XBot::XBotCore::~XBotCore() {

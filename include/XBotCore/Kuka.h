@@ -28,6 +28,9 @@
 #include "friremote.h"
 #include <XBotCore/HALInterface.h>
 
+
+#define IPROBOT "192.168.0.10"
+
 namespace XBot
 {
     class Kuka;
@@ -37,6 +40,10 @@ class XBot::Kuka :  public HALInterface {
 
 private:
   
+    virtual bool getState();
+    
+    virtual float getSampleTime();
+    
     //NOTE IXBotJoint getters
     virtual bool get_link_pos(int joint_id, double& link_pos) final;
     
@@ -77,7 +84,7 @@ private:
     
     virtual bool set_aux(int joint_id, const double& aux) final;
     
-    friRemote friInst;
+    friRemote* friInst;
     FRI_QUALITY lastQuality;
     double timeCounter;
     float JntVals[LBR_MNJ];
