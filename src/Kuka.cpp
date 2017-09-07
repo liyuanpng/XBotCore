@@ -93,7 +93,7 @@ int Kuka::recv_from_slave(){
       friInst->setToKRLReal(0,friInst->getFrmKRLReal(1));
       for (int i = 0; i < LBR_MNJ; i++)
       {
-	  JntVals[i] = friInst->getMsrMsrJntPosition()[i];
+	  JntVals[i] = friInst->getMsrCmdJntPosition()[i];
       }
       
       
@@ -112,13 +112,13 @@ int Kuka::send_to_slave(){
     
     if ( friInst->getSequenceCount() % divider == 0)
     {
-	    cout << "krl interaction \n";
-	    cout << friInst->getMsrBuf().krl;
-	    cout << "intf stat interaction \n";
-	    cout << friInst->getMsrBuf().intf.stat;
-	    cout << "smpl " << friInst->getSampleTime();
-
-	    cout << endl;
+// 	    cout << "krl interaction \n";
+// 	    cout << friInst->getMsrBuf().krl;
+// 	    cout << "intf stat interaction \n";
+// 	    cout << friInst->getMsrBuf().intf.stat;
+// 	    cout << "smpl " << friInst->getSampleTime();
+// 
+// 	    cout << endl;
     }
 // //     friInst->doSendData();
     // Stop request is issued from the other side
@@ -133,9 +133,9 @@ int Kuka::send_to_slave(){
     //
     if ( friInst->getQuality() != lastQuality)
     {
-            cout << "quality change detected "<< friInst->getQuality()<< " \n";
-            cout << friInst->getMsrBuf().intf;
-            cout << endl;
+//             cout << "quality change detected "<< friInst->getQuality()<< " \n";
+//             cout << friInst->getMsrBuf().intf;
+//             cout << endl;
             lastQuality=friInst->getQuality();
     }
   
@@ -151,14 +151,16 @@ int Kuka::send_to_slave(){
 bool XBot::Kuka::get_link_pos(int joint_id, double& link_pos)
 {
 
-    link_pos = JntVals[joint_id];
-    return false;   
+    //link_pos = JntVals[joint_id];
+    link_pos = friInst->getMsrMsrJntPosition()[joint_id];
+//      std::cout<<"ID "<<joint_id<<" "<<link_pos<<std::endl;
+    return true;   
 }
 
 bool XBot::Kuka::get_motor_pos(int joint_id, double& motor_pos)
 {
-
-    return false;  
+    motor_pos = friInst->getMsrMsrJntPosition()[joint_id];
+    return true; 
 }
 
 bool XBot::Kuka::get_link_vel(int joint_id, double& link_vel)
@@ -219,7 +221,7 @@ bool XBot::Kuka::set_pos_ref(int joint_id, const double& pos_ref)
 {
     
     JntVals[joint_id] = pos_ref;
-    return false; 
+    return true; 
 }
 
 bool XBot::Kuka::set_vel_ref(int joint_id, const double& vel_ref)
