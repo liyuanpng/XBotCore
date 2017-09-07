@@ -33,6 +33,7 @@
 #include <Kuka.h>
 
 //TODO example
+double val=0;
 float JntVals[7];
 bool first=false;
 
@@ -53,7 +54,6 @@ XBot::XBotCore::XBotCore(const char* config_yaml) :
     
     // set thread priority
     set_thread_priority();
-    
     
     //TODO use FactoryPattern
     //use shared library
@@ -99,19 +99,14 @@ void XBot::XBotCore::set_thread_priority()
 void XBot::XBotCore::th_init( void * ){
   
   halInterface->init();
-  //halInterface->get_link_pos(0,val);
   //control_init();
-//    for(int i=0;i<LBR_MNJ;i++){
-//      double val;
-//       halInterface->get_link_pos(i,val);
-//       JntVals[i] = val;
-//     }
 }
 
 void XBot::XBotCore::th_loop( void * ){
   
-  halInterface->recv_from_slave();
-  control_loop();
+  int state = halInterface->recv_from_slave();
+  if(state == 0)
+    control_loop();
   halInterface->send_to_slave();
   
 }
@@ -140,7 +135,7 @@ void XBot::XBotCore::control_init(void)
     auto time_provider = std::make_shared<XBot::TimeProviderFunction<boost::function<double()>>>(time_func);
     
     // create plugin handler
-    _pluginHandler = std::make_shared<XBot::PluginHandler>(_robot, time_provider, "XBotRTPlugins");  //"XBotRTPlugins"
+    _pluginHandler = std::make_shared<XBot::PluginHandler>(_robot, time_provider, "XBotRTPlugins");
     
     // define the XBotCore shared_memory for the RT plugins
     XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
@@ -162,8 +157,6 @@ int XBot::XBotCore::control_loop(void)
 //     std::cout << "laurenzi" << std::endl;
     _iter++;
    // _pluginHandler->run();  
-     //TODO ask if ok or to move 
-    if(!halInterface->getState()){ val = 0; return 0;}
     ////////////////
     //EXample
     //read value joints once

@@ -26,21 +26,19 @@ using namespace XBot;
 
 Kuka::Kuka(const char * config){
  
-
 }
 
 Kuka::~Kuka() {
-
-    
+   
 }
 
 bool Kuka::getState(){
   
   bool b;
-  b = (friInst->getState() == FRI_STATE_CMD) && ( friInst->isPowerOn() );
-  
+  b = (friInst->getState() == FRI_STATE_CMD) && ( friInst->isPowerOn() );  
   return b;
 }
+
 float Kuka::getSampleTime(){
   
   return friInst->getSampleTime();
@@ -48,30 +46,27 @@ float Kuka::getSampleTime(){
 
 void Kuka::init_internal() {
 
-      cout << "Opening FRI Version " 
-                << FRI_MAJOR_VERSION << "." << FRI_SUB_VERSION << "." <<FRI_DATAGRAM_ID_CMD << "." <<FRI_DATAGRAM_ID_MSR 
-                << " Interface for First Sample" << endl;
-        {
-          // do checks, whether the interface - and the host meets the requirements
-          // Note:: This Check remains in friRempte.cpp -- should go to your code ...
-          FRI_PREPARE_CHECK_BYTE_ORDER;
-          if (!FRI_CHECK_BYTE_ORDER_OK) 
-          {
-                  cerr << "Byte order on your system is not appropriate - expect deep trouble" <<endl;
-          }
-          if (!FRI_CHECK_SIZES_OK)
-          {
-                  cout << "Sizes of datastructures not appropriate - expect even deeper trouble" << endl;
+    cout << "Opening FRI Version " 
+	      << FRI_MAJOR_VERSION << "." << FRI_SUB_VERSION << "." <<FRI_DATAGRAM_ID_CMD << "." <<FRI_DATAGRAM_ID_MSR 
+	      << " Interface for First Sample" << endl;
+      {
+	// do checks, whether the interface - and the host meets the requirements
+	// Note:: This Check remains in friRempte.cpp -- should go to your code ...
+	FRI_PREPARE_CHECK_BYTE_ORDER;
+	if (!FRI_CHECK_BYTE_ORDER_OK) 
+	{
+		cerr << "Byte order on your system is not appropriate - expect deep trouble" <<endl;
+	}
+	if (!FRI_CHECK_SIZES_OK)
+	{
+		cout << "Sizes of datastructures not appropriate - expect even deeper trouble" << endl;
 
-          }
-        }
-        
+	}
+      }
         
       friInst = new friRemote(49948,IPROBOT);        
       lastQuality = FRI_QUALITY_BAD;
       timeCounter=0;
-      
-      
   
 }
 
@@ -101,7 +96,9 @@ int Kuka::recv_from_slave(){
 	  JntVals[i] = friInst->getMsrMsrJntPosition()[i];
       }
       
-      //TODO put here getSTate()
+      
+      if(!getState()) return 1;
+      
      return 0;
 }
 

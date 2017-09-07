@@ -40,7 +40,7 @@ class XBot::Kuka :  public HALInterface {
 
 private:
   
-    virtual bool getState();
+    bool getState();
     
     virtual float getSampleTime();
     
