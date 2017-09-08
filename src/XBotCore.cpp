@@ -32,11 +32,6 @@
 //#include <Ethernet.h>
 #include <Kuka.h>
 
-//TODO example
-double val=0;
-float JntVals[7];
-bool first=false;
-
 XBot::XBotCore::XBotCore(const char* config_yaml) : 
     _path_to_config(config_yaml)
 {

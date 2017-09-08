@@ -69,7 +69,7 @@ include_directories(include ${XBotCoreModel_INCLUDE_DIRS}
                             ${sharedlibpp_INCLUDE_DIRS}
                             ${XCM_INCLUDE_DIRS}
                             include/XBotCore/
-                            ${CMAKE_CURRENT_SOURCE_DIR}/../FRI_Remote
+                            ${CMAKE_CURRENT_SOURCE_DIR}/../FRI_Kuka/include/
 
                     )
                             
@@ -86,8 +86,8 @@ add_library(XBotCoreThread SHARED
     src/XBotCore.cpp
 #     src/ec_boards_base.cpp
 #     src/Ethernet.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../FRI_Remote/friudp.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../FRI_Remote/friremote.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../FRI_Kuka/src/friudp.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../FRI_Kuka/src/friremote.cpp
     src/Kuka.cpp
 )
 
