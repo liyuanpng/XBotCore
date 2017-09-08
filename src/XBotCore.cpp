@@ -154,32 +154,8 @@ double XBot::XBotCore::get_time()
 
 int XBot::XBotCore::control_loop(void) 
 {    
-//     std::cout << "laurenzi" << std::endl;
     _iter++;
    _pluginHandler->run();  
-    ////////////////
-    //EXample
-    //read value joints once
-//     if(!first){
-//       first=true;
-//     for(int i=0;i<LBR_MNJ;i++){
-//      double val;
-//       halInterface->get_link_pos(i,val);
-//       JntVals[i] = val;
-//     }
-//     }
-//    
-//     val+=halInterface->getSampleTime()*0.01;
-//     for (int i = 0; i < LBR_MNJ; i++)
-//     {
-// 	// perform some sort of sine wave motion
-// 	JntVals[i]+=(float)sin( val * M_PI * 0.02) * (float)(10./180.*M_PI);
-//     }  
-//     
-//     for(int i=0;i<LBR_MNJ;i++){
-//       halInterface->set_pos_ref(i,JntVals[i]);
-//     }
-    /////////////
 
 }
 

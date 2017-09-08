@@ -42,7 +42,7 @@ private:
   
     bool getState();
     
-    virtual float getSampleTime();
+    float getSampleTime();
     
     //NOTE IXBotJoint getters
     virtual bool get_link_pos(int joint_id, double& link_pos) final;

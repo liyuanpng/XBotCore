@@ -93,7 +93,8 @@ int Kuka::recv_from_slave(){
       friInst->setToKRLReal(0,friInst->getFrmKRLReal(1));
       for (int i = 0; i < LBR_MNJ; i++)
       {
-	  JntVals[i] = friInst->getMsrCmdJntPosition()[i];
+	  //JntVals[i] = friInst->getMsrCmdJntPosition()[i];
+	  friInst->getCurrentCmdJntPosition(JntVals);
       }
       
       

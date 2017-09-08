@@ -12,7 +12,6 @@ class HALInterface :  public XBot::IXBotJoint,
                       public XBot::IXBotHand {
 public:
   
-    virtual float getSampleTime() = 0;
     virtual void init() = 0;
     virtual int recv_from_slave() = 0;
     virtual int send_to_slave() = 0;   
