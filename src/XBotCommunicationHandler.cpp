@@ -150,90 +150,27 @@ void XBot::CommunicationHandler::th_init(void*)
 
 #endif
     
-    char *error;  
-    std::string path_to_so;
-    /********************************WEB INTERFACE********************************************/    
-    computeAbsolutePath("libwebserver", "/build/install/lib/", path_to_so);
-    path_to_so += std::string(".so");
-    lib_handle = dlopen(path_to_so.c_str(), RTLD_NOW);
-    if (!lib_handle) {
-        std::cout << "WEB_COMMUNICATION_INTERFACE NOT found! " << std::endl;
-        fprintf(stderr, "%s\n", dlerror());
-        //exit(1);
-    }
-    std::cout << "USE_WEB_COMMUNICATION_INTERFACE found! " << std::endl;
-    create = (XBot::CommunicationInterface* (*)(XBot::RobotInterface::Ptr))dlsym(lib_handle, "create_instance");
-    if ((error = dlerror()) != NULL) {
-        fprintf(stderr, "%s\n", error);
-        exit(1);
-    }
-    
-    CommunicationInterface* instance =(CommunicationInterface*)create(_robot);
-    if( instance != nullptr){
-      _web_communication = std::shared_ptr<XBot::CommunicationInterface>(instance);
+    /********************************WEB INTERFACE********************************************/
+    _web_communication = CommunicationInterfaceFactory::getFactory("libwebserver", "WEB_SERVER",_robot);
+    if(_web_communication){
       _communication_ifc_vector.push_back( _web_communication );
     }
     /****************************************************************************************/
     
-    /********************************ROS INTERFACE********************************************/  
-//     computeAbsolutePath("libros", "/build/install/lib/", path_to_so);
-//     path_to_so += std::string(".so");
-//     lib_handle = dlopen(path_to_so.c_str(), RTLD_NOW);
-//     if (!lib_handle) {
-//         std::cout << "ROS_COMMUNICATION_INTERFACE NOT found! " << std::endl;
-//         fprintf(stderr, "%s\n", dlerror());
-//         //exit(1);
-//     }
-//     std::cout << "USE_ROS_COMMUNICATION_INTERFACE found! " << std::endl;
-//     create = (XBot::CommunicationInterface* (*)(XBot::RobotInterface::Ptr))dlsym(lib_handle, "create_instance");
-//     if ((error = dlerror()) != NULL) {
-//         fprintf(stderr, "%s\n", error);
-//         exit(1);
-//     }
-//     
-//     CommunicationInterface* instance =(CommunicationInterface*)create(_robot);
-//     if( instance != nullptr){
-//       _ros_communication  = std::shared_ptr<XBot::CommunicationInterface>(instance);
+    /********************************ROS INTERFACE********************************************/
+//     _ros_communication = CommunicationInterfaceFactory::getFactory("libros", "ROS",_robot);
+//     if(_ros_communication){
 //       _communication_ifc_vector.push_back( _ros_communication );
 //     }
-//     
-//     if ( _master_communication_interface_name == "ROS" ||
-//          _master_communication_interface_name == "ros"
-//     ) {
-//         _master_communication_ifc = _ros_communication;
-//     }
-
     /****************************************************************************************/
     
-    /********************************YARP INTERFACE********************************************/  
-//     computeAbsolutePath("libyarp", "/build/install/lib/", path_to_so);
-//     path_to_so += std::string(".so");
-//     lib_handle = dlopen(path_to_so.c_str(), RTLD_NOW);
-//     if (!lib_handle) {
-//         std::cout << "YARP_COMMUNICATION_INTERFACE NOT found! " << std::endl;
-//         fprintf(stderr, "%s\n", dlerror());
-//         //exit(1);
-//     }
-//     std::cout << "USE_YARP_COMMUNICATION_INTERFACE found! " << std::endl;
-//     create = (XBot::CommunicationInterface* (*)(XBot::RobotInterface::Ptr))dlsym(lib_handle, "create_instance");
-//     if ((error = dlerror()) != NULL) {
-//         fprintf(stderr, "%s\n", error);
-//         exit(1);
-//     }
-//     
-//     CommunicationInterface* instance =(CommunicationInterface*)create(_robot);
-//     if( instance != nullptr){
-//       _yarp_communication  = std::shared_ptr<XBot::CommunicationInterface>(instance);
+    /********************************YARP INTERFACE********************************************/
+//     _yarp_communication = CommunicationInterfaceFactory::getFactory("libyarp", "YARP",_robot);
+//     if(_yarp_communication){
 //       _communication_ifc_vector.push_back( _yarp_communication );
 //     }
-//     
-//     if ( _master_communication_interface_name == "YARP" ||
-//          _master_communication_interface_name == "yarp"
-//     ) {
-//         _master_communication_ifc = _yarp_communication;
-//     }
-
     /****************************************************************************************/
+    
 #ifdef USE_YARP_COMMUNICATION_INTERFACE
     std::cerr << "USE_YARP_COMMUNICATION_INTERFACE found! " << std::endl;
     _yarp_communication = std::make_shared<XBot::CommunicationInterfaceYARP>(_robot);
@@ -417,37 +354,11 @@ void XBot::CommunicationHandler::th_loop(void*)
 
 }
 
-
-bool XBot::CommunicationHandler::computeAbsolutePath (  const std::string& input_path,
-                                                        const std::string& middle_path,
-                                                        std::string& absolute_path)
-{
-    // if not an absolute path
-    if(!(input_path.at(0) == '/')) {
-        // if you are working with the Robotology Superbuild
-        const char* env_p = std::getenv("ROBOTOLOGY_ROOT");
-        // check the env, otherwise error
-        if(env_p) {
-            std::string current_path(env_p);
-            // default relative path when working with the superbuild
-            current_path += middle_path;
-            current_path += input_path;
-            absolute_path = current_path;
-            return true;
-        }
-        else {
-            std::cerr << "ERROR in " << __func__ << " : the input path  " << input_path << " is neither an absolute path nor related with the robotology superbuild. Download it!" << std::endl;
-            return false;
-        }
-    }
-    // already an absolute path
-    absolute_path = input_path;
-    return true;
-}
-
 XBot::CommunicationHandler::~CommunicationHandler()
 {
-     dlclose(lib_handle);
+     CommunicationInterfaceFactory::unloadLib("libwebserver");
+//      CommunicationInterfaceFactory::unloadLib("libros");
+//      CommunicationInterfaceFactory::unloadLib("libyarp");
     _logger->flush();
 }
 

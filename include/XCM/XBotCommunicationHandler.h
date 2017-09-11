@@ -37,9 +37,7 @@
 #include <XCM/XBotYARP/CommunicationInterfaceYARP.h>
 #endif
 
-// #include <XCM/CommunicationInterfaceWebServer.h>
-
-#include <dlfcn.h>
+#include <XCM/XBotCommunicationInterfaceFactory.h>
 
 namespace XBot
 {
@@ -57,13 +55,6 @@ public:
 protected:
 
 private:
-  
-    void* lib_handle;
-    XBot::CommunicationInterface* (*create)(XBot::RobotInterface::Ptr);
-    
-    static bool computeAbsolutePath ( const std::string& input_path,
-                                      const std::string& middle_path,
-                                      std::string& absolute_path );
     
     std::vector<std::string> _io_plugin_names;
     std::vector<IOPlugin*> _io_plugin_ptr;
