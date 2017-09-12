@@ -67,6 +67,13 @@ void Kuka::init_internal() {
       friInst = new friRemote(49948,IPROBOT);        
       lastQuality = FRI_QUALITY_BAD;
       timeCounter=0;
+      
+      for (int i = 0; i < LBR_MNJ; i++)
+      {
+	  JntStiff[i] = 0;
+	  JntDamp [i] = 0;
+	  JntTorq [i] = 0;
+      }
   
 }
 
@@ -104,9 +111,14 @@ int Kuka::recv_from_slave(){
 }
 
 int Kuka::send_to_slave(){
-    
-    
-    friInst->doPositionControl(JntVals);
+      
+    //friInst->doPositionControl(JntVals);
+    //pure torque control
+    //friInst->doJntImpedanceControl(JntVals,nullptr,nullptr,JntTorq);
+    //impedance control
+    friInst->doJntImpedanceControl(JntVals,JntStiff,JntDamp,JntTorq);
+    //impedance control default stiff and damp
+    //friInst->doJntImpedanceControl(JntVals);
     
     // have some debug information every n.th. step
     int divider = (int)( (1./friInst->getSampleTime()) *2.0);
@@ -178,8 +190,10 @@ bool XBot::Kuka::get_motor_vel(int joint_id, double& motor_vel)
 
 bool XBot::Kuka::get_torque(int joint_id, double& torque)
 {
-
-    return false; 
+    
+    torque = friInst->getMsrJntTrq()[joint_id];
+    
+    return true; 
 }
 
 bool XBot::Kuka::get_temperature(int joint_id, double& temperature)
@@ -214,8 +228,12 @@ bool XBot::Kuka::get_aux(int joint_id, double& aux)
 
 bool XBot::Kuka::get_gains(int joint_id, std::vector< double >& gain_vector)
 {
-    
-    return false; 
+    gain_vector.resize(2);
+
+    gain_vector[0] = JntStiff[joint_id];
+    gain_vector[1] = JntDamp[joint_id];
+            
+    return true; 
 }
 
 bool XBot::Kuka::set_pos_ref(int joint_id, const double& pos_ref)
@@ -233,14 +251,16 @@ bool XBot::Kuka::set_vel_ref(int joint_id, const double& vel_ref)
 
 bool XBot::Kuka::set_tor_ref(int joint_id, const double& tor_ref)
 {
+    JntTorq[joint_id] = tor_ref;
     
-    return false; 
+    return true; 
 }
 
 bool XBot::Kuka::set_gains(int joint_id, const std::vector<double>& gains)
 {
-    
-    return false; 
+    JntStiff[joint_id] = gains[0];
+    JntDamp[joint_id] = gains[1];
+    return true; 
 }
  
 bool XBot::Kuka::set_fault_ack(int joint_id, const double& fault_ack)

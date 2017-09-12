@@ -87,7 +87,11 @@ private:
     friRemote* friInst;
     FRI_QUALITY lastQuality;
     double timeCounter;
+    
     float JntVals[LBR_MNJ];
+    float JntTorq[LBR_MNJ];
+    float JntStiff[LBR_MNJ];
+    float JntDamp[LBR_MNJ];
 
 public:
     Kuka(const char * config);
