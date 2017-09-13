@@ -22,8 +22,8 @@
 std::map<std::string, void*> CommunicationInterfaceFactory::handles;
 
 
-std::shared_ptr<XBot::CommunicationInterface> CommunicationInterfaceFactory::getFactory(const std::__cxx11::string& file_name,
-                                                                                        const std::__cxx11::string& lib_name,
+std::shared_ptr<XBot::CommunicationInterface> CommunicationInterfaceFactory::getFactory(const std::string& file_name,
+                                                                                        const std::string& lib_name,
                                                                                         XBot::RobotInterface::Ptr _robot )
 {
 
@@ -59,7 +59,7 @@ std::shared_ptr<XBot::CommunicationInterface> CommunicationInterfaceFactory::get
     
 }
 
-void CommunicationInterfaceFactory::unloadLib(const std::__cxx11::string& file_name)
+void CommunicationInterfaceFactory::unloadLib(const std::string& file_name)
 {
 
   dlclose( handles[file_name] );
