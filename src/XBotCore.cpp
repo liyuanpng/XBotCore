@@ -30,7 +30,8 @@
 #include <boost/bind.hpp>
 // #include <XBotEcat.h>
 //#include <Ethernet.h>
-#include <Kuka.h>
+//#include <Kuka.h>
+#include <XBotCore/HALInterfaceFactory.h>
 
 XBot::XBotCore::XBotCore(const char* config_yaml) : 
     _path_to_config(config_yaml)
@@ -49,12 +50,12 @@ XBot::XBotCore::XBotCore(const char* config_yaml) :
     
     // set thread priority
     set_thread_priority();
-    
-    //TODO use FactoryPattern
-    //use shared library
+   
     //halInterface= new XBot::Ethernet(_path_to_config.c_str()); 
-//     halInterface = new XBot::XBotEcat(_path_to_config.c_str());
-    halInterface = new XBot::Kuka(_path_to_config.c_str());
+    //halInterface = new XBot::XBotEcat(_path_to_config.c_str());
+    //halInterface = std::shared_ptr<XBot::Kuka>(new XBot::Kuka(_path_to_config.c_str()));     
+    halInterface = HALInterfaceFactory::getFactory("libXBotKuka", "KUKA",config_yaml);
+    if(!halInterface) exit(1);
 }
 
 void XBot::XBotCore::set_thread_name(std::string thread_name)
@@ -158,5 +159,6 @@ XBot::XBotCore::~XBotCore() {
     
     _pluginHandler->close();
     printf("Iteration: %d \n", _iter);
+    HALInterfaceFactory::unloadLib("libXBotKuka");
     printf("~XBotCore()\n");
 }

@@ -120,7 +120,7 @@ private:
      */
     void set_thread_priority();
   
-    HALInterface* halInterface;
+    std::shared_ptr<HALInterface> halInterface;
      
     /**
      * @brief Path to YAML config file

@@ -69,12 +69,12 @@ include_directories(include ${XBotCoreModel_INCLUDE_DIRS}
                             ${sharedlibpp_INCLUDE_DIRS}
                             ${XCM_INCLUDE_DIRS}
                             include/XBotCore/
-                            ${CMAKE_CURRENT_SOURCE_DIR}/../FRI_Kuka/include/
+#                             ${CMAKE_CURRENT_SOURCE_DIR}/../FRI_Kuka/include/
 
                     )
                             
 
-add_definitions(-DHAVE_SOCKLEN_T)                            
+# add_definitions(-DHAVE_SOCKLEN_T)                         
 # exe
 add_executable(${PROJECT_NAME}
     src/XBotMain.cpp
@@ -84,11 +84,12 @@ add_executable(${PROJECT_NAME}
 add_library(XBotCoreThread SHARED
 #     src/XBotEcat.cpp
     src/XBotCore.cpp
+    src/HALInterfaceFactory.cpp
 #     src/ec_boards_base.cpp
 #     src/Ethernet.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../FRI_Kuka/src/friudp.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../FRI_Kuka/src/friremote.cpp
-    src/Kuka.cpp
+#     ${CMAKE_CURRENT_SOURCE_DIR}/../FRI_Kuka/src/friudp.cpp
+#     ${CMAKE_CURRENT_SOURCE_DIR}/../FRI_Kuka/src/friremote.cpp
+#     src/Kuka.cpp
 )
 
 
