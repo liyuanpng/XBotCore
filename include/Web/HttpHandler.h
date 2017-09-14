@@ -25,8 +25,8 @@
 #include <Response.h>
 #include <Request.h>
 #include <memory>
-
-class WebRobotState;
+#include <Web/WebRobotState.h>
+//class WebRobotState;
 
 class HttpHandler : public HttpInterface{
   
