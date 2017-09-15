@@ -32,78 +32,13 @@
 
 XBot::XBotCore::XBotCore(const char* config_yaml) : 
     _path_to_config(config_yaml)
-{
-    //TODO fix thread stuff
-    // set thread name
-    //const YAML::Node& board_ctrl = root_cfg["x_bot_ecat"]; // TBD check that the Node is defined
-    //set_thread_name(board_ctrl["name"].as<std::string>()); // TBD check that name is defined
-    
-    set_thread_name("XBOT");
-    // set thread period - not periodic
-    task_period_t t;
-    memset(&t, 0, sizeof(t));
-    t.period = {0,1};
-    set_thread_period(t);
-    
-    // set thread priority
-    set_thread_priority();
-        
+{        
     halInterface = HALInterfaceFactory::getFactory("libXBotKuka", "KUKA",config_yaml);
     if(!halInterface) exit(1);
 }
 
-void XBot::XBotCore::set_thread_name(std::string thread_name)
+void XBot::XBotCore::init_internal()
 {
-    // save the thread name
-    this->thread_name = thread_name;
-    // set thread name
-    name = this->thread_name.c_str();
-}
-
-std::string XBot::XBotCore::get_thread_name(void)
-{
-    return thread_name;
-}
-
-void XBot::XBotCore::set_thread_period(task_period_t t)
-{
-    period.task_time = t.task_time;
-    period.period = t.period;
-}
-
-void XBot::XBotCore::set_thread_priority()
-{
-
-    // set scheduler policy
-#ifdef __XENO__
-    schedpolicy = SCHED_FIFO;
-#else
-    schedpolicy = SCHED_OTHER;
-#endif
-    
-    // set scheduler priority and stacksize
-    priority = sched_get_priority_max(schedpolicy);
-    stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
-}
-
-void XBot::XBotCore::th_init( void * ){
-  
-  halInterface->init();
-  control_init();
-}
-
-void XBot::XBotCore::th_loop( void * ){
-  
-  int state = halInterface->recv_from_slave();
-  if(state == 0)
-    control_loop();
-  halInterface->send_to_slave();
-  
-}
-
-void XBot::XBotCore::control_init(void) 
-{
-    
     // create robot from config file and any map
     XBot::AnyMapPtr anymap = std::make_shared<XBot::AnyMap>();
     std::shared_ptr<XBot::IXBotJoint> xbot_joint(halInterface);
@@ -135,6 +70,16 @@ void XBot::XBotCore::control_init(void)
     
     //
     _pluginHandler->init_plugins(shared_memory, xbot_joint, xbot_ft, xbot_imu);
+    
+    return;
+}
+
+void XBot::XBotCore::control_init(void) 
+{
+     halInterface->init();
+     init_internal();    
+     
+     return;
 }
 
 double XBot::XBotCore::get_time()
@@ -143,10 +88,17 @@ double XBot::XBotCore::get_time()
 }
 
 int XBot::XBotCore::control_loop(void) 
-{    
-    _iter++;
-   _pluginHandler->run();  
+{       
+    int state = halInterface->recv_from_slave();
+    if(state == 0)
+      loop_internal();  
+    halInterface->send_to_slave();
+}
 
+void XBot::XBotCore::loop_internal()
+{
+    _iter++;
+    _pluginHandler->run();  
 }
 
 XBot::XBotCore::~XBotCore() {

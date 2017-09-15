@@ -79,6 +79,7 @@ add_executable(${PROJECT_NAME}
 # lib
 add_library(XBotCoreThread SHARED
     src/XBotCore.cpp
+    src/XBotCoreThread.cpp
     src/HALInterfaceFactory.cpp
 )
 
