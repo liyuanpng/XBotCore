@@ -38,7 +38,7 @@
 #include <XBotInterface/RobotInterface.h>
 
 #include <XCM/XBotPluginHandler.h>
-#include <HALInterface.h>
+#include <XBotCore/HALInterface.h>
 
 namespace XBot
 {

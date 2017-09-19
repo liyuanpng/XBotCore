@@ -13,6 +13,10 @@ project(XBotCore)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 include(MacroOptionalBuild)
 include(MacroSetcap)
+include(MacroYCMInstallLibrary)
+
+# Add cmake dir and include custom macros
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 # C++11 
 include(CheckCXXCompilerFlag)
@@ -116,53 +120,56 @@ install(TARGETS XBotCoreThread RUNTIME LIBRARY DESTINATION lib)
 # documentation
 add_subdirectory(doc)
 
+ycm_library_install(XBotCoreThread 1 0 0)
+ycm_library_install(XBotCore 1 0 0)
+
 ########################################################################
 
-set(VARS_PREFIX ${PROJECT_NAME})
-
-set(${PROJECT_NAME}_MAJOR_VERSION 0)
-set(${PROJECT_NAME}_MINOR_VERSION 0)
-set(${PROJECT_NAME}_PATCH_VERSION 1)
-set(${PROJECT_NAME}_VERSION ${${PROJECT_NAME}_MAJOR_VERSION}.${${PROJECT_NAME}_MINOR_VERSION}.${${PROJECT_NAME}_PATCH_VERSION})
-
-find_package(YCM REQUIRED)
-include(YCMDefaultDirs)
-ycm_default_dirs(${VARS_PREFIX})
-
-target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
-                                                "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
-
-set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
-                                               SOVERSION ${${VARS_PREFIX}_VERSION})
-
-install(DIRECTORY include/
-        DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"
-        FILES_MATCHING PATTERN "*.h*")
-
-install(TARGETS ${PROJECT_NAME}
-        EXPORT ${PROJECT_NAME}
-        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
-        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
-        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
-
-
-
-#enabling it will add all XBotInterface dependencies as dependencies for third party users
-set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS ${PROJECT_NAME})
-
-
-include(InstallBasicPackageFiles)
-install_basic_package_files(${PROJECT_NAME} VARS_PREFIX ${VARS_PREFIX}
-                                    VERSION ${${VARS_PREFIX}_VERSION}
-                                    COMPATIBILITY SameMajorVersion
-                                    TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
-                                    NO_CHECK_REQUIRED_COMPONENTS_MACRO)                                    
-
-include(AddUninstallTarget)
-
-if(NOT Xenomai_FOUND)
-    # NOTE do it manually on the install
-    #set_cap_install(${CMAKE_INSTALL_PREFIX}/bin/${PROJECT_NAME}-${${PROJECT_NAME}_VERSION})
-endif()
+# set(VARS_PREFIX ${PROJECT_NAME})
+# 
+# set(${PROJECT_NAME}_MAJOR_VERSION 0)
+# set(${PROJECT_NAME}_MINOR_VERSION 0)
+# set(${PROJECT_NAME}_PATCH_VERSION 1)
+# set(${PROJECT_NAME}_VERSION ${${PROJECT_NAME}_MAJOR_VERSION}.${${PROJECT_NAME}_MINOR_VERSION}.${${PROJECT_NAME}_PATCH_VERSION})
+# 
+# find_package(YCM REQUIRED)
+# include(YCMDefaultDirs)
+# ycm_default_dirs(${VARS_PREFIX})
+# 
+# target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
+#                                                 "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
+# 
+# set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
+#                                                SOVERSION ${${VARS_PREFIX}_VERSION})
+# 
+# install(DIRECTORY include/
+#         DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"
+#         FILES_MATCHING PATTERN "*.h*")
+# 
+# install(TARGETS ${PROJECT_NAME}
+#         EXPORT ${PROJECT_NAME}
+#         ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
+#         RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
+#         LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
+# 
+# 
+# 
+# #enabling it will add all XBotInterface dependencies as dependencies for third party users
+# set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS ${PROJECT_NAME})
+# 
+# 
+# include(InstallBasicPackageFiles)
+# install_basic_package_files(${PROJECT_NAME} VARS_PREFIX ${VARS_PREFIX}
+#                                     VERSION ${${VARS_PREFIX}_VERSION}
+#                                     COMPATIBILITY SameMajorVersion
+#                                     TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
+#                                     NO_CHECK_REQUIRED_COMPONENTS_MACRO)                                    
+# 
+# include(AddUninstallTarget)
+# 
+# if(NOT Xenomai_FOUND)
+#     # NOTE do it manually on the install
+#     #set_cap_install(${CMAKE_INSTALL_PREFIX}/bin/${PROJECT_NAME}-${${PROJECT_NAME}_VERSION})
+# endif()
 
 
