@@ -39,6 +39,7 @@
 
 #include <XCM/XBotPluginHandler.h>
 #include <XBotCore/HALInterface.h>
+#include <XBotCore/ControllerInterface.h>
 
 namespace XBot
 {
@@ -49,7 +50,7 @@ namespace XBot
  * @brief XBotCore: RT EtherCAT thread and RT (shared-memory) XBotCore interfaces implementation.
  * 
  */
-class XBot::XBotCore 
+class XBot::XBotCore : public ControllerInterface
                         
 {
 public:

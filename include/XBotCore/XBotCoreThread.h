@@ -33,6 +33,8 @@
 #include <XCM/XBotUtils.h>
 #include <XCM/XBotThread.h>
 #include <XBotCore/XBotCore.h>
+#include <memory>
+
 
 namespace XBot
 {
@@ -43,7 +45,7 @@ namespace XBot
  * @brief XBotCore: RT EtherCAT thread and RT (shared-memory) XBotCore interfaces implementation.
  * 
  */
-class XBot::XBotCoreThread : public XBot::Thread_hook, protected XBot::XBotCore
+class XBot::XBotCoreThread : public XBot::Thread_hook
                         
 {
 public:
@@ -63,6 +65,8 @@ public:
     std::string get_thread_name(void);
 
 private:
+    
+    std::shared_ptr<ControllerInterface> controller;
     
     /**
      * @brief The thread name
