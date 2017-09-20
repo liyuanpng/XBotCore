@@ -24,6 +24,16 @@
 
 #include <XCM/XBotUtils.h>
 
+extern "C" XBot::CommunicationInterfaceROS* create_instance(XBot::RobotInterface::Ptr robot)
+{
+  return new XBot::CommunicationInterfaceROS(robot);
+}
+
+extern "C" void destroy_instance( XBot::CommunicationInterfaceROS* instance )
+{
+  delete instance;
+}
+
 namespace XBot {
 
 bool CommunicationInterfaceROS::callback(std_srvs::SetBoolRequest& req,

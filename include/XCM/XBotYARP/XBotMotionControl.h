@@ -45,6 +45,8 @@ class XBot::dev::XBotMotionControl :    public DeviceDriver,
                                         public ITorqueControl,
                                         public IPositionDirect,
                                         public IInteractionMode,
+                                        public IAmplifierControl,
+                                        public IPWMControl,
                                         public IXBotInit
 
 {
@@ -315,6 +317,28 @@ public:
     bool setInteractionMode(int j, yarp::dev::InteractionModeEnum _mode);
     bool setInteractionModes(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
     bool setInteractionModes(yarp::dev::InteractionModeEnum* modes);
+    
+    // AmplifierControl interface
+    virtual bool disableAmp(int j);
+    virtual bool enableAmp(int j);
+    virtual bool getAmpStatus(int j, int* v);
+    virtual bool getCurrent(int j, double* val);
+    virtual bool getAmpStatus(int* st);
+    virtual bool getCurrents(double* vals);
+    virtual bool getMaxCurrent(int j, double* v);
+    virtual bool setMaxCurrent(int j, double v);
+    virtual bool getPWM(int j, double* val);
+    
+    // PWMControl interface
+    virtual bool getDutyCycle(int m, double* val);
+    virtual bool getDutyCycles(double* vals);
+    virtual bool getNumberOfMotors(int* number);
+    virtual bool getRefDutyCycle(int m, double* ref);
+    virtual bool getRefDutyCycles(double* refs);
+    virtual bool setRefDutyCycle(int m, double ref);
+    virtual bool setRefDutyCycles(const double* refs);
+
+
 
 };
 

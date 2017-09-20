@@ -23,6 +23,7 @@
 
 #include <XCM/XBotUtils.h>
 
+namespace XBot{
 typedef struct {
     struct timeval task_time;
     struct timeval period;
@@ -38,14 +39,17 @@ typedef struct {
     unsigned long        overruns;
 } task_time_stat_t;
 
+}
+
+namespace XBot{
 class Thread_hook;
+}
 
-typedef Thread_hook* Thread_hook_Ptr;
-
+namespace XBot{
+typedef XBot::Thread_hook* Thread_hook_Ptr;
 void * rt_periodic_thread ( Thread_hook_Ptr );
 void * rt_non_periodic_thread ( Thread_hook_Ptr );
 void * nrt_thread ( Thread_hook_Ptr );
-
 
 inline void tsnorm ( struct timespec *ts ) {
     while ( ts->tv_nsec >= NSEC_PER_SEC ) {
@@ -53,9 +57,9 @@ inline void tsnorm ( struct timespec *ts ) {
         ts->tv_sec++;
     }
 }
+}
 
-
-class Thread_hook {
+class XBot::Thread_hook {
 
 public:
     
@@ -94,17 +98,18 @@ protected:
 
 };
 
-inline Thread_hook::~Thread_hook() {
+
+inline XBot::Thread_hook::~Thread_hook() {
 
     std::cout << "~" << typeid ( this ).name() << std::endl;
 }
 
-inline int Thread_hook::is_non_periodic() {
+inline int XBot::Thread_hook::is_non_periodic() {
 
     return ( period.period.tv_sec == 0 && period.period.tv_usec == 1 );
 }
 
-inline void * Thread_hook::nrt_th_helper ( void *kls ) {
+inline void * XBot::Thread_hook::nrt_th_helper ( void *kls ) {
 
 //     try {
         return nrt_thread ( ( Thread_hook_Ptr ) kls );
@@ -116,7 +121,7 @@ inline void * Thread_hook::nrt_th_helper ( void *kls ) {
 
 }
 
-inline void * Thread_hook::rt_th_helper ( void *kls )  {
+inline void * XBot::Thread_hook::rt_th_helper ( void *kls )  {
 
 //     try {
 
@@ -133,15 +138,15 @@ inline void * Thread_hook::rt_th_helper ( void *kls )  {
 }
 
 
-inline void Thread_hook::stop() {
+inline void XBot::Thread_hook::stop() {
     _run_loop = 0;
 }
 
-inline void Thread_hook::join() {
+inline void XBot::Thread_hook::join() {
     /*pthread_cancel(thread_id);*/ pthread_join ( thread_id, 0 );
 }
 
-inline void Thread_hook::create ( int rt=true, int cpu_nr=0 ) {
+inline void XBot::Thread_hook::create ( int rt=true, int cpu_nr=0 ) {
 
     int ret;
     pthread_attr_t      attr;

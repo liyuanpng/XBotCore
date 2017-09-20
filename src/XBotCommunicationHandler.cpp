@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2017 IIT-ADVR
- * Author: Arturo Laurenzi, Luca Muratore
- * email:  arturo.laurenzi@iit.it, luca.muratore@iit.it
+ * Author: Arturo Laurenzi, Luca Muratore, Giuseppe Rigano
+ * email:  arturo.laurenzi@iit.it, luca.muratore@iit.it, giuseppe.rigano@iit.it
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -19,7 +19,6 @@
 
 #include <XCM/XBotCommunicationHandler.h>
 
-
 XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config) :
     _path_to_config(path_to_config),
     _master_communication_ifc(nullptr)
@@ -28,6 +27,13 @@ XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config) :
 
 void XBot::CommunicationHandler::th_init(void*)
 {
+    // check that config file exists
+    std::ifstream fin(_path_to_config);
+    if (fin.fail()) {
+        XBot::ConsoleLogger::getLogger()->error() << "ERROR in " << __func__ << "! Can NOT open config file " << _path_to_config << "!" << XBot::ConsoleLogger::getLogger()->endl();
+        exit(0);
+    }
+    
     /* Get plugin vector from config file, save switch names, start pipe publishers */
     YAML::Node root_cfg = YAML::LoadFile(_path_to_config);
 
@@ -132,7 +138,7 @@ void XBot::CommunicationHandler::th_init(void*)
 
     /* Get a vector of communication interfaces to/from NRT frameworks like ROS, YARP, ... */
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
-    std::cout << "USE_ROS_COMMUNICATION_INTERFACE found! " << std::endl;
+    std::cerr << "USE_ROS_COMMUNICATION_INTERFACE found! " << std::endl;
     _ros_communication = std::make_shared<XBot::CommunicationInterfaceROS>(_robot);
     _communication_ifc_vector.push_back( _ros_communication );
 
@@ -143,9 +149,30 @@ void XBot::CommunicationHandler::th_init(void*)
     }
 
 #endif
-
+    
+    /********************************WEB INTERFACE********************************************/
+    _web_communication = CommunicationInterfaceFactory::getFactory("libwebserver", "WEB_SERVER",_robot);
+    if(_web_communication){
+      _communication_ifc_vector.push_back( _web_communication );
+    }
+    /****************************************************************************************/
+    
+    /********************************ROS INTERFACE********************************************/
+//     _ros_communication = CommunicationInterfaceFactory::getFactory("libros", "ROS",_robot);
+//     if(_ros_communication){
+//       _communication_ifc_vector.push_back( _ros_communication );
+//     }
+    /****************************************************************************************/
+    
+    /********************************YARP INTERFACE********************************************/
+//     _yarp_communication = CommunicationInterfaceFactory::getFactory("libyarp", "YARP",_robot);
+//     if(_yarp_communication){
+//       _communication_ifc_vector.push_back( _yarp_communication );
+//     }
+    /****************************************************************************************/
+    
 #ifdef USE_YARP_COMMUNICATION_INTERFACE
-    std::cout << "USE_YARP_COMMUNICATION_INTERFACE found! " << std::endl;
+    std::cerr << "USE_YARP_COMMUNICATION_INTERFACE found! " << std::endl;
     _yarp_communication = std::make_shared<XBot::CommunicationInterfaceYARP>(_robot);
     _communication_ifc_vector.push_back( _yarp_communication );
 
@@ -244,6 +271,22 @@ void XBot::CommunicationHandler::th_loop(void*)
                 std::cerr << "ERROR: ROS Master Communication Interface not compiled" << std::endl;
 #endif
             }
+            
+            else if ( master == "WEB" ||
+                 master == "web"
+            ) {
+                std::cout << "Switching to WEB Master Communication Interface" << std::endl;
+
+                _master_communication_ifc = _web_communication;
+                // HACK restarting XBotCommunicationPlugin
+                std::string cmd = "stop";
+                _switch_pub_vector[xbot_communication_idx].write(cmd);
+                sleep(1);
+                cmd = "start";
+                _switch_pub_vector[xbot_communication_idx].write(cmd);
+
+                
+            }
 
             else if ( master == "YARP" ||
                       master == "yarp"
@@ -300,7 +343,7 @@ void XBot::CommunicationHandler::th_loop(void*)
     /* Receive commands from the master communication handler,
      * i.e. the only one enabled to send commands to the robot */
     _master_communication_ifc->receiveReference(); // this updates robot
-
+    
     /* Run external plugins */
     for( XBot::IOPlugin * io_plugin_ptr : _io_plugin_ptr ){
         if(io_plugin_ptr) io_plugin_ptr->run();
@@ -313,6 +356,9 @@ void XBot::CommunicationHandler::th_loop(void*)
 
 XBot::CommunicationHandler::~CommunicationHandler()
 {
+     CommunicationInterfaceFactory::unloadLib("libwebserver");
+//      CommunicationInterfaceFactory::unloadLib("libros");
+//      CommunicationInterfaceFactory::unloadLib("libyarp");
     _logger->flush();
 }
 

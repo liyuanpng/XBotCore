@@ -71,6 +71,12 @@ void XBot::PluginHandler::update_plugins_set_name(const std::string& plugins_set
 bool PluginHandler::load_plugins()
 {
 
+    std::ifstream fin(_path_to_cfg);
+    if (fin.fail()) {
+        std::cerr << "ERROR in " << __func__ << "! Can NOT open config file " << _path_to_cfg << "!" << std::endl;
+        return false;
+    }
+    
     _root_cfg = YAML::LoadFile(_path_to_cfg);
 
 
