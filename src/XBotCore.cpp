@@ -33,7 +33,23 @@
 XBot::XBotCore::XBotCore(const char* config_yaml) : 
     _path_to_config(config_yaml)
 {        
-    halInterface = HALInterfaceFactory::getFactory("libXBotKuka", "KUKA",config_yaml);
+   
+    YAML::Node root_cfg = YAML::LoadFile(config_yaml);
+    const YAML::Node &hal_lib = root_cfg["HALInterface"];
+    
+    std::string lib_file="", lib_name="";
+    if( hal_lib == nullptr){
+      
+      std::cout<<"HALInterface parameter missing in config file "<<std::endl;
+      exit(1);
+      
+    }else{
+      
+      lib_file = hal_lib["lib_file"].as<std::string>();
+      lib_name = hal_lib["lib_name"].as<std::string>();
+    }
+    
+    halInterface = HALInterfaceFactory::getFactory(lib_file, lib_name,config_yaml);
     if(!halInterface) exit(1);
 }
 
