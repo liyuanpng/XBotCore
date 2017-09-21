@@ -37,6 +37,13 @@ XBot::XBotCore::XBotCore(const char* config_yaml) :
     if(!halInterface) exit(1);
 }
 
+XBot::XBotCore::XBotCore(const char* config_yaml, std::shared_ptr<HALInterface> halinterface) : 
+    _path_to_config(config_yaml)
+{        
+    halInterface = halinterface;
+    if(!halInterface) exit(1);
+}
+
 void XBot::XBotCore::init_internal()
 {
     // create robot from config file and any map
