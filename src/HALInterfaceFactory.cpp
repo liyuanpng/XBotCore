@@ -21,6 +21,7 @@
 
 std::map<std::string, void*> HALInterfaceFactory::handles;
 
+void (*HALInterfaceFactory::destroy)(HALInterface* instance);
 
 std::shared_ptr<HALInterface> HALInterfaceFactory::getFactory(const std::__cxx11::string& file_name,
                                                                                         const std::__cxx11::string& lib_name,
@@ -50,6 +51,8 @@ std::shared_ptr<HALInterface> HALInterfaceFactory::getFactory(const std::__cxx11
             exit(1);
         }
         
+        destroy = (void (*)(HALInterface* instance))dlsym(lib_handle,"destroy_instance");
+        
         HALInterface* instance =(HALInterface*)create(config);
         if( instance != nullptr){
           return std::shared_ptr<HALInterface>(instance);
@@ -59,9 +62,10 @@ std::shared_ptr<HALInterface> HALInterfaceFactory::getFactory(const std::__cxx11
     
 }
 
-void HALInterfaceFactory::unloadLib(const std::__cxx11::string& file_name)
+void HALInterfaceFactory::unloadLib(const std::__cxx11::string& file_name, HALInterface* HALInterface)
 {
 
+  destroy(HALInterface);
   dlclose( handles[file_name] );
   std::cout << file_name <<" INTERFACE unloaded! " << std::endl;
 }

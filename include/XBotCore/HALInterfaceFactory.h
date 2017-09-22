@@ -35,10 +35,12 @@ public:
   
   static std::shared_ptr<HALInterface> getFactory(const std::string& file_name, const std::string& lib_name,  const char * config);
 
-  static void unloadLib(const std::string& file_name);
+  static void unloadLib(const std::string& file_name, HALInterface* HALInterface);
 
 private:
 
+  static void (*destroy)(HALInterface* instance);
+  
   HALInterfaceFactory() = delete;
   
   static std::map<std::string, void*> handles;

@@ -130,6 +130,6 @@ XBot::XBotCore::~XBotCore() {
     _pluginHandler->close();
     printf("Iteration: %d \n", _iter);
     if( lib_file != "")
-        HALInterfaceFactory::unloadLib(lib_file);
+        HALInterfaceFactory::unloadLib(lib_file, halInterface.get());
     printf("~XBotCore()\n");
 }
