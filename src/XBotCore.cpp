@@ -37,7 +37,8 @@ XBot::XBotCore::XBotCore(const char* config_yaml) :
     YAML::Node root_cfg = YAML::LoadFile(config_yaml);
     const YAML::Node &hal_lib = root_cfg["HALInterface"];
     
-    std::string lib_file="", lib_name="";
+    lib_file = "";
+    std::string lib_name="";
     if( hal_lib == nullptr){
       
       std::cout<<"HALInterface parameter missing in config file "<<std::endl;
@@ -128,6 +129,7 @@ XBot::XBotCore::~XBotCore() {
     
     _pluginHandler->close();
     printf("Iteration: %d \n", _iter);
-    HALInterfaceFactory::unloadLib("libXBotKuka");
+    if( lib_file != "")
+        HALInterfaceFactory::unloadLib(lib_file);
     printf("~XBotCore()\n");
 }

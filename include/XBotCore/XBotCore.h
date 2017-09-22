@@ -104,6 +104,7 @@ private:
     
     void loop_internal();
 
+    std::string lib_file;
 };
 
 #endif //__X_BOT_CORE_H__
