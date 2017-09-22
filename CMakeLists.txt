@@ -47,10 +47,7 @@ endif()
 find_package(XBotCoreModel REQUIRED)
 find_package(XCM REQUIRED)
 
-# find_package(soem${LIB_TYPE} REQUIRED)
-# find_package(iitecat_iface${LIB_TYPE} REQUIRED)
-# find_package(walkman_master${LIB_TYPE} REQUIRED)
-# find_package(ecat_test_utils${LIB_TYPE} REQUIRED)
+
 find_package(sharedlibpp REQUIRED)
 
 # communication packages
@@ -65,11 +62,7 @@ set(COMMON_LIBS
 
 # include 
 include_directories(include ${XBotCoreModel_INCLUDE_DIRS} 
-                            ${kdl_parser_INCLUDE_DIRS}
-                            ${soem${LIB_TYPE}_INCLUDE_DIRS}
-                            ${iitecat_iface${LIB_TYPE}_INCLUDE_DIRS}
-                            ${walkman_master${LIB_TYPE}_INCLUDE_DIRS}
-                            ${ecat_test_utils${LIB_TYPE}_INCLUDE_DIRS}
+                            ${kdl_parser_INCLUDE_DIRS}                            
                             ${sharedlibpp_INCLUDE_DIRS}
                             ${XCM_INCLUDE_DIRS}
                             include/XBotCore/ )
@@ -95,22 +88,14 @@ if ( Xenomai_FOUND )
 endif()
 
 target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
-                                      ${XBotCoreModel_LIBRARIES}
-                                      ${soem${LIB_TYPE}_LIBRARIES} 
-                                      ${iitecat_iface${LIB_TYPE}_LIBRARIES}
-                                      ${walkman_masterwalkman_master${LIB_TYPE}_LIBRARIES}
-                                      ${ecat_test_utils${LIB_TYPE}_LIBRARIES}
+                                      ${XBotCoreModel_LIBRARIES}                                      
                                       XBotCoreThread
                                       )
 
                                       
                                       
 target_link_libraries(XBotCoreThread    ${COMMON_LIBS}
-                                        ${XBotCoreModel_LIBRARIES}
-                                        ${soem${LIB_TYPE}_LIBRARIES} 
-                                        ${iitecat_iface${LIB_TYPE}_LIBRARIES}
-                                        ${walkman_master${LIB_TYPE}_LIBRARIES}
-                                        ${ecat_test_utils${LIB_TYPE}_LIBRARIES}
+                                        ${XBotCoreModel_LIBRARIES}                                        
                                         ${sharedlibpp_LIBRARIES}
                                         ${XCM_LIBRARIES}
                                         )                                      
