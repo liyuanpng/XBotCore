@@ -19,6 +19,8 @@ int main(int argc, char **argv){
     ros::init(argc, argv, "DummyMain");
     ros::NodeHandle nh;
 
+    nh.setParam("/use_sim_time", true);
+    
     ros::Publisher clock_pub = nh.advertise<rosgraph_msgs::Clock>("/clock", 1);
 
 
@@ -68,6 +70,8 @@ int main(int argc, char **argv){
         rosgraph_msgs::Clock msg;
         msg.clock = ros::Time(time);
         clock_pub.publish(msg);
+        
+        std::clock_t tic = std::clock();
 
         time_provider->set_time(time);
 
@@ -75,14 +79,21 @@ int main(int argc, char **argv){
             std::cout << "Time [s]: " << int(time) << std::endl;
             std::cout << "Mean exec time [ms]: " << 1000*boost_acc::rolling_mean(time_acc) << std::endl;
         }
+        
 
         plugin_handler.run();
         
-        time += loop_rate.expectedCycleTime().toSec();
+        time += 0.001;
         
-        time_acc(loop_rate.cycleTime().toSec());
+        double elapsed_time = double(std::clock() - tic)/CLOCKS_PER_SEC;
+        
+        time_acc(elapsed_time);
 
-        loop_rate.sleep();
+        usleep(std::max(.0, 1000 - elapsed_time*1e6));
+
+        
+        
+
 
     }
 
