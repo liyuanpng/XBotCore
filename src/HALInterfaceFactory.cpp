@@ -23,9 +23,11 @@ std::map<std::string, void*> HALInterfaceFactory::handles;
 
 void (*HALInterfaceFactory::destroy)(HALInterface* instance);
 
-std::shared_ptr<HALInterface> HALInterfaceFactory::getFactory(const std::__cxx11::string& file_name,
-                                                                                        const std::__cxx11::string& lib_name,
-                                                                                        const char * config )
+
+
+std::shared_ptr<HALInterface> HALInterfaceFactory::getFactory(const std::string& file_name,
+                                                              const std::string& lib_name,
+                                                              const char * config )
 {
 
     char *error;  
@@ -62,7 +64,7 @@ std::shared_ptr<HALInterface> HALInterfaceFactory::getFactory(const std::__cxx11
     
 }
 
-void HALInterfaceFactory::unloadLib(const std::__cxx11::string& file_name, HALInterface* HALInterface)
+void HALInterfaceFactory::unloadLib(const std::string& file_name, HALInterface* HALInterface)
 {
 
   destroy(HALInterface);
