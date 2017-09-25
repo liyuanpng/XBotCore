@@ -9,52 +9,17 @@
 
 #include <XCM/XBotPluginHandler.h>
 
-static sigset_t   signal_mask;
-volatile sig_atomic_t g_loop_ok = 1;
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/rolling_mean.hpp>
 
-void *signal_thread (void *arg)
-{
-    int       sig_caught;    /* signal caught       */
-    int       rc;            /* returned code       */
-
-
-    rc = sigwait (&signal_mask, &sig_caught);
-    if (rc != 0) {
-        /* handle error */
-    }
-    switch (sig_caught)
-    {
-    case SIGINT:     /* process SIGINT  */
-        g_loop_ok = 0;
-        fprintf (stderr, "\nSIGINT signal %d\n", sig_caught);
-        break;
-    case SIGTERM:    /* process SIGTERM */
-        g_loop_ok = 0;
-        fprintf (stderr, "\nSIGTERM signal %d\n", sig_caught);
-        break;
-    default:         /* should normally not happen */
-        fprintf (stderr, "\nUnexpected signal %d\n", sig_caught);
-        break;
-    }
-}
 
 int main(int argc, char **argv){
 
-    ros::init(argc, argv, "DummyMain", ros::init_options::NoSigintHandler);
+    ros::init(argc, argv, "DummyMain");
     ros::NodeHandle nh;
 
     ros::Publisher clock_pub = nh.advertise<rosgraph_msgs::Clock>("/clock", 1);
-
-    // SIGNAL handling
-    pthread_t  sig_thr_id;
-    int rc;
-
-    sigemptyset (&signal_mask);
-    sigaddset (&signal_mask, SIGINT);
-    sigaddset (&signal_mask, SIGTERM);
-    rc = pthread_sigmask (SIG_BLOCK, &signal_mask, NULL);
-    rc = pthread_create (&sig_thr_id, NULL, signal_thread, NULL);
-    // SIGNAL handling
 
 
     using namespace XBot;
@@ -90,27 +55,34 @@ int main(int argc, char **argv){
     plugin_handler.init_plugins(shared_memory);
 
     double time = 0;
+    
+    ros::Rate loop_rate(1000);
+    
+    namespace boost_acc = boost::accumulators;
+    
+    boost_acc::accumulator_set<double, boost_acc::stats<boost_acc::tag::rolling_mean> > time_acc(boost_acc::tag::rolling_window::window_size = 1000);
 
-    while(g_loop_ok){
+
+    while(ros::ok()){
 
         rosgraph_msgs::Clock msg;
         msg.clock = ros::Time(time);
         clock_pub.publish(msg);
 
-        std::clock_t tic = std::clock();
-
         time_provider->set_time(time);
 
         if( int(time*1000) % 1000 == 0 ){
-            std::cout << "Time: " << int(time) << std::endl;
+            std::cout << "Time [s]: " << int(time) << std::endl;
+            std::cout << "Mean exec time [ms]: " << 1000*boost_acc::rolling_mean(time_acc) << std::endl;
         }
 
         plugin_handler.run();
-        time += 0.001;
+        
+        time += loop_rate.expectedCycleTime().toSec();
+        
+        time_acc(loop_rate.cycleTime().toSec());
 
-        double elapsed_time = double(std::clock() - tic)/CLOCKS_PER_SEC;
-
-        usleep(std::max(.0, 1000 - elapsed_time*1e6));
+        loop_rate.sleep();
 
     }
 
