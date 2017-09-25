@@ -98,9 +98,9 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
 
     if(command.read(current_command)){
         if(current_command.str() == "filter ON"){
-            _filter_q.setOmega(2*3.1415*0.5);
-            _filter_k.setOmega(2*3.1415*0.5);
-            _filter_d.setOmega(2*3.1415*0.5);
+            _filter_q.setOmega(2*3.1415*0.2);
+            _filter_k.setOmega(2*3.1415*0.2);
+            _filter_d.setOmega(2*3.1415*0.2);
         }
         if(current_command.str() == "filter OFF"){
             _filter_q.setOmega(2*3.1415*200);
