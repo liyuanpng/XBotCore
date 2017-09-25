@@ -38,6 +38,7 @@ public:
 
     virtual void sendRobotState() = 0;
     virtual void receiveReference() = 0;
+    virtual void resetReference() { std::cout << "TO BE IMPLEMENTED" << std::endl; }
 
     virtual bool advertiseSwitch(const std::string& port_name) = 0;
     virtual bool receiveFromSwitch(const std::string& port_name, std::string& message) = 0;
@@ -50,6 +51,7 @@ public:
 
     virtual void advertiseStatus(const std::string& plugin_name){}
     virtual bool setPluginStatus(const std::string& plugin_name, const std::string& status){}
+    virtual std::string getPluginStatus(const std::string& plugin_name){ return "TO BE IMPLEMENTED"; }
 
 protected:
 
