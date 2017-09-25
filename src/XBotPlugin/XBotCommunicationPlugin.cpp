@@ -44,9 +44,9 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
     }
 
     // initialize filter
-    _filter_q = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
-    _filter_k = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
-    _filter_d = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    _filter_q = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*200, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    _filter_k = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*200, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    _filter_d = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*200, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
     
     // NOTE filter ON by default
     _filter_enabled = true;
@@ -98,17 +98,14 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
 
     if(command.read(current_command)){
         if(current_command.str() == "filter ON"){
-            _filter_enabled = true;
-            _robot->getJointPosition(_qref);
-            _robot->getStiffness(_kref);
-            _robot->getDamping(_dref);
-
-            _filter_q.reset(_qref);
-            _filter_k.reset(_kref);
-            _filter_d.reset(_dref);
+            _filter_q.setOmega(2*3.1415*0.5);
+            _filter_k.setOmega(2*3.1415*0.5);
+            _filter_d.setOmega(2*3.1415*0.5);
         }
         if(current_command.str() == "filter OFF"){
-            _filter_enabled = false;
+            _filter_q.setOmega(2*3.1415*200);
+            _filter_k.setOmega(2*3.1415*200);
+            _filter_d.setOmega(2*3.1415*200);
         }
     }
     
