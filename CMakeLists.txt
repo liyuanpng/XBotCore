@@ -78,6 +78,7 @@ add_library(XBotCoreThread SHARED
     src/XBotCore.cpp
     src/XBotCoreThread.cpp
     src/HALInterfaceFactory.cpp
+    src/signal_handler.cpp
 )
 
 
