@@ -29,8 +29,11 @@
 #include <assert.h>
 #include <signal.h>
 #include <exception>
+#include <stdlib.h> 
 
 #include <XBotCore/XBotCoreThread.h>
+
+#include <XCM/XBotCommunicationHandler.h>
 
 extern void main_common(__sighandler_t sig_handler);
 
@@ -57,9 +60,16 @@ int main(int argc, char *argv[]) try {
     }
 
     main_common(shutdown);
-    
+
     threads["boards_ctrl"] = new XBot::XBotCoreThread(argv[1]);
     threads["boards_ctrl"]->create(true, 2);
+
+    // starts CommunicationHandler
+    system(std::string("CommunicationHandler " + std::string(argv[1])).c_str());
+    
+    //threads["ch"] = new XBot::CommunicationHandler(argv[1]);
+    //threads["ch"]->create(false,3);
+
 
     while (main_loop) {
         sleep(1); 
