@@ -43,6 +43,9 @@ int main(int argc, char **argv){
     else{
 
     }
+    
+    // starts CommunicationHandler
+    system(std::string("CommunicationHandler " + std::string(argv[1])).c_str());
 
 
     RobotInterface::Ptr robot = RobotInterface::getRobot(path_to_cfg, AnyMapPtr(), framework);
