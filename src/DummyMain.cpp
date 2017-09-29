@@ -57,7 +57,7 @@ int main(int argc, char **argv){
     plugin_handler.init_plugins(shared_memory);
     
     // starts CommunicationHandler
-    system(std::string("CommunicationHandler " + std::string(argv[1])).c_str());
+//     system(std::string("CommunicationHandler " + std::string(argv[1])).c_str());
 
     double time = 0;
     
