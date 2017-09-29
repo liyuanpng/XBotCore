@@ -281,6 +281,12 @@ install(TARGETS NRTDeployer
         EXPORT  NRTDeployer
         RUNTIME DESTINATION bin)
 
+add_executable(RobotStateLogger src/RobotStateLogger.cpp)
+target_link_libraries(RobotStateLogger XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
+
+install(TARGETS RobotStateLogger
+        EXPORT  RobotStateLogger
+        RUNTIME DESTINATION bin)
 
 if ( Xenomai_FOUND )
     set_xeno_flags(XCM)
