@@ -74,6 +74,8 @@ find_package(catkin QUIET COMPONENTS roscpp sensor_msgs std_srvs message_generat
 find_package(YARP QUIET)
 find_package(kdl_parser REQUIRED)
 
+# find_package(Boost REQUIRED)
+
 
 option(BUILD_TESTS "Compile XCM tests" FALSE)
 
@@ -192,7 +194,7 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/XBotPlugin.cpp
                         src/XBotControlPlugin.cpp
                         src/XBotPluginHandler.cpp
-                        src/XBotModuleHandler.cpp
+#                         src/XBotModuleHandler.cpp
                         src/XBotControlModule.cpp
                         src/XBotCommunicationHandler.cpp
                         src/XBotXDDP.cpp
@@ -209,7 +211,7 @@ add_library(XCM_no_xeno SHARED ${XBotInterface_INCLUDES}
                         src/XBotPlugin.cpp
                         src/XBotControlPlugin.cpp
                         src/XBotPluginHandler.cpp
-                        src/XBotModuleHandler.cpp
+#                         src/XBotModuleHandler.cpp
                         src/XBotControlModule.cpp
                         src/XBotCommunicationHandler.cpp
                         src/XBotXDDP.cpp

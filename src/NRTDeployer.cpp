@@ -21,6 +21,8 @@
 
 #include <XCM/XBotUtils.h>
 
+#include <boost/bind.hpp>
+
 XBot::NRTDeployer::NRTDeployer(std::string path_to_config) :
     _path_to_config(path_to_config)
 {

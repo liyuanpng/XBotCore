@@ -22,9 +22,13 @@
 
 #include <XBotCore-interfaces/XBotPipes.h>
 
-#include <XCM/CommunicationInterfaceROS.h>
+// #include <XCM/CommunicationInterfaceROS.h>
+
+
 
 namespace XBot {
+    
+class CommunicationInterfaceROS;
 
 /**
 * @brief Class which acts as a std::string of maximum length equal to 40
@@ -189,7 +193,7 @@ public:
 
 private:
     
-    XBot::CommunicationInterfaceROS::Ptr _ros_communication;
+    std::shared_ptr<XBot::CommunicationInterfaceROS> _ros_communication;
     std::string _aux_data;
     
     bool _is_switch, _is_cmd;
@@ -208,7 +212,7 @@ public:
 
 private:
     
-    XBot::CommunicationInterfaceROS::Ptr _ros_communication;
+    std::shared_ptr<XBot::CommunicationInterfaceROS> _ros_communication;
     std::string _aux_data;
 };
 

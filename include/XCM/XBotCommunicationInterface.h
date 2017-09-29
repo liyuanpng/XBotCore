@@ -22,6 +22,7 @@
 #define __XBOT_COMMUNICATION_INTERFACE_H__
 
 #include <XBotInterface/RobotInterface.h>
+#include <XCM/XBotXDDP.h>
 
 namespace XBot {
 
@@ -32,8 +33,10 @@ public:
     typedef std::shared_ptr<CommunicationInterface> Ptr;
 
     CommunicationInterface() {}
-    CommunicationInterface(XBotInterface::Ptr robot):
+    CommunicationInterface(XBotInterface::Ptr robot, 
+                           XBot::XBotXDDP::Ptr xddp_handler = nullptr ):
         _robot(robot),
+        _xddp_handler(xddp_handler),
         _master_communication_interface_port("MasterCommunicationInterface_switch") {}
 
     virtual void sendRobotState() = 0;
@@ -57,6 +60,8 @@ protected:
 
     XBotInterface::Ptr _robot;
     std::string _master_communication_interface_port;
+    
+    XBot::XBotXDDP::Ptr _xddp_handler;
 
 private:
 

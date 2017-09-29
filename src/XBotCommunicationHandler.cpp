@@ -139,7 +139,7 @@ void XBot::CommunicationHandler::th_init(void*)
     /* Get a vector of communication interfaces to/from NRT frameworks like ROS, YARP, ... */
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
     std::cerr << "USE_ROS_COMMUNICATION_INTERFACE found! " << std::endl;
-    _ros_communication = std::make_shared<XBot::CommunicationInterfaceROS>(_robot);
+    _ros_communication = std::make_shared<XBot::CommunicationInterfaceROS>(_robot, _xddp_handler);
     _communication_ifc_vector.push_back( _ros_communication );
 
     if ( _master_communication_interface_name == "ROS" ||
