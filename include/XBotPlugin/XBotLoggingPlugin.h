@@ -62,6 +62,8 @@ private:
     
     RobotInterface::Ptr _robot;
     
+    std::vector<double> _faults;
+    
     XBot::MatLogger::Ptr _logger;
 
 };
