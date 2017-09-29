@@ -25,12 +25,13 @@ int main(int argc, char** argv){
     
     auto js_callback = std::bind(callback, std::placeholders::_1, std::ref(js_msg));
     
-    ros::Subscriber js_sub = nh.subscribe<XCM::JointStateAdvr>("/xbotcore/"+model->getUrdf().getName()+"/joint_state", 
+    ros::Subscriber js_sub = nh.subscribe<XCM::JointStateAdvr>("/xbotcore/"+model->getUrdf().getName()+"/joint_states", 
                                                                1, 
                                                                js_callback);
     
     while(js_msg.name.size() == 0){
         std::cout << "Waiting for CommunicationHandler to start..." << std::endl;
+        ros::spinOnce();
         ros::Duration(1).sleep();
     }
     
