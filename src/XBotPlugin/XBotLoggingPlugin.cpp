@@ -39,8 +39,8 @@ bool XBot::XBotLoggingPlugin::init_control_plugin( std::string path_to_config_fi
     _robot->initLog(_logger, 100000);
     
     // add the faults
-    _faults.resize(_robot->getJointNum());
-    _logger->createVectorVariable("fault", _faults.size());
+    _faults.resize(_robot->getJointNum(), 0.0);
+    _logger->createVectorVariable("fault", _faults.size(), 1, 100000);
 
     return true;
 }
@@ -64,7 +64,9 @@ void XBot::XBotLoggingPlugin::control_loop(double time, double period)
     // log fault
     int i = 0;
     for(int id : _robot->getEnabledJointId()) {
-        get_xbotcore_joint()->get_fault(id, _faults[i]);
+	if(get_xbotcore_joint()) {
+	    get_xbotcore_joint()->get_fault(id, _faults[i]);
+	}
         i++;
     }
     _logger->log("fault", _faults);
