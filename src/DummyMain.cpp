@@ -8,6 +8,7 @@
 #include <rosgraph_msgs/Clock.h>
 
 #include <XCM/XBotPluginHandler.h>
+#include <XBotInterface/Utils.h>
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
@@ -26,24 +27,21 @@ int main(int argc, char **argv){
 
     using namespace XBot;
 
-    std::string path_to_cfg;
-
-    if(argc > 1){
-        path_to_cfg = std::string(argv[1]);
-    }
-    else{
-
-    }
-
     std::string framework = "DUMMY";
 
-    if(argc > 2){
-        framework = std::string(argv[2]);
+    // config file handling
+    std::string path_to_cfg;
+    if ( argc != 2 ) {
+        // check the default path
+        path_to_cfg = XBot::Utils::getXBotConfig();
+        if(path_to_cfg == "") {
+            printf ( "Usage: %s config.yaml\nOr set_xbot_config config.yaml && %s\n", argv[0], argv[0] );
+            return 0;
+        }
     }
-    else{
-
+    else {
+        path_to_cfg = argv[1];
     }
-
 
     RobotInterface::Ptr robot = RobotInterface::getRobot(path_to_cfg, AnyMapPtr(), framework);
 

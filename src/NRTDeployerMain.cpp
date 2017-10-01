@@ -25,6 +25,8 @@
 
 #include <XCM/NRTDeployer.h>
 
+#include <XBotInterface/Utils.h>
+
 static sigset_t   signal_mask;  
 volatile sig_atomic_t g_loop_ok = 1;
 
@@ -71,14 +73,25 @@ int main ( int argc, char *argv[] ) try {
 
     
     int num_iters = 0;
-
     std::map<std::string, XBot::Thread_hook*> threads;
+    
+
+    // config file handling
+    std::string path_to_cfg;
     if ( argc != 2 ) {
-        printf ( "Usage: %s config.yaml\n", argv[0] );
-        return 0;
+        // check the default path
+        path_to_cfg = XBot::Utils::getXBotConfig();
+        if(path_to_cfg == "") {
+            printf ( "Usage: %s config.yaml\nOr set_xbot_config config.yaml && %s\n", argv[0], argv[0] );
+            return 0;
+        }
+    }
+    else {
+        path_to_cfg = argv[1];
     }
 
-    threads["NRTDeployer"] = new XBot::NRTDeployer ( argv[1] );
+
+    threads["NRTDeployer"] = new XBot::NRTDeployer ( path_to_cfg );
     threads["NRTDeployer"]->create ( false, 0 );
     
 
