@@ -99,6 +99,8 @@ int main(int argc, char **argv){
 
 
     }
+    
+    nh.setParam("/use_sim_time", false);
 
     plugin_handler.close();
 
