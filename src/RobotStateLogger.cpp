@@ -36,7 +36,7 @@ int main(int argc, char** argv){
     }
     
     
-    auto robot = XBot::RobotInterface::getRobot(argv[1]);
+    auto robot = XBot::RobotInterface::getRobot(argv[1]); // FIXME not able to log references
     
     auto logger = XBot::MatLogger::getLogger("/tmp/RobotStateLog");
     
@@ -62,6 +62,8 @@ int main(int argc, char** argv){
         }
         
         logger->add("fault", fault, 1, log_capacity);
+        
+        loop_rate.sleep();
         
     }
     
