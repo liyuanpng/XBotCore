@@ -98,17 +98,14 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
 
     if(command.read(current_command)){
         if(current_command.str() == "filter ON"){
-            _filter_enabled = true;
-            _robot->getJointPosition(_qref);
-            _robot->getStiffness(_kref);
-            _robot->getDamping(_dref);
-
-            _filter_q.reset(_qref);
-            _filter_k.reset(_kref);
-            _filter_d.reset(_dref);
+            _filter_q.setOmega(2*3.1415*0.2);
+            _filter_k.setOmega(2*3.1415*0.2);
+            _filter_d.setOmega(2*3.1415*0.2);
         }
         if(current_command.str() == "filter OFF"){
-            _filter_enabled = false;
+            _filter_q.setOmega(2*3.1415*200);
+            _filter_k.setOmega(2*3.1415*200);
+            _filter_d.setOmega(2*3.1415*200);
         }
     }
     

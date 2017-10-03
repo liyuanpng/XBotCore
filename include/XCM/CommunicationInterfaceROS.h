@@ -44,6 +44,7 @@ public:
 
     virtual void sendRobotState();
     virtual void receiveReference();
+    virtual void resetReference();
 
     virtual bool advertiseSwitch(const std::string& port_name);
     virtual bool receiveFromSwitch(const std::string& port_name, std::string& message);
@@ -56,6 +57,7 @@ public:
 
     virtual void advertiseStatus(const std::string& plugin_name);
     virtual bool setPluginStatus(const std::string& plugin_name, const std::string& status);
+    virtual std::string getPluginStatus(const std::string& plugin_name);
 
 protected:
 

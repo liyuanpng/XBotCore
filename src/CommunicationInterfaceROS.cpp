@@ -391,13 +391,52 @@ void CommunicationInterfaceROS::sendRobotState()
     }
 }
 
+void CommunicationInterfaceROS::resetReference()
+{
+    _robot->getPositionReference(_joint_id_map);
+    
+    for( const auto& pair : _jointid_to_command_msg_idx ){
+         _control_message->position(pair.second) = _joint_id_map[pair.first];
+    }
+
+    
+    _robot->getVelocityReference(_joint_id_map);
+
+    for( const auto& pair : _jointid_to_command_msg_idx ){
+        _control_message->velocity(pair.second) = _joint_id_map[pair.first];
+    }
+
+    
+    _robot->getEffortReference(_joint_id_map);
+
+    for( const auto& pair : _jointid_to_command_msg_idx ){
+        _control_message->effort(pair.second) = _joint_id_map[pair.first];
+    }
+
+    
+    _robot->getStiffness(_joint_id_map);
+
+    for( const auto& pair : _jointid_to_command_msg_idx ){
+        _control_message->stiffness(pair.second) = _joint_id_map[pair.first];
+    }
+
+    
+    _robot->getDamping(_joint_id_map);
+
+    for( const auto& pair : _jointid_to_command_msg_idx ){
+        _control_message->damping(pair.second) = _joint_id_map[pair.first];
+    }
+
+    
+}
+
+
 void CommunicationInterfaceROS::receiveReference()
 {
     if( !_receive_commands_ok ) return;
 
     ros::spinOnce();
 
-    _joint_id_map.clear();
 
     for( const auto& pair : _jointid_to_command_msg_idx ){
         _joint_id_map[pair.first] = _control_message->position(pair.second);
@@ -405,7 +444,6 @@ void CommunicationInterfaceROS::receiveReference()
 
     _robot->setPositionReference(_joint_id_map);
 
-    _joint_id_map.clear();
 
     for( const auto& pair : _jointid_to_command_msg_idx ){
         _joint_id_map[pair.first] = _control_message->velocity(pair.second);
@@ -413,7 +451,6 @@ void CommunicationInterfaceROS::receiveReference()
 
     _robot->setVelocityReference(_joint_id_map);
 
-    _joint_id_map.clear();
 
     for( const auto& pair : _jointid_to_command_msg_idx ){
         _joint_id_map[pair.first] = _control_message->effort(pair.second);
@@ -421,7 +458,6 @@ void CommunicationInterfaceROS::receiveReference()
 
     _robot->setEffortReference(_joint_id_map);
 
-    _joint_id_map.clear();
 
     for( const auto& pair : _jointid_to_command_msg_idx ){
         _joint_id_map[pair.first] = _control_message->stiffness(pair.second);
@@ -429,7 +465,6 @@ void CommunicationInterfaceROS::receiveReference()
 
     _robot->setStiffness(_joint_id_map);
 
-    _joint_id_map.clear();
 
     for( const auto& pair : _jointid_to_command_msg_idx ){
         _joint_id_map[pair.first] = _control_message->damping(pair.second);
@@ -585,6 +620,12 @@ bool XBot::CommunicationInterfaceROS::receiveFromCmd(const std::string& port_nam
     }
 }
 
+std::string CommunicationInterfaceROS::getPluginStatus(const std::string& plugin_name)
+{
+    return _plugin_status_map.at(plugin_name);
+}
+
+
 bool XBot::CommunicationInterfaceROS::receiveMasterCommunicationInterface(std::string& framework_name)
 {
     ros::spinOnce();
@@ -631,6 +672,8 @@ bool CommunicationInterfaceROS::computeAbsolutePath (  const std::string& input_
     absolute_path = input_path;
     return true;
 }
+
+
 
 
 }
