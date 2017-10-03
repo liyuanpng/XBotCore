@@ -46,8 +46,17 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
     CommunicationInterface(robot),
     _path_to_cfg(robot->getPathToConfig())
 {
+    std::string aport = PORT;
+    YAML::Node root_cfg = YAML::LoadFile(_path_to_cfg);
+    const YAML::Node &web_server = root_cfg["WebServer"]; 
+    if(web_server){
+       address = web_server["address"].as<std::string>();
+       port = web_server["port"].as<std::string>();
+       aport = address +":"+port;
+    } 
+    
     const char *options[] = {
-            "document_root", DOCUMENT_ROOT, "listening_ports", PORT, 0};
+            "document_root", DOCUMENT_ROOT, "listening_ports", aport.c_str(), 0};
     
     std::vector<std::string> cpp_options;
     for (int i=0; i<(sizeof(options)/sizeof(options[0])-1); i++) {
@@ -57,11 +66,13 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
     numjoint = _robot->getJointNum();
     buffer = std::make_shared<Buffer<WebRobotState>>(50);    
     sharedData = std::make_shared<SharedData>();
-    server = std::make_shared<CivetServer>(cpp_options);  
+    try{
+      server = std::make_shared<CivetServer>(cpp_options);  
+    }catch( CivetException e ){ std::cout<<"Port "<< aport <<" already in use from another process"<<std::endl; std::cout<<e.what()<<std::endl; exit(1);}
     ws_civet_handler = std::make_shared<WebSocketHandler>(buffer, sharedData);   
     server->addWebSocketHandler("/websocket", *ws_civet_handler);  
     
-    std::cout<<"XBotCore server running at http://"<<PORT<<std::endl;        
+    std::cout<<"XBotCore server running at http://"<<aport<<std::endl;        
 }
 
 void CommunicationInterfaceWebServer::sendRobotState()

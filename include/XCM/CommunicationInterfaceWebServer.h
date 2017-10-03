@@ -84,7 +84,8 @@ class CommunicationInterfaceWebServer : public CommunicationInterface {
       
       std::shared_ptr<Buffer<WebRobotState>> buffer;
       std::shared_ptr<SharedData> sharedData;
-    
+      std::string address;
+      std::string port; 
 };
 
 }
