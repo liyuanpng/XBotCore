@@ -79,6 +79,7 @@ bool XBot::AdvrJointState::init(const std::string& path_to_config_file, GenericJ
         _msg.link_velocity.clear();
         _msg.motor_position.clear();
         _msg.motor_velocity.clear();
+        _msg.fault.clear();
         _msg.aux.clear();
         _msg.stiffness.clear();
         _msg.damping.clear();
@@ -88,6 +89,7 @@ bool XBot::AdvrJointState::init(const std::string& path_to_config_file, GenericJ
 
         for( const std::string& jname : robot->getEnabledJointNames() ){
             _msg.effort.push_back(0);
+            _msg.fault.push_back(0);
             _msg.link_position.push_back(0);
             _msg.link_velocity.push_back(0);
             _msg.motor_position.push_back(0);
@@ -135,6 +137,12 @@ int XBot::AdvrJointState::getIndex(const std::string& joint_name)
         return -1;
     }
 }
+
+double& XBot::AdvrJointState::fault(int index)
+{
+    return _msg.fault[index];
+}
+
 
 double& XBot::AdvrJointState::aux(int index)
 {

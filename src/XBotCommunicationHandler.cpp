@@ -131,7 +131,6 @@ void XBot::CommunicationHandler::th_init(void*)
     _robot = XBot::RobotInterface::getRobot(_path_to_config, anymap, "XBotRT");
 
     _logger = XBot::MatLogger::getLogger("/tmp/CommunicationHandler_log");
-    _robot->initLog(_logger, 100000);
 
     // update robot
     _robot->sense();
@@ -140,7 +139,7 @@ void XBot::CommunicationHandler::th_init(void*)
     /* Get a vector of communication interfaces to/from NRT frameworks like ROS, YARP, ... */
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
     std::cerr << "USE_ROS_COMMUNICATION_INTERFACE found! " << std::endl;
-    _ros_communication = std::make_shared<XBot::CommunicationInterfaceROS>(_robot);
+    _ros_communication = std::make_shared<XBot::CommunicationInterfaceROS>(_robot, _xddp_handler);
     _communication_ifc_vector.push_back( _ros_communication );
 
     if ( _master_communication_interface_name == "ROS" ||
@@ -343,9 +342,6 @@ void XBot::CommunicationHandler::th_loop(void*)
 
     /* Read robot state from RT layer and update robot */
     _robot->sense(false);
-
-    /* Log */
-    _robot->log(_logger, double(XBot::get_time_ns()) / 1e9);
 
     /* Publish robot state to all frameworks */
     for(auto comm_ifc : _communication_ifc_vector){

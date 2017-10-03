@@ -24,9 +24,9 @@
 
 #include <XCM/XBotUtils.h>
 
-extern "C" XBot::CommunicationInterfaceROS* create_instance(XBot::RobotInterface::Ptr robot)
+extern "C" XBot::CommunicationInterfaceROS* create_instance(XBot::RobotInterface::Ptr robot, XBot::XBotXDDP::Ptr xddp_handler )
 {
-  return new XBot::CommunicationInterfaceROS(robot);
+  return new XBot::CommunicationInterfaceROS(robot, xddp_handler);
 }
 
 extern "C" void destroy_instance( XBot::CommunicationInterfaceROS* instance )
@@ -85,8 +85,8 @@ CommunicationInterfaceROS::CommunicationInterfaceROS():
     _nh = std::make_shared<ros::NodeHandle>();
 }
 
-CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot):
-    CommunicationInterface(robot),
+CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot, XBot::XBotXDDP::Ptr xddp_handler):
+    CommunicationInterface(robot, xddp_handler),
     _path_to_cfg(robot->getPathToConfig())
 {
     int argc = 1;
@@ -229,6 +229,13 @@ void CommunicationInterfaceROS::sendRobotState()
     /* Joint states */
 
     if( !_send_robot_state_ok ) return;
+    
+    for( int id : _robot->getEnabledJointId() ){
+        int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
+        double fault_value;
+        _xddp_handler->get_fault(id, fault_value);
+        _jointstate_message->fault(joint_state_msg_idx) = fault_value;
+    }
 
     _robot->getJointPosition(_joint_id_map);
 

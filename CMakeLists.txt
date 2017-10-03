@@ -74,6 +74,8 @@ find_package(catkin QUIET COMPONENTS roscpp sensor_msgs std_srvs message_generat
 find_package(YARP QUIET)
 find_package(kdl_parser REQUIRED)
 
+# find_package(Boost REQUIRED)
+
 
 option(BUILD_TESTS "Compile XCM tests" FALSE)
 
@@ -192,7 +194,7 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/XBotPlugin.cpp
                         src/XBotControlPlugin.cpp
                         src/XBotPluginHandler.cpp
-                        src/XBotModuleHandler.cpp
+#                         src/XBotModuleHandler.cpp
                         src/XBotControlModule.cpp
                         src/XBotCommunicationHandler.cpp
                         src/XBotXDDP.cpp
@@ -209,7 +211,7 @@ add_library(XCM_no_xeno SHARED ${XBotInterface_INCLUDES}
                         src/XBotPlugin.cpp
                         src/XBotControlPlugin.cpp
                         src/XBotPluginHandler.cpp
-                        src/XBotModuleHandler.cpp
+#                         src/XBotModuleHandler.cpp
                         src/XBotControlModule.cpp
                         src/XBotCommunicationHandler.cpp
                         src/XBotXDDP.cpp
@@ -279,6 +281,12 @@ install(TARGETS NRTDeployer
         EXPORT  NRTDeployer
         RUNTIME DESTINATION bin)
 
+add_executable(RobotStateLogger src/RobotStateLogger.cpp)
+target_link_libraries(RobotStateLogger XCM ${COMMUNICATION_INTERFACE_LIBRARIES})
+
+install(TARGETS RobotStateLogger
+        EXPORT  RobotStateLogger
+        RUNTIME DESTINATION bin)
 
 if ( Xenomai_FOUND )
     set_xeno_flags(XCM)

@@ -110,6 +110,8 @@ namespace XBot {
         std::map<int, XBot::RobotIMU::pdo_rx> _imu_state_map;
 
         XBot::ESCUtils _esc_utils;
+        
+        std::shared_ptr<XBot::IXBotJoint> _xbot_joint;
 
         int _communication_plugin_idx;
         int _logging_plugin_idx;

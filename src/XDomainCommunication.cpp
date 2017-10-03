@@ -19,6 +19,7 @@
 
 
 #include <XBotCore-interfaces/XDomainCommunication.h>
+#include <XCM/CommunicationInterfaceROS.h>
 
 namespace XBot {
 

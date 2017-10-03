@@ -13,5 +13,7 @@ float64[] effort_reference
 float64[] stiffness
 float64[] damping
 
+float64[] fault
+
 string aux_name
 float64[] aux
