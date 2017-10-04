@@ -55,7 +55,6 @@ find_package(sharedlibpp REQUIRED)
 
 set(COMMON_LIBS
     pthread
-    jsoncpp
     yaml-cpp
 )
 
