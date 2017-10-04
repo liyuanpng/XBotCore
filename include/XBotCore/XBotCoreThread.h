@@ -27,84 +27,77 @@
 */
 
 
-#ifndef __X_BOT_CORE_H__
-#define __X_BOT_CORE_H__
+#ifndef __X_BOT_CORE_THREAD_H__
+#define __X_BOT_CORE_THREAD_H__
 
 #include <XCM/XBotUtils.h>
+#include <XCM/XBotThread.h>
+#include <XBotCore/XBotCore.h>
+#include <memory>
 
-// #include <XBotCore/XBotEcat.h>
-#include <XBotCore-interfaces/XBotPipes.h>
-
-#include <XBotInterface/RobotInterface.h>
-
-#include <XCM/XBotPluginHandler.h>
-#include <XBotCore/HALInterface.h>
-#include <XBotCore/ControllerInterface.h>
 
 namespace XBot
 {
-    class XBotCore;  
+    class XBotCoreThread;  
 }
 
 /**
  * @brief XBotCore: RT EtherCAT thread and RT (shared-memory) XBotCore interfaces implementation.
  * 
  */
-class XBot::XBotCore : public ControllerInterface
+class XBot::XBotCoreThread : public XBot::Thread_hook
                         
 {
 public:
     
-    XBotCore(const char * config_yaml);
-    XBotCore(const char * config_yaml, std::shared_ptr<HALInterface> halInterface);
-    virtual ~XBotCore();  
-
-protected:
+    XBotCoreThread(const char * config_yaml);
+    virtual ~XBotCoreThread();    
     
+    virtual void th_init ( void * );
+    virtual void th_loop ( void * );
+        
     /**
-     * @brief initialization function called before the control_loop
+     * @brief Getter for the thread name
      * 
      * @param  void
+     * @return std::string the thread name
+     */
+    std::string get_thread_name(void);
+
+private:
+    
+    std::shared_ptr<ControllerInterface> controller;
+    
+    /**
+     * @brief The thread name
+     * 
+     */
+    std::string thread_name;
+    
+    /**
+     * @brief Setter for the thread name
+     * 
+     * @param  std::string the thread name
      * @return void
      */
-    virtual void control_init(void) final;
-     
+    void set_thread_name(std::string);
+        
     /**
-     * @brief Simply call the plugin handler loop function that will be implemented by the derived class: overridden from Ec_Thread_Boards_base
+     * @brief Setter for the thread period
      * 
-     * @param  void
-     * @return 1 on plugin_handler_loop() success. 0 otherwise
+     * @param  t the task period
+     * @return void
      */
-    virtual int control_loop(void) final;
-    
-private:    
-  
-    double get_time();
-  
-    std::shared_ptr<HALInterface> halInterface;
-     
-    /**
-     * @brief Path to YAML config file
-     * 
-     */
-    std::string _path_to_config;
-    
-    // xbot robot
-    XBot::RobotInterface::Ptr _robot;
+    void set_thread_period(task_period_t t);
     
     /**
-     * @brief XBot plugin handler
+     * @brief Setter for the thread priority: RT thread
      * 
+     * @param void
+     * @return void
      */
-    XBot::PluginHandler::Ptr _pluginHandler;
-    
-    int _iter = 0;
-  
-    void init_internal();
-    
-    void loop_internal();
+    void set_thread_priority();   
 
-    std::string lib_file;
 };
 
 #endif //__X_BOT_CORE_H__

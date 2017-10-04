@@ -30,7 +30,7 @@
 #include <signal.h>
 #include <exception>
 
-#include <XBotCore/XBotCore.h>
+#include <XBotCore/XBotCoreThread.h>
 
 extern void main_common(__sighandler_t sig_handler);
 
@@ -50,7 +50,7 @@ void shutdown(int sig __attribute__((unused)))
 
 int main(int argc, char *argv[]) try {
 
-    std::map<std::string, Thread_hook*> threads;
+    std::map<std::string, XBot::Thread_hook*> threads;
     if ( argc != 2) {
         printf("Usage: %s config.yaml\n", argv[0]);
         return 0;
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) try {
 
     main_common(shutdown);
     
-    threads["boards_ctrl"] = new XBot::XBotCore(argv[1]);
+    threads["boards_ctrl"] = new XBot::XBotCoreThread(argv[1]);
     threads["boards_ctrl"]->create(true, 2);
 
     while (main_loop) {

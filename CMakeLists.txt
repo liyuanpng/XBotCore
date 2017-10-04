@@ -13,6 +13,10 @@ project(XBotCore)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 include(MacroOptionalBuild)
 include(MacroSetcap)
+include(MacroYCMInstallLibrary)
+
+# Add cmake dir and include custom macros
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 # C++11 
 include(CheckCXXCompilerFlag)
@@ -43,10 +47,7 @@ endif()
 find_package(XBotCoreModel REQUIRED)
 find_package(XCM REQUIRED)
 
-find_package(soem${LIB_TYPE} REQUIRED)
-find_package(iitecat_iface${LIB_TYPE} REQUIRED)
-find_package(walkman_master${LIB_TYPE} REQUIRED)
-find_package(ecat_test_utils${LIB_TYPE} REQUIRED)
+
 find_package(sharedlibpp REQUIRED)
 
 # communication packages
@@ -61,16 +62,12 @@ set(COMMON_LIBS
 
 # include 
 include_directories(include ${XBotCoreModel_INCLUDE_DIRS} 
-                            ${kdl_parser_INCLUDE_DIRS}
-                            ${soem${LIB_TYPE}_INCLUDE_DIRS}
-                            ${iitecat_iface${LIB_TYPE}_INCLUDE_DIRS}
-                            ${walkman_master${LIB_TYPE}_INCLUDE_DIRS}
-                            ${ecat_test_utils${LIB_TYPE}_INCLUDE_DIRS}
+                            ${kdl_parser_INCLUDE_DIRS}                            
                             ${sharedlibpp_INCLUDE_DIRS}
                             ${XCM_INCLUDE_DIRS}
-                    )
+                            include/XBotCore/ )
                             
-
+                       
 # exe
 add_executable(${PROJECT_NAME}
     src/XBotMain.cpp
@@ -78,8 +75,10 @@ add_executable(${PROJECT_NAME}
 
 # lib
 add_library(XBotCoreThread SHARED
-    src/XBotEcat.cpp
     src/XBotCore.cpp
+    src/XBotCoreThread.cpp
+    src/HALInterfaceFactory.cpp
+    src/signal_handler.cpp
 )
 
 
@@ -90,22 +89,14 @@ if ( Xenomai_FOUND )
 endif()
 
 target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
-                                      ${XBotCoreModel_LIBRARIES}
-                                      ${soem${LIB_TYPE}_LIBRARIES} 
-                                      ${iitecat_iface${LIB_TYPE}_LIBRARIES}
-                                      ${walkman_masterwalkman_master${LIB_TYPE}_LIBRARIES}
-                                      ${ecat_test_utils${LIB_TYPE}_LIBRARIES}
+                                      ${XBotCoreModel_LIBRARIES}                                      
                                       XBotCoreThread
                                       )
 
                                       
                                       
 target_link_libraries(XBotCoreThread    ${COMMON_LIBS}
-                                        ${XBotCoreModel_LIBRARIES}
-                                        ${soem${LIB_TYPE}_LIBRARIES} 
-                                        ${iitecat_iface${LIB_TYPE}_LIBRARIES}
-                                        ${walkman_master${LIB_TYPE}_LIBRARIES}
-                                        ${ecat_test_utils${LIB_TYPE}_LIBRARIES}
+                                        ${XBotCoreModel_LIBRARIES}                                        
                                         ${sharedlibpp_LIBRARIES}
                                         ${XCM_LIBRARIES}
                                         )                                      
@@ -115,53 +106,56 @@ install(TARGETS XBotCoreThread RUNTIME LIBRARY DESTINATION lib)
 # documentation
 add_subdirectory(doc)
 
+ycm_library_install(XBotCoreThread 1 0 0)
+ycm_library_install(XBotCore 1 0 0)
+
 ########################################################################
 
-set(VARS_PREFIX ${PROJECT_NAME})
-
-set(${PROJECT_NAME}_MAJOR_VERSION 0)
-set(${PROJECT_NAME}_MINOR_VERSION 0)
-set(${PROJECT_NAME}_PATCH_VERSION 1)
-set(${PROJECT_NAME}_VERSION ${${PROJECT_NAME}_MAJOR_VERSION}.${${PROJECT_NAME}_MINOR_VERSION}.${${PROJECT_NAME}_PATCH_VERSION})
-
-find_package(YCM REQUIRED)
-include(YCMDefaultDirs)
-ycm_default_dirs(${VARS_PREFIX})
-
-target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
-                                                "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
-
-set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
-                                               SOVERSION ${${VARS_PREFIX}_VERSION})
-
-install(DIRECTORY include/
-        DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"
-        FILES_MATCHING PATTERN "*.h*")
-
-install(TARGETS ${PROJECT_NAME}
-        EXPORT ${PROJECT_NAME}
-        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
-        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
-        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
-
-
-
-#enabling it will add all XBotInterface dependencies as dependencies for third party users
-set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS ${PROJECT_NAME})
-
-
-include(InstallBasicPackageFiles)
-install_basic_package_files(${PROJECT_NAME} VARS_PREFIX ${VARS_PREFIX}
-                                    VERSION ${${VARS_PREFIX}_VERSION}
-                                    COMPATIBILITY SameMajorVersion
-                                    TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
-                                    NO_CHECK_REQUIRED_COMPONENTS_MACRO)                                    
-
-include(AddUninstallTarget)
-
-if(NOT Xenomai_FOUND)
-    # NOTE do it manually on the install
-    #set_cap_install(${CMAKE_INSTALL_PREFIX}/bin/${PROJECT_NAME}-${${PROJECT_NAME}_VERSION})
-endif()
+# set(VARS_PREFIX ${PROJECT_NAME})
+# 
+# set(${PROJECT_NAME}_MAJOR_VERSION 0)
+# set(${PROJECT_NAME}_MINOR_VERSION 0)
+# set(${PROJECT_NAME}_PATCH_VERSION 1)
+# set(${PROJECT_NAME}_VERSION ${${PROJECT_NAME}_MAJOR_VERSION}.${${PROJECT_NAME}_MINOR_VERSION}.${${PROJECT_NAME}_PATCH_VERSION})
+# 
+# find_package(YCM REQUIRED)
+# include(YCMDefaultDirs)
+# ycm_default_dirs(${VARS_PREFIX})
+# 
+# target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
+#                                                 "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
+# 
+# set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
+#                                                SOVERSION ${${VARS_PREFIX}_VERSION})
+# 
+# install(DIRECTORY include/
+#         DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"
+#         FILES_MATCHING PATTERN "*.h*")
+# 
+# install(TARGETS ${PROJECT_NAME}
+#         EXPORT ${PROJECT_NAME}
+#         ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
+#         RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
+#         LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
+# 
+# 
+# 
+# #enabling it will add all XBotInterface dependencies as dependencies for third party users
+# set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS ${PROJECT_NAME})
+# 
+# 
+# include(InstallBasicPackageFiles)
+# install_basic_package_files(${PROJECT_NAME} VARS_PREFIX ${VARS_PREFIX}
+#                                     VERSION ${${VARS_PREFIX}_VERSION}
+#                                     COMPATIBILITY SameMajorVersion
+#                                     TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
+#                                     NO_CHECK_REQUIRED_COMPONENTS_MACRO)                                    
+# 
+# include(AddUninstallTarget)
+# 
+# if(NOT Xenomai_FOUND)
+#     # NOTE do it manually on the install
+#     #set_cap_install(${CMAKE_INSTALL_PREFIX}/bin/${PROJECT_NAME}-${${PROJECT_NAME}_VERSION})
+# endif()
 
 
