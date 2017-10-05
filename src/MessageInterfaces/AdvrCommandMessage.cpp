@@ -78,8 +78,12 @@ bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::Gener
 
     // TBD check if they exist
     const YAML::Node &ctrl_msg_root = root_cfg["AdvrCommandMessage"];
-    std::string joint_service_name = ctrl_msg_root["joint_service_name"].as<std::string>();
-    std::string command_topic_name = ctrl_msg_root["command_topic_name"].as<std::string>();
+//     std::string joint_service_name = ctrl_msg_root["joint_service_name"].as<std::string>();
+//     std::string command_topic_name = ctrl_msg_root["command_topic_name"].as<std::string>();
+   
+   std::string robot_name = XBot::ModelInterface::getModel(path_to_config_file)->getUrdf().getName();
+   std::string joint_service_name = "/" + robot_name + "/position_controller/get_joint_names";
+   std::string command_topic_name = "/xbotcore/" + robot_name + "/command";
 
     ros::NodeHandle nh;
 
