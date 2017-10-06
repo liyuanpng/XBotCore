@@ -18,6 +18,7 @@
 */
 
 #include <XCM/MessageInterfaces/AdvrJointState.h>
+#include <XBotInterface/Utils.h>
 
 SHLIBPP_DEFINE_SHARED_SUBCLASS(advrjointstate_jointstate_message, XBot::AdvrJointState, XBot::GenericJointStateMessage);
 
@@ -33,10 +34,12 @@ bool XBot::AdvrJointState::init(const std::string& path_to_config_file, GenericJ
 
     std::cout << "Initializing AdvrJointState message interface!" << std::endl;
 
-    YAML::Node root_cfg = YAML::LoadFile(path_to_config_file);
+    // core YAML
+    std::string core_absolute_path = XBot::Utils::computeAbsolutePath("core.yaml");
+    YAML::Node core_cfg = YAML::LoadFile(core_absolute_path);
 
     // TBD check if they exist
-    const YAML::Node &jointstate_root = root_cfg["AdvrJointStateMessage"];
+    const YAML::Node &jointstate_root = core_cfg["AdvrJointStateMessage"];
     if(!jointstate_root){
         std::cerr << "ERROR in " << __func__ << "! Provided config file does not contain mandatory node \"JointState\" " << std::endl;
         return false;

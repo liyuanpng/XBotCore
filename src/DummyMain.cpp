@@ -43,6 +43,7 @@ int main(int argc, char **argv){
         path_to_cfg = argv[1];
     }
 
+    std::cout << "Using config file : " << path_to_cfg << std::endl;
     RobotInterface::Ptr robot = RobotInterface::getRobot(path_to_cfg, AnyMapPtr(), framework);
 
 
