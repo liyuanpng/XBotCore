@@ -55,7 +55,7 @@ class XBot::XBotCore : public ControllerInterface
 {
 public:
     
-    XBotCore(const char * config_yaml);
+    XBotCore(const char * config_yaml,  const char* param);
     XBotCore(const char * config_yaml, std::shared_ptr<HALInterface> halInterface);
     virtual ~XBotCore();  
 

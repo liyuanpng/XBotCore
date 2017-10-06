@@ -30,7 +30,7 @@
 #include <boost/bind.hpp>
 #include <XBotCore/HALInterfaceFactory.h>
 
-XBot::XBotCore::XBotCore(const char* config_yaml) : 
+XBot::XBotCore::XBotCore(const char* config_yaml,  const char* param) : 
     _path_to_config(config_yaml)
 {        
    
@@ -48,6 +48,14 @@ XBot::XBotCore::XBotCore(const char* config_yaml) :
       
       lib_file = hal_lib["lib_file"].as<std::string>();
       lib_name = hal_lib["lib_name"].as<std::string>();
+    }
+    
+    if (param != nullptr){
+      
+       if(strcmp(param,"dummy") == 0){
+         lib_file = "libXBotDummy";
+         lib_name = "DUMMY";
+      }
     }
     
     halInterface = HALInterfaceFactory::getFactory(lib_file, lib_name,config_yaml);

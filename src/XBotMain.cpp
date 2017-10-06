@@ -51,14 +51,14 @@ void shutdown(int sig __attribute__((unused)))
 int main(int argc, char *argv[]) try {
 
     std::map<std::string, XBot::Thread_hook*> threads;
-    if ( argc != 2) {
+    if ( argc < 2) {
         printf("Usage: %s config.yaml\n", argv[0]);
         return 0;
     }
 
     main_common(shutdown);
     
-    threads["boards_ctrl"] = new XBot::XBotCoreThread(argv[1]);
+    threads["boards_ctrl"] = new XBot::XBotCoreThread(argv[1], argv[2]);
     threads["boards_ctrl"]->create(true, 2);
 
     while (main_loop) {

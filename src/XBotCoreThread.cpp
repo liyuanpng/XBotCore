@@ -29,7 +29,7 @@
 #include <XBotCore/XBotCoreThread.h>
 
 
-XBot::XBotCoreThread::XBotCoreThread(const char* config_yaml)   
+XBot::XBotCoreThread::XBotCoreThread(const char* config_yaml, const char* param)   
 {
    // _path_to_config = config_yaml;
   //TODO fix thread stuff
@@ -47,7 +47,7 @@ XBot::XBotCoreThread::XBotCoreThread(const char* config_yaml)
     // set thread priority
     set_thread_priority();
     
-    controller = std::shared_ptr<ControllerInterface>(new XBot::XBotCore(config_yaml));
+    controller = std::shared_ptr<ControllerInterface>(new XBot::XBotCore(config_yaml, param));
 }
 
 void XBot::XBotCoreThread::set_thread_name(std::string thread_name)
