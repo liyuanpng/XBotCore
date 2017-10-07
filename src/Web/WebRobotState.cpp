@@ -29,7 +29,8 @@ void WebRobotState::serialize(StringBuffer& buffer){
         serializeArray(writer,"motor_position", motor_position);
         serializeArray(writer,"link_velocity",link_vel);
         serializeArray(writer,"motor_velocity",motor_vel);
-        serializeArray(writer,"temperature",temperature);      
+        serializeArray(writer,"temperature",temperature);   
+	serializeArray(writer,"effort",effort); 
         writer.EndObject();  
 }
 
