@@ -74,7 +74,11 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
     for ( auto &chainmap : _robot->getChainMap()){
 	std::string key =chainmap.first;
 	XBot::KinematicChain::Ptr chain = chainmap.second;
+	std::vector<int> ids = chain->getJointIds();
 	std::vector<std::string> val = chain->getJointNames();
+	for( int i=0; i<ids.size();i ++){
+	  val[i] = val[i] + "|"+std::to_string(ids[i]);
+	}
 	sharedData->insertChain(key,val);
     }
     

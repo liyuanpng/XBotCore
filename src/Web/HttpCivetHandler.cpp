@@ -77,9 +77,12 @@ bool HttpCivetHandler::handlePost(CivetServer* server, mg_connection* conn){
        }
       
       std::shared_ptr<RequestObject> req = std::make_shared<RequestObject>();
+      std::string type = "application/json"; //TODO make general
+      std::string header = "HTTP/1.1 200 OK\r\nContent-Type: "
+                            +type+"\r\nConnection: close\r\n\r\n";
       req->SetData(buf);
       http_interface->handlePost(req);
-      
+      mg_printf(conn, header.c_str());
       mg_printf(conn,"{\"response\":\"ok\"}");
   
       return true;

@@ -96,10 +96,18 @@ void HttpHandler::handleGet(std::shared_ptr<ResponseInterface>& response){
 	    const std::string& outer_key = pair.first;
 	    const std::vector<std::string>& inner_map = pair.second;
 	    writer.StartObject();  
-	    writer.Key(outer_key.c_str());
+	    writer.Key("Chain"); 
+	    writer.String(outer_key.c_str());
+	     writer.Key("Val"); 
 	    writer.StartArray();
-	    for( auto s: inner_map){
-	      writer.String(s.c_str());
+	    for( std::string s: inner_map){
+	      std::size_t found = s.find("|");
+	      writer.StartObject(); 
+	      writer.Key("Name");
+	      writer.String(s.substr(0,found).c_str());
+	      writer.Key("ID");
+	      writer.Int(std::stoi(s.substr(found+1)));
+	      writer.EndObject();
 	    }
 	    writer.EndArray();;
 	    writer.EndObject();
@@ -113,7 +121,7 @@ void HttpHandler::handleGet(std::shared_ptr<ResponseInterface>& response){
 void HttpHandler::handlePost(std::shared_ptr<RequestObject>& binary_request){
     
       std::unique_ptr<JsonRequest> getter = std::unique_ptr<JsonRequest>(new JsonRequest(binary_request));
-//       void* buff = request->GetData();     
+//       void* buff = binary_request->GetData();     
 //       std::cout<<"pos"<<std::string((char*)buff)<<std::endl;
 
       sharedData->clearJointMap();
