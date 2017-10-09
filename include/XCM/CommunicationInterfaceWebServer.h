@@ -25,10 +25,7 @@
 #include <HttpCivetHandler.h>
 #include <WebSocketCivetHandler.h>
 
-//192.168.0.100
-#define DOCUMENT_ROOT "/home/user/advr-superbuild/external/webGUI/dist"
-//#define PORT "192.168.0.100:8081"
-//#define PORT "10.255.32.80:8081"
+#define DOCUMENT_ROOT "/WebGUIDistr/dist"
 #define PORT "127.0.0.1:8081"
 #define SWITCH_URI "/switch"
 #define STATUS_URI "/status"

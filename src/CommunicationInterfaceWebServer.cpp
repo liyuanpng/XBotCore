@@ -55,8 +55,13 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
        aport = address +":"+port;
     } 
     
+    std::string droot = "";
+    const char* env_p = std::getenv("ROBOTOLOGY_ROOT");
+    if( env_p != nullptr && !(strcmp(env_p,"") == 0))
+       droot = std::string(env_p) + std::string(DOCUMENT_ROOT);
+    
     const char *options[] = {
-            "document_root", DOCUMENT_ROOT, "listening_ports", aport.c_str(), 0};
+            "document_root", droot.c_str(), "listening_ports", aport.c_str(), 0};
     
     std::vector<std::string> cpp_options;
     for (int i=0; i<(sizeof(options)/sizeof(options[0])-1); i++) {
