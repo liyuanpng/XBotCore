@@ -41,7 +41,7 @@ bool HttpCivetHandler::handleGet(CivetServer *server, struct mg_connection *conn
       http_interface->handleGet(resp_interface);
       std::string type = resp_interface->GetTypeResponse();
       std::string header = "HTTP/1.1 200 OK\r\nContent-Type: "
-                            +type+"\r\nConnection: close\r\n\r\n";
+                            +type+"; charset=utf-8"+"\r\nConnection: close\r\n\r\n";
 
       mg_printf(conn, header.c_str());
       mg_write(conn,resp_interface->GetData(),resp_interface->GetLength());
