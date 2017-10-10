@@ -41,7 +41,7 @@ XBot::XBotCoreThread::XBotCoreThread(const char* config_yaml, const char* param)
     // set thread period - not periodic
     task_period_t t;
     memset(&t, 0, sizeof(t));
-    t.period = {0,1};
+    t.period = {0,2000};
     set_thread_period(t);
     
     // set thread priority
