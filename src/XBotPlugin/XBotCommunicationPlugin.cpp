@@ -44,10 +44,10 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
     }
 
     // initialize filter
-    _filter_q = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
-    _filter_k = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
-    _filter_d = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
-    _filter_qdot = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    _filter_q = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*1.0, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    _filter_k = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*1.0, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    _filter_d = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*1.0, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    _filter_qdot = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*1.0, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
 
     
     // NOTE filter ON by default
@@ -105,10 +105,10 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
 
     if(command.read(current_command)){
         if(current_command.str() == "filter ON"){
-            _filter_q.setOmega(2*3.1415*0.2);
-            _filter_k.setOmega(2*3.1415*0.2);
-            _filter_d.setOmega(2*3.1415*0.2);
-            _filter_qdot.setOmega(2*3.1415*0.2);
+            _filter_q.setOmega(2*3.1415*1.0);
+            _filter_k.setOmega(2*3.1415*1.0);
+            _filter_d.setOmega(2*3.1415*1.0);
+            _filter_qdot.setOmega(2*3.1415*1.0);
         }
         if(current_command.str() == "filter OFF"){
             _filter_q.setOmega(2*3.1415*200);
