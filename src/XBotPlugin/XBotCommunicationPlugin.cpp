@@ -47,16 +47,20 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
     _filter_q = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
     _filter_k = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
     _filter_d = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    _filter_qdot = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*0.2, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+
     
     // NOTE filter ON by default
     _filter_enabled = true;
     _robot->getMotorPosition(_qref);
     _robot->getStiffness(_kref);
     _robot->getDamping(_dref);
+    _robot->getJointVelocity(_qdotref);
 
     _filter_q.reset(_qref);
     _filter_k.reset(_kref);
     _filter_d.reset(_dref);
+    _filter_qdot.reset(_qdotref);
     
     DPRINTF("Filter ON by default\n");
 
@@ -77,14 +81,17 @@ void XBot::XBotCommunicationPlugin::on_start(double time)
     _robot->getJointPosition(_q0);
     _robot->getStiffness(_k0);
     _robot->getDamping(_d0);
+    _robot->getJointVelocity(_qdot0);
 
     _filter_q.reset(_q0);
     _filter_k.reset(_k0);
     _filter_d.reset(_d0);
+    _filter_qdot.reset(_qdot0);
 
     _robot->getJointPosition(_pos_ref_map);
     _robot->getStiffness(_k_ref_map);
     _robot->getDamping(_d_ref_map);
+    _robot->getJointVelocity(_vel_ref_map);
 }
 
 void XBot::XBotCommunicationPlugin::on_stop(double time)
@@ -101,11 +108,13 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
             _filter_q.setOmega(2*3.1415*0.2);
             _filter_k.setOmega(2*3.1415*0.2);
             _filter_d.setOmega(2*3.1415*0.2);
+            _filter_qdot.setOmega(2*3.1415*0.2);
         }
         if(current_command.str() == "filter OFF"){
             _filter_q.setOmega(2*3.1415*200);
             _filter_k.setOmega(2*3.1415*200);
             _filter_d.setOmega(2*3.1415*200);
+            _filter_qdot.setOmega(2*3.1415*200);
         }
     }
     
@@ -115,7 +124,7 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
         if( p.second.read(_pdo_tx) ) {
           
             if( _hand_map[p.first] != nullptr){                
-                // HACK scaling back based on 9.0 max range
+                //  HACK scaling back based on 9.0 max range
                 _hand_map[p.first]->grasp(_pdo_tx.pos_ref / 9.0);
             }          
             
@@ -140,6 +149,10 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
         _robot->getPositionReference(_qref);
         _qref = alpha*_qref + (1-alpha)*_q0;
         _robot->setPositionReference(_qref);
+        
+        _robot->getVelocityReference(_qdotref);
+        _qdotref = alpha*_qdotref + (1-alpha)*_qdot0;
+        _robot->setVelocityReference(_qdotref);
 
         _robot->getStiffness(_kref);
         _kref = alpha*_kref + (1-alpha)*_k0;
@@ -159,6 +172,9 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
 
         _robot->getDamping(_dref);
         _robot->setDamping(_filter_d.process(_dref));
+        
+        _robot->getVelocityReference(_qdotref);
+        _robot->setVelocityReference(_filter_qdot.process(_qdotref));
     }
 
     _robot->move();
