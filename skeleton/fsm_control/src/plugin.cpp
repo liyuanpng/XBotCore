@@ -102,6 +102,10 @@ bool _MODULE_PREFIX_::close()
     return true;
 }
 
+_MODULE_PREFIX_::~_MODULE_PREFIX_()
+{
+  
+}
 
 
 }
