@@ -29,6 +29,7 @@ XBotControlPlugin::XBotControlPlugin()
 XBotControlPlugin::~XBotControlPlugin()
 {
 
+  std::cout<<"~XBotControlPlugin"<<std::endl;
 }
 
 bool XBotControlPlugin::init(std::string path_to_config_file,

@@ -23,7 +23,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
+#include <string>
 
 #include <unistd.h>
 #include <spawn.h>
@@ -66,7 +66,39 @@ void XBot::PluginHandler::update_plugins_set_name(const std::string& plugins_set
     }
 }
 
+std::vector<std::string>& PluginHandler::getPluginsName()
+{
+  
+  return _rtplugin_names;
+  
+}
 
+std::shared_ptr<shlibpp::SharedLibraryClass<XBot::XBotControlPlugin>> PluginHandler::loadPlugin(const std::string& plugin_name) {  
+  
+    std::string path_to_so;
+    computeAbsolutePath(plugin_name, "/build/install/lib/lib", path_to_so);
+    path_to_so += std::string(".so");
+
+    std::string factory_name = plugin_name + std::string("_factory");
+
+    auto factory_ptr = std::make_shared<shlibpp::SharedLibraryClassFactory<XBot::XBotControlPlugin>>(path_to_so.c_str(), factory_name.c_str());
+
+    if (!factory_ptr->isValid()) {
+        // NOTE print to celebrate the wizard
+        printf("error (%s) : %s\n", shlibpp::Vocab::decode(factory_ptr->getStatus()).c_str(),
+            factory_ptr->getLastNativeError().c_str());
+        std::cout << "Unable to load plugin " << plugin_name << "!" << std::endl;
+    }
+    else{
+        std::cout << "Restarting plugin " << plugin_name << "!" << std::endl;
+    }
+
+    
+    auto plugin_ptr = std::make_shared<shlibpp::SharedLibraryClass<XBot::XBotControlPlugin>>(*factory_ptr);
+
+
+    return plugin_ptr;
+}
 
 bool PluginHandler::load_plugins()
 {
@@ -129,6 +161,8 @@ bool PluginHandler::load_plugins()
 
     bool success = true;
 
+    int pos = 0;
+    
     for( const std::string& plugin_name : _rtplugin_names ){
 
         std::string path_to_so;
@@ -158,14 +192,114 @@ bool PluginHandler::load_plugins()
         _rtplugin_vector.push_back(plugin_ptr);
 
         _pluginhandler_log->createScalarVariable(plugin_name + "_exec_time");
+        
+        std::string plugin_name1 = plugin_name;
+        pluginMap[plugin_name1] = plugin_ptr;
+        pluginPos [plugin_name1] = pos;
+        
+          std::cout<<"pos"<< plugin_name<<" "<<pluginPos [plugin_name1]<<std::endl;
 
+        pos = pos +1;
     }
 
     _time.resize(_rtplugin_vector.size());
     _last_time.resize(_rtplugin_vector.size());
     _period.resize(_rtplugin_vector.size());
 
+      std::cout<<"pos"<<pluginPos ["Homing"]<<std::endl;
+      
     return success;
+}
+
+
+void PluginHandler::initPlugin(std::shared_ptr<shlibpp::SharedLibraryClass<XBot::XBotControlPlugin>> plugin_ptr,
+                                 const std::string& name
+                                 /*XBot::SharedMemory::Ptr shared_memory,
+                                 std::shared_ptr< IXBotJoint> joint,
+                                 std::shared_ptr< IXBotFT > ft,
+                                 std::shared_ptr< IXBotIMU > imu,
+                                 std::shared_ptr< IXBotHand > hand,
+                                 std::shared_ptr< IXBotModel > model*/)
+{
+  
+  
+        bool plugin_init_success = false;
+         std::cout<<"aaaaaaaaaaaa"<<name <<std::endl;
+         int i=0;
+         // auto it = pluginPos.find(name);
+       
+         _plugin_state[i] == "RESTARTING";
+         
+            std::cout<<"aaahhhhhhhhhhhhaa"<<name <<std::endl;
+//     if(it != pluginPos.end()) {
+//       i = it->second;
+//       std::cout<<"pos"<< i<<std::endl;
+//     }
+//     else { std::cout<<"not found"<<std::endl;}
+         
+           
+        //_plugin_custom_status[i] = std::make_shared<PluginStatus>();
+         std::cout<<"aaaaaaaaaaaasss"<<std::endl;
+        try{
+            /* Try to init the current plugin */
+            plugin_init_success = ( *plugin_ptr)->init( _path_to_cfg,
+                                                        name,
+                                                        _plugin_custom_status[i],
+                                                        _shared_memory,
+                                                        _joint,
+                                                        _model,
+                                                        _ft,
+                                                        _imu,
+                                                        _hand );
+
+            std::cout<<"bbbbbbbbbbbbb"<<std::endl;
+            /* Handle return value if init() was performed cleanly */
+            if(!plugin_init_success){
+                std::cout << "ERROR: plugin " << (*plugin_ptr)->name << " - init() failed. Plugin init() returned false!" << std::endl;              
+
+            }
+            else{
+                std::cout << "Plugin " << (*plugin_ptr)->name << " initialized successfully!" << std::endl;
+            }
+        }
+
+        /* Handle exceptions inheriting from std::exception */
+        catch(std::exception& e){
+            std::cerr << "ERROR: plugin " << (*plugin_ptr)->name << " - init() failed.\n An exception was thrown: " << e.what() << std::endl;            
+            plugin_init_success = false;
+        }
+
+        /* Handle all other exceptions */
+        catch(...){
+            std::cerr << "ERROR: plugin " << (*plugin_ptr)->name << " - init() failed.\n An exception was thrown!" << std::endl;           
+            plugin_init_success = false;
+        }
+       
+       // allocate concrete pub/sub classes
+        if( _is_RT_plugin_handler ) {
+            _plugin_switch[i] = std::make_shared<XBot::SubscriberRT<XBot::Command>>();
+            _plugin_status[i] = std::make_shared<XBot::PublisherRT<XBot::Command>>();
+        }
+        else {
+            _plugin_switch[i] = std::make_shared<XBot::NRT_ROS_Subscriber>();
+            _plugin_status[i] = std::make_shared<XBot::NRT_ROS_Publisher>();
+            // NOTE handling cmd for NRTPlugin in CH style
+            _plugin_cmd[i] = std::make_shared<XBot::NRT_ROS_Subscriber>();
+            _plugin_cmd[i]->init(_rtplugin_names[i]+"_cmd");
+            // pipes
+            std::string command_name = _rtplugin_names[i] + "_cmd";
+            _command_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(command_name));
+        }
+
+          std::cout<<"aawewewewewasss"<<std::endl;
+          
+        // initialize pub/sub
+        _plugin_init_success[i] = plugin_init_success;
+        _plugin_switch[i]->init(_rtplugin_names[i]+"_switch");
+        _plugin_status[i]->init(_rtplugin_names[i]+"_status");
+        
+        _plugin_state[i] == "STOPPED";
+  
 }
 
 bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
@@ -176,6 +310,13 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
                                  std::shared_ptr< IXBotModel > model )
 {
 
+    _shared_memory = shared_memory;
+  _joint = joint;
+  _ft = ft;
+  _imu = imu;
+  _hand = hand;
+  _model = model;
+  
     // Save xbot_joint
     _xbot_joint = joint;
     
@@ -342,6 +483,29 @@ void XBot::PluginHandler::fill_robot_state()
     
 }
 
+void PluginHandler::replacePlugin(const std::string& name/*,
+                                 XBot::SharedMemory::Ptr shared_memory,
+                                 std::shared_ptr< IXBotJoint> joint,
+                                 std::shared_ptr< IXBotFT > ft,
+                                 std::shared_ptr< IXBotIMU > imu,
+                                 std::shared_ptr< IXBotHand > hand,
+                                 std::shared_ptr< IXBotModel > model*/){
+  
+  
+    unloadPlugin(name);
+    //_rtplugin_factory[0].get()->removeRef();
+//     _rtplugin_factory[0] = nullptr;
+//     _rtplugin_vector[0] = nullptr;
+    //pluginMap[name] = nullptr;
+    _rtplugin_vector[0].reset();
+    pluginMap[name].reset();
+    
+    std::shared_ptr<shlibpp::SharedLibraryClass<XBot::XBotControlPlugin>> plugin_ptr = loadPlugin(name);
+    initPlugin(plugin_ptr, name);//, shared_memory, joint, ft, imu);
+    _rtplugin_vector[0] = plugin_ptr;
+    pluginMap[name] = plugin_ptr;
+  
+}
 
 void PluginHandler::run()
 {
@@ -359,10 +523,9 @@ void PluginHandler::run()
 
     XBot::Command cmd;
 
+    if(true){
     for( int i = 0; i < _rtplugin_vector.size(); i++){
-
-        const auto& plugin = _rtplugin_vector[i];
-
+        
         _time[i] = _time_provider->get_time();
 
         if(_first_loop[i]){
@@ -382,12 +545,13 @@ void PluginHandler::run()
 
         if( _plugin_state[i] == "STOPPED" ){
           
-            _plugin_status[i]->write(XBot::Command("STOPPED"+_plugin_custom_status[i]->getStatus()));
+            _plugin_status[i]->write(XBot::Command("STOPPED"));//+_plugin_custom_status[i]->getStatus()));
 
             if( _plugin_switch[i]->read(cmd) ){
 
                 /* If start command has been received, set plugin to RUNNING */
                 if( cmd.str() == "start" && plugin_can_start(i) ){
+                    const auto& plugin = _rtplugin_vector[i];
                     std::cout << "Starting plugin : " << (*plugin)->name << std::endl;
                     (*plugin)->on_start(_time[i]);
                     _plugin_state[i] = "RUNNING";
@@ -399,7 +563,8 @@ void PluginHandler::run()
 
         if( _plugin_state[i] == "RUNNING" ){
 
-            _plugin_status[i]->write(XBot::Command("RUNNING"+_plugin_custom_status[i]->getStatus()));
+            const auto& plugin = _rtplugin_vector[i];
+            _plugin_status[i]->write(XBot::Command("RUNNING"));//+_plugin_custom_status[i]->getStatus()));
 
             if( _plugin_switch[i]->read(cmd) ){
 
@@ -428,9 +593,16 @@ void PluginHandler::run()
         }
 
     }
+    }
 
     _last_time = _time;
 
+}
+
+void PluginHandler::unloadPlugin(const std::string& port_name)
+{
+    (*pluginMap[port_name])->close();
+    
 }
 
 void PluginHandler::close()

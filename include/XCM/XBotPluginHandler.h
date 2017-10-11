@@ -57,7 +57,30 @@ namespace XBot {
         void run();
 
         void close();
+        
+        std::shared_ptr<shlibpp::SharedLibraryClass<XBot::XBotControlPlugin>> loadPlugin(const std::string& plugin_name);
+        
+        void initPlugin(std::shared_ptr<shlibpp::SharedLibraryClass<XBot::XBotControlPlugin>> plugin_ptr,
+                          const std::string& name/*,
+                          XBot::SharedMemory::Ptr shared_memory,
+                          std::shared_ptr< IXBotJoint> joint    = nullptr,
+                          std::shared_ptr< IXBotFT > ft         = nullptr,
+                          std::shared_ptr< IXBotIMU > imu       = nullptr,
+                          std::shared_ptr< IXBotHand > hand     = nullptr ,
+                          std::shared_ptr< IXBotModel > model   = nullptr */);
+        
+        void unloadPlugin(const std::string& port_name);
+        
+        void replacePlugin(const std::string& name/*,
+                            XBot::SharedMemory::Ptr shared_memory ,
+                            std::shared_ptr< IXBotJoint> joint    = nullptr,
+                            std::shared_ptr< IXBotFT > ft         = nullptr,
+                            std::shared_ptr< IXBotIMU > imu       = nullptr,
+                            std::shared_ptr< IXBotHand > hand     = nullptr ,
+                            std::shared_ptr< IXBotModel > model   = nullptr */);
 
+        std::vector<std::string>& getPluginsName();
+        
         ~PluginHandler();
 
     protected:
@@ -112,6 +135,10 @@ namespace XBot {
         XBot::ESCUtils _esc_utils;
         
         std::shared_ptr<XBot::IXBotJoint> _xbot_joint;
+        
+        std::map< std::string, std::shared_ptr<shlibpp::SharedLibraryClass<XBot::XBotControlPlugin>> > pluginMap;
+        std::map < std::string , int > pluginPos;
+        
 
         int _communication_plugin_idx;
         int _logging_plugin_idx;
@@ -123,6 +150,13 @@ namespace XBot {
         
         std::string _plugins_set_name;
         bool _is_RT_plugin_handler;
+        
+        XBot::SharedMemory::Ptr _shared_memory;
+  std::shared_ptr< XBot::IXBotJoint> _joint;
+  std::shared_ptr< XBot::IXBotFT > _ft;
+  std::shared_ptr< XBot::IXBotIMU > _imu;
+  std::shared_ptr< XBot::IXBotHand > _hand;
+  std::shared_ptr< XBot::IXBotModel > _model;
 
     };
 }
