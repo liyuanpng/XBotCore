@@ -36,12 +36,18 @@ XBot::XBotCoreThread::XBotCoreThread(const char* config_yaml, const char* param)
     // set thread name
     //const YAML::Node& board_ctrl = root_cfg["x_bot_ecat"]; // TBD check that the Node is defined
     //set_thread_name(board_ctrl["name"].as<std::string>()); // TBD check that name is defined
-    
+    int period = 1;
+    if (param != nullptr){      
+       if(strcmp(param,"dummy") == 0){
+         period = 1000;
+      }      
+    }
+      
     set_thread_name("XBOT");
     // set thread period - not periodic
     task_period_t t;
     memset(&t, 0, sizeof(t));
-    t.period = {0,1};
+    t.period = {0,period};
     set_thread_period(t);
     
     // set thread priority
