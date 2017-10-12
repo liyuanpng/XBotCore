@@ -79,11 +79,34 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
     for ( auto &chainmap : _robot->getChainMap()){
 	std::string key =chainmap.first;
 	XBot::KinematicChain::Ptr chain = chainmap.second;
-	std::vector<int> ids = chain->getJointIds();
-	std::vector<std::string> val = chain->getJointNames();
-	for( int i=0; i<ids.size();i ++){
-	  val[i] = val[i] + "|"+std::to_string(ids[i]);
+	std::vector<std::string> ids;
+	//populate ids
+	for( int i=0; i<chain->getJointIds().size();i ++){
+	  ids.push_back(std::to_string(chain->getJointIds()[i]));
 	}
+	
+	std::vector<std::string> names = chain->getJointNames();
+	std::vector<std::string> jvals;
+	//populate jvals
+	
+	std::vector <std::string> lowlimit;
+	std::vector <std::string> uplimit;
+	for( int i=0; i<ids.size();i ++){
+	  jvals.push_back(std::to_string(chain->getJointPosition(i)));
+	  double llimit, ulimit;
+	  chain->getJointLimits(i,llimit,ulimit);
+	  lowlimit.push_back(std::to_string(llimit));
+	  uplimit.push_back(std::to_string(ulimit));
+	}
+	
+	std::vector < std::vector<std::string> > val;
+	//populate val
+	val.push_back(ids);
+	val.push_back(names);
+	val.push_back(jvals);
+	val.push_back(lowlimit);
+	val.push_back(uplimit);
+	
 	sharedData->insertChain(key,val);
     }
     

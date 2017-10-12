@@ -88,26 +88,37 @@ void HttpHandler::handleGet(std::shared_ptr<ResponseInterface>& response){
 	}
       }
       else if(uri.compare("/chains")==0){
-	      
+	
 	writer.StartObject();  
 	writer.Key("Chains");   
 	writer.StartArray();
 	for( auto const &pair : sharedData->getChainMap()){                 
 	    const std::string& outer_key = pair.first;
-	    const std::vector<std::string>& inner_map = pair.second;
+	    const std::vector< std::vector<std::string> >& inner_map = pair.second;
 	    writer.StartObject();  
-	    writer.Key("Chain"); 
+	    writer.Key("Chain");
 	    writer.String(outer_key.c_str());
-	     writer.Key("Val"); 
+	    writer.Key("Val"); 
 	    writer.StartArray();
-	    for( std::string s: inner_map){
-	      std::size_t found = s.find("|");
-	      writer.StartObject(); 
-	      writer.Key("Name");
-	      writer.String(s.substr(0,found).c_str());
-	      writer.Key("ID");
-	      writer.Int(std::stoi(s.substr(found+1)));
-	      writer.EndObject();
+	    std::vector<std::string> v = inner_map[0];
+	    for (int i=0 ;i< v.size(); i++){
+		writer.StartObject(); 
+		writer.Key("ID");
+		std::vector<std::string> idv = inner_map[0];
+		std::vector<std::string> nv = inner_map[1];
+		std::vector<std::string> lv = inner_map[2];
+		std::vector<std::string> llv = inner_map[3];
+		std::vector<std::string> ulv = inner_map[4];
+		writer.Int(std::stoi(idv[i]));
+		writer.Key("Name");
+		writer.String(nv[i].c_str());
+		writer.Key("Lval");
+		writer.Double(std::stod(lv[i]));
+		writer.Key("Llimit");
+		writer.Double(std::stod(llv[i]));
+		writer.Key("Ulimit");
+		writer.Double(std::stod(ulv[i]));
+		writer.EndObject();
 	    }
 	    writer.EndArray();;
 	    writer.EndObject();

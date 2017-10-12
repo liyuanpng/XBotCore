@@ -59,17 +59,17 @@ std::string SharedData::getSwitch(std::string key){
     return _switch[key];
 }
 
-void SharedData::insertChain(std::string key, std::vector<std::string> val){
+void SharedData::insertChain(std::string key, std::vector< std::vector<std::string> > val){
     std::lock_guard<std::mutex> locker(chain_mutex); 
     _chain[key] = val;
 }
 
-std::vector<std::string> SharedData::getChain(std::string key){
+std::vector< std::vector<std::string> > SharedData::getChain(std::string key){
     std::lock_guard<std::mutex> locker(chain_mutex); 
     return _chain[key];
 }
 
-std::map<std::string, std::vector<std::string>> SharedData::getChainMap(){
+std::map<std::string, std::vector<std::vector<std::string>> > SharedData::getChainMap(){
     std::lock_guard<std::mutex> locker(chain_mutex);
     return _chain;
 }
