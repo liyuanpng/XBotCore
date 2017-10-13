@@ -189,10 +189,14 @@ void CommunicationInterfaceWebServer::receiveReference()
         int id = m.first;
         double val = m.second;
 	std::string jname =_robot->getJointByID(id)->getJointName();
-	if( _robot->getUrdf().getJoint(jname)->type == urdf::Joint::CONTINUOUS) 
+	if( _robot->getUrdf().getJoint(jname)->type == urdf::Joint::CONTINUOUS) {
 	  vmap.at(id)= val;
-	else 
-	  pmap.at(id)= val; 
+	  pmap.at(id)= 0.0;
+	}
+	else {
+	  pmap.at(id)= val;
+	  vmap.at(id)= 0.0;
+	}
 	
       } 
       if(!map.empty()){
