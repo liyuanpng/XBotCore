@@ -27,57 +27,107 @@ HttpHandler::HttpHandler (std::shared_ptr<SharedData>& sharedData, std::shared_p
  
 void HttpHandler::handleGet(std::shared_ptr<ResponseInterface>& response){      
          
+      std::shared_ptr<StringBuffer> jsonresp = std::make_shared<StringBuffer>();
+      jsonresp->Clear();
+      Writer<StringBuffer> writer(*jsonresp);
+  
       if(uri.compare("/switch")==0){
-        sharedData->insertSwitch(key, val);       
+        sharedData->insertSwitch(key, val);
+	writer.StartObject();  
+	writer.Key("Response");
+	//TODO check return value insertswitch and answer accordingly
+	writer.String("OK");
+	writer.EndObject();
       }
-      else if(uri.compare("/cmd")==0) {
-        sharedData->insertCmd(key, val);        
-      }       
+      else if(uri.compare("/status")==0){
+	writer.StartObject();  
+	writer.Key("Response");
+	std::string s =sharedData->getAllStatus()[key];
+	if (s.empty()) s = "Error: Not Found";
+	writer.String(s.c_str());  
+	writer.EndObject();
+      }
       else if(uri.compare("/master")==0){
         sharedData->setMaster(key);
+	writer.StartObject();  
+	writer.Key("Response");
+	writer.String("OK");
+	writer.EndObject();
       }
-      
-      std::string sresp="";
-      sresp+="<html><body>\r\n";
-      sresp+=("<h2>XBOTCORE </h2>\r\n");
-      
-      for( auto const &s : sharedData->getAllStatus()){                 
-          auto const &outer_key = s.first;
-          auto const &inner_map = s.second;
-          std::string ss="<h3>"+ outer_key+ " "+ inner_map+ "</h3>\r\n";
-          const char * w =const_cast<char*>( ss.c_str());
-          sresp+=(w);
+      else if(uri.compare("/plugins")==0){
+	        
+	writer.StartObject();  
+	writer.Key("Plugins");   
+	writer.StartArray();
+	for( auto const &s : sharedData->getAllStatus()){                 
+	    const std::string& outer_key = s.first;
+	    const std::string& inner_map = s.second;
+	    writer.StartObject();  
+	    writer.Key("Name");
+	    writer.String(outer_key.c_str());
+	    writer.Key("Status");
+	    writer.String(inner_map.c_str());
+	    writer.EndObject();
+	}
+	writer.EndArray();
+	writer.EndObject();  	
       }
-
-      sresp+=("</body></html>\r\n");
-
-      response = std::make_shared<StringResponse>(sresp);
-     
-//       std::shared_ptr<StringBuffer> jsonresp = std::make_shared<StringBuffer>();
-//       // 1. Parse a JSON string into DOM.
-//       const char* json = "[{\"project\":\"rapidjson\",\"stars\":10}, {\"project\":\"rapidjson\",\"stars\":10}]";
-//       Document d;
-//       d.Parse(json);
-// 
-//       // 2. Modify it by DOM.
-//       Value& s = d["stars"];
-//       s.SetInt(s.GetInt() + 1);
-// 
-//       // 3. Stringify the DOM
-//       Writer<StringBuffer> writer(*jsonresp);
-//       d.Accept(writer);
-//       
-//       response = std::make_shared<JsonResponse>(jsonresp);
-     
-             
+      else if(uri.compare("/state")==0){
+	      
+	WebRobotState rstate;
+	bool resp = buffer->remove(rstate);
+	if(resp){      
+	    rstate.serialize(*jsonresp);
+	}
+      }
+      else if(uri.compare("/chains")==0){
+	
+	writer.StartObject();  
+	writer.Key("Chains");   
+	writer.StartArray();
+	for( auto const &pair : sharedData->getChainMap()){                 
+	    const std::string& outer_key = pair.first;
+	    const std::vector< std::vector<std::string> >& inner_map = pair.second;
+	    writer.StartObject();  
+	    writer.Key("Chain");
+	    writer.String(outer_key.c_str());
+	    writer.Key("Val"); 
+	    writer.StartArray();
+	    std::vector<std::string> v = inner_map[0];
+	    for (int i=0 ;i< v.size(); i++){
+		writer.StartObject(); 
+		writer.Key("ID");
+		std::vector<std::string> idv = inner_map[0];
+		std::vector<std::string> nv = inner_map[1];
+		std::vector<std::string> lv = inner_map[2];
+		std::vector<std::string> llv = inner_map[3];
+		std::vector<std::string> ulv = inner_map[4];
+		writer.Int(std::stoi(idv[i]));
+		writer.Key("Name");
+		writer.String(nv[i].c_str());
+		writer.Key("Lval");
+		writer.Double(std::stod(lv[i]));
+		writer.Key("Llimit");
+		writer.Double(std::stod(llv[i]));
+		writer.Key("Ulimit");
+		writer.Double(std::stod(ulv[i]));
+		writer.EndObject();
+	    }
+	    writer.EndArray();;
+	    writer.EndObject();
+	}
+	writer.EndArray();
+	writer.EndObject();  	
+      }
+      response = std::make_shared<JsonResponse>(jsonresp);
 }
   
 void HttpHandler::handlePost(std::shared_ptr<RequestObject>& binary_request){
     
       std::unique_ptr<JsonRequest> getter = std::unique_ptr<JsonRequest>(new JsonRequest(binary_request));
-//       void* buff = request->GetData();     
+//       void* buff = binary_request->GetData();     
 //       std::cout<<"pos"<<std::string((char*)buff)<<std::endl;
-
+      
       sharedData->clearJointMap();
       
       std::vector<double> vec;
@@ -98,7 +148,11 @@ void HttpHandler::handlePost(std::shared_ptr<RequestObject>& binary_request){
             sharedData->insertJoint(ref.first,ref.second);
           }
         }        
-      }
+      }else if(uri.compare("/cmd")==0) {
+	  std::string mess = getter->GetDocument().GetObject()["cmd"].GetString();
+	  std::string key = getter->GetDocument().GetObject()["Name"].GetString();
+	  sharedData->insertCmd(key,mess);
+      }   
     
 }
   

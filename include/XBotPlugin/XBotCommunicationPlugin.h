@@ -65,7 +65,7 @@ protected:
 private:
 
     XBot::JointIdMap _pos_ref_map, _vel_ref_map, _tor_ref_map, _k_ref_map, _d_ref_map;
-    Eigen::VectorXd _q0, _qref, _k0, _kref, _d0, _dref;
+    Eigen::VectorXd _q0, _qref, _k0, _kref, _d0, _dref, _qdot0, _qdotref;
 
     double _start_time;
 
@@ -74,7 +74,7 @@ private:
 
     XBot::RobotInterface::Ptr _robot;
 
-    XBot::Utils::SecondOrderFilter<Eigen::VectorXd> _filter_q, _filter_k, _filter_d;
+    XBot::Utils::SecondOrderFilter<Eigen::VectorXd> _filter_q, _filter_k, _filter_d, _filter_qdot;
 
     bool _filter_enabled;
     

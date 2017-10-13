@@ -46,8 +46,22 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
     CommunicationInterface(robot),
     _path_to_cfg(robot->getPathToConfig())
 {
+    std::string aport = PORT;
+    YAML::Node root_cfg = YAML::LoadFile(_path_to_cfg);
+    const YAML::Node &web_server = root_cfg["WebServer"]; 
+    if(web_server){
+       address = web_server["address"].as<std::string>();
+       port = web_server["port"].as<std::string>();
+       aport = address +":"+port;
+    } 
+    
+    std::string droot = "";
+    const char* env_p = std::getenv("ROBOTOLOGY_ROOT");
+    if( env_p != nullptr && !(strcmp(env_p,"") == 0))
+       droot = std::string(env_p) + std::string(DOCUMENT_ROOT);
+    
     const char *options[] = {
-            "document_root", DOCUMENT_ROOT, "listening_ports", PORT, 0};
+            "document_root", droot.c_str(), "listening_ports", aport.c_str(), 0};
     
     std::vector<std::string> cpp_options;
     for (int i=0; i<(sizeof(options)/sizeof(options[0])-1); i++) {
@@ -57,28 +71,63 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
     numjoint = _robot->getJointNum();
     buffer = std::make_shared<Buffer<WebRobotState>>(50);    
     sharedData = std::make_shared<SharedData>();
-    server = std::make_shared<CivetServer>(cpp_options);  
+    try{
+      server = std::make_shared<CivetServer>(cpp_options);  
+    }catch( CivetException e ){ std::cout<<"Port "<< aport <<" already in use from another process"<<std::endl; std::cout<<e.what()<<std::endl; exit(1);}
     ws_civet_handler = std::make_shared<WebSocketHandler>(buffer, sharedData);   
     server->addWebSocketHandler("/websocket", *ws_civet_handler);  
+    for ( auto &chainmap : _robot->getChainMap()){
+	std::string key =chainmap.first;
+	XBot::KinematicChain::Ptr chain = chainmap.second;
+	std::vector<std::string> ids;
+	//populate ids
+	for( int i=0; i<chain->getJointIds().size();i ++){
+	  ids.push_back(std::to_string(chain->getJointIds()[i]));
+	}
+	
+	std::vector<std::string> names = chain->getJointNames();
+	std::vector<std::string> jvals;
+	//populate jvals
+	
+	std::vector <std::string> lowlimit;
+	std::vector <std::string> uplimit;
+	for( int i=0; i<ids.size();i ++){
+	  jvals.push_back(std::to_string(chain->getJointPosition(i)));
+	  double llimit, ulimit;
+	  chain->getJointLimits(i,llimit,ulimit);
+	  lowlimit.push_back(std::to_string(llimit));
+	  uplimit.push_back(std::to_string(ulimit));
+	}
+	
+	std::vector < std::vector<std::string> > val;
+	//populate val
+	val.push_back(ids);
+	val.push_back(names);
+	val.push_back(jvals);
+	val.push_back(lowlimit);
+	val.push_back(uplimit);
+	
+	sharedData->insertChain(key,val);
+    }
     
-    std::cout<<"XBotCore server running at http://"<<PORT<<std::endl;        
+    std::cout<<"XBotCore server running at http://"<<aport<<std::endl;        
 }
 
 void CommunicationInterfaceWebServer::sendRobotState()
 {
 
-    if(sharedData->getNumClient().load() <= 0) return;
-    
     //read from robot
     //write to a buffer that the callback handleData will use
     JointIdMap _joint_id_map, _motor_id_map,
-    _jvel_id_map,_mvel_id_map, _temp_id_map;
+    _jvel_id_map,_mvel_id_map, _temp_id_map,
+    _effort_id_map;
     
     _robot->getJointPosition(_joint_id_map);
     _robot->getMotorPosition(_motor_id_map);
     _robot->getJointVelocity(_jvel_id_map);
     _robot->getMotorVelocity(_mvel_id_map);
     _robot->getTemperature(_temp_id_map);
+    _robot->getJointEffort(_effort_id_map);
     
     WebRobotState rstate;  
     
@@ -92,16 +141,25 @@ void CommunicationInterfaceWebServer::sendRobotState()
         double jvelval= _jvel_id_map.at(id);
         double mvelval= _mvel_id_map.at(id);
         double tempval= _temp_id_map.at(id);
+        double effval= _effort_id_map.at(id);
                  
         rstate.joint_id.push_back(id);
         rstate.link_position.push_back(jval);
         rstate.motor_position.push_back(mval);
         rstate.link_vel.push_back(jvelval);
         rstate.motor_vel.push_back(mvelval); 
-        rstate.temperature.push_back(tempval);        
+        rstate.temperature.push_back(tempval); 
+        rstate.effort.push_back(effval);
     }
     
-    buffer->add(rstate);   
+    if(sharedData->getNumClient().load() <= 0) {
+	buffer->clear();
+	buffer->add(rstate); 
+    }
+    else{
+	buffer->add(rstate);   
+    }
+    
 }
 
 void CommunicationInterfaceWebServer::receiveReference()
@@ -117,6 +175,9 @@ void CommunicationInterfaceWebServer::receiveReference()
          eigVec(i) = vec[i];
       }     
       _robot->setPositionReference(eigVec);
+      
+      //NOTE send velocityref for each joint
+      _robot->setVelocityReference(eigVec);
     }
     
       //set single joint value      
@@ -139,9 +200,13 @@ bool CommunicationInterfaceWebServer::advertiseSwitch(const std::string& port_na
     http_civet_handler = std::make_shared<HttpCivetHandler>(http_handler);
     server->addHandler(SWITCH_URI, *http_civet_handler);
     server->addHandler(CMD_URI, *http_civet_handler);
+    server->addHandler(STATUS_URI, *http_civet_handler);
     server->addHandler(MASTER_URI, *http_civet_handler);
     server->addHandler(ALLJOINT_URI, *http_civet_handler);
     server->addHandler(SINGLEJOINT_URI, *http_civet_handler);
+    server->addHandler(PLUGIN_URI, *http_civet_handler);
+    server->addHandler(STATE_URI, *http_civet_handler);
+    server->addHandler(CHAINS_URI, *http_civet_handler);
     sharedData->insertSwitch(port_name, "");
     
     return true;
@@ -179,8 +244,7 @@ bool CommunicationInterfaceWebServer::receiveFromSwitch(const std::string& port_
 
 bool XBot::CommunicationInterfaceWebServer::receiveFromCmd(const std::string& port_name, std::string& message)
 {
-    
-    message = sharedData->getCmd(port_name);   
+    message = sharedData->getCmd(port_name); 
     sharedData->insertCmd(port_name, "");
     if (message.compare("")==0) return false;
     return true;    

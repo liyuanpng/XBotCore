@@ -82,6 +82,7 @@ private:
     XBot::CommunicationInterface::Ptr _master_communication_ifc;
     
     XBot::CommunicationInterface::Ptr _web_communication;
+    bool loadWebServer;
 
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
     XBot::CommunicationInterface::Ptr _ros_communication;

@@ -39,9 +39,15 @@ bool HttpCivetHandler::handleGet(CivetServer *server, struct mg_connection *conn
           
       std::shared_ptr<ResponseInterface> resp_interface;
       http_interface->handleGet(resp_interface);
+      int content_length = resp_interface->GetLength();
+      //std::cout<<"SIZE "<< f<< std::endl;
       std::string type = resp_interface->GetTypeResponse();
       std::string header = "HTTP/1.1 200 OK\r\nContent-Type: "
-                            +type+"\r\nConnection: close\r\n\r\n";
+                            +type+"; charset=utf-8"+"\r\nContent-Length: "+ 
+			    std::to_string(content_length) +"\r\nConnection: close\r\n\r\n";
+			    
+     
+     
 
       mg_printf(conn, header.c_str());
       mg_write(conn,resp_interface->GetData(),resp_interface->GetLength());
@@ -77,9 +83,12 @@ bool HttpCivetHandler::handlePost(CivetServer* server, mg_connection* conn){
        }
       
       std::shared_ptr<RequestObject> req = std::make_shared<RequestObject>();
+      std::string type = "application/json"; //TODO make general
+      std::string header = "HTTP/1.1 200 OK\r\nContent-Type: "
+                            +type+"\r\nConnection: close\r\n\r\n";
       req->SetData(buf);
       http_interface->handlePost(req);
-      
+      mg_printf(conn, header.c_str());
       mg_printf(conn,"{\"response\":\"ok\"}");
   
       return true;

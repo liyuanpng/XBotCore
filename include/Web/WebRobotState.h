@@ -38,6 +38,7 @@ class WebRobotState {
     std::vector<double> link_vel;
     std::vector<double> motor_vel;
     std::vector<double> temperature;
+    std::vector<double> effort;
     
     //XBot::RobotState::pdo_rx pdo_rx;
     //IMU

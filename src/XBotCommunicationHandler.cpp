@@ -21,7 +21,8 @@
 
 XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config) :
     _path_to_config(path_to_config),
-    _master_communication_ifc(nullptr)
+    _master_communication_ifc(nullptr),
+    loadWebServer(true)
 {
 }
 
@@ -149,10 +150,21 @@ void XBot::CommunicationHandler::th_init(void*)
 
 #endif
     
+    const YAML::Node &web_server = root_cfg["WebServer"]; 
+    if(web_server){
+       std::string load = web_server["enable"].as<std::string>();
+       if (load.compare("true") == 0 ) 
+         loadWebServer = true;
+       else
+         loadWebServer = false;       
+    }
+    
     /********************************WEB INTERFACE********************************************/
-    _web_communication = CommunicationInterfaceFactory::getFactory("libwebserver", "WEB_SERVER",_robot);
-    if(_web_communication){
-      _communication_ifc_vector.push_back( _web_communication );
+    if (loadWebServer) {
+      _web_communication = CommunicationInterfaceFactory::getFactory("libwebserver", "WEB_SERVER",_robot);
+      if(_web_communication){
+        _communication_ifc_vector.push_back( _web_communication );
+      }
     }
     /****************************************************************************************/
     
@@ -362,7 +374,8 @@ void XBot::CommunicationHandler::th_loop(void*)
 
 XBot::CommunicationHandler::~CommunicationHandler()
 {
-     CommunicationInterfaceFactory::unloadLib("libwebserver");
+    if (loadWebServer) 
+      CommunicationInterfaceFactory::unloadLib("libwebserver");
 //      CommunicationInterfaceFactory::unloadLib("libros");
 //      CommunicationInterfaceFactory::unloadLib("libyarp");
     _logger->flush();

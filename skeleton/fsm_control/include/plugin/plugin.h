@@ -45,6 +45,8 @@ public:
 
     virtual void on_stop(double time);
 
+    virtual ~_MODULE_PREFIX_();
+    
 protected:
 
     virtual void control_loop(double time, double period);

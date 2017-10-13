@@ -43,6 +43,8 @@ public:
     virtual void on_start(double time);
 
     virtual void on_stop(double time);
+    
+    virtual ~_MODULE_PREFIX_();
 
 protected:
 
