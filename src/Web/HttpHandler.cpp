@@ -47,13 +47,6 @@ void HttpHandler::handleGet(std::shared_ptr<ResponseInterface>& response){
 	writer.String(s.c_str());  
 	writer.EndObject();
       }
-      else if(uri.compare("/cmd")==0) {
-        sharedData->insertCmd(key, val);
-	writer.StartObject();  
-	writer.Key("Response");
-	writer.String("OK");
-	writer.EndObject();
-      }       
       else if(uri.compare("/master")==0){
         sharedData->setMaster(key);
 	writer.StartObject();  
@@ -134,7 +127,7 @@ void HttpHandler::handlePost(std::shared_ptr<RequestObject>& binary_request){
       std::unique_ptr<JsonRequest> getter = std::unique_ptr<JsonRequest>(new JsonRequest(binary_request));
 //       void* buff = binary_request->GetData();     
 //       std::cout<<"pos"<<std::string((char*)buff)<<std::endl;
-
+      
       sharedData->clearJointMap();
       
       std::vector<double> vec;
@@ -155,7 +148,11 @@ void HttpHandler::handlePost(std::shared_ptr<RequestObject>& binary_request){
             sharedData->insertJoint(ref.first,ref.second);
           }
         }        
-      }
+      }else if(uri.compare("/cmd")==0) {
+	  std::string mess = getter->GetDocument().GetObject()["cmd"].GetString();
+	  std::string key = getter->GetDocument().GetObject()["Name"].GetString();
+	  sharedData->insertCmd(key,mess);
+      }   
     
 }
   
