@@ -175,6 +175,9 @@ void CommunicationInterfaceWebServer::receiveReference()
          eigVec(i) = vec[i];
       }     
       _robot->setPositionReference(eigVec);
+      
+      //NOTE send velocityref for each joint
+      _robot->setVelocityReference(eigVec);
     }
     
       //set single joint value      
@@ -241,8 +244,7 @@ bool CommunicationInterfaceWebServer::receiveFromSwitch(const std::string& port_
 
 bool XBot::CommunicationInterfaceWebServer::receiveFromCmd(const std::string& port_name, std::string& message)
 {
-    
-    message = sharedData->getCmd(port_name);   
+    message = sharedData->getCmd(port_name); 
     sharedData->insertCmd(port_name, "");
     if (message.compare("")==0) return false;
     return true;    
