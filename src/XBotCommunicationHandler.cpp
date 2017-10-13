@@ -240,6 +240,11 @@ void XBot::CommunicationHandler::th_init(void*)
     // set scheduler priority and stacksize
     priority = sched_get_priority_max(schedpolicy);
     stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
+    
+    /* Initialize references */
+    Eigen::VectorXd q0;
+    _robot->getMotorPosition(q0);
+    _robot->setPositionReference(q0);
 
 
 }
