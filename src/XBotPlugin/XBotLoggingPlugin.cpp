@@ -27,9 +27,9 @@ XBot::XBotLoggingPlugin::XBotLoggingPlugin()
 
 }
 
-bool XBot::XBotLoggingPlugin::init_control_plugin(std::string path_to_config_file,
-                                                        XBot::SharedMemory::Ptr shared_memory,
-                                                        RobotInterface::Ptr robot)
+bool XBot::XBotLoggingPlugin::init_control_plugin( std::string path_to_config_file,
+                                                   XBot::SharedMemory::Ptr shared_memory,
+                                                   RobotInterface::Ptr robot)
 {
     // get the robot
     _robot = robot;
@@ -37,6 +37,10 @@ bool XBot::XBotLoggingPlugin::init_control_plugin(std::string path_to_config_fil
     // initialize logger
     _logger = XBot::MatLogger::getLogger("/tmp/XBotCore_log");
     _robot->initLog(_logger, 100000);
+    
+    // add the faults
+    _faults.resize(_robot->getJointNum(), 0.0);
+    _logger->createVectorVariable("fault", _faults.size(), 1, 100000);
 
     return true;
 }
@@ -56,6 +60,18 @@ void XBot::XBotLoggingPlugin::control_loop(double time, double period)
 {
     // log all robot state
     _robot->log(_logger, time);
+    
+    // log fault
+    int i = 0;
+    for(int id : _robot->getEnabledJointId()) {
+	if(get_xbotcore_joint()) {
+	    get_xbotcore_joint()->get_fault(id, _faults[i]);
+	}
+        i++;
+    }
+    _logger->log("fault", _faults);
+    
+    
 }
 
 bool XBot::XBotLoggingPlugin::close(void)

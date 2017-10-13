@@ -176,6 +176,9 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
                                  std::shared_ptr< IXBotModel > model )
 {
 
+    // Save xbot_joint
+    _xbot_joint = joint;
+    
     _plugin_init_success.resize(_rtplugin_vector.size(), false);
     _plugin_switch.resize(_rtplugin_vector.size());
     _plugin_status.resize(_rtplugin_vector.size());
@@ -321,6 +324,22 @@ void XBot::PluginHandler::fill_robot_state()
     _esc_utils.setRobotStateFromRobotInterface(_robot_state_map);
     _esc_utils.setRobotFTFromRobotInterface(_ft_state_map);
     _esc_utils.setRobotIMUFromRobotInterface(_imu_state_map);
+    
+    for(int id: _robot->getEnabledJointId()){
+     
+        double fault_value = 0;
+        
+        if(!_xbot_joint) continue;
+        
+        _xbot_joint->get_fault(id, fault_value);
+         
+        _robot_state_map.at(id).RobotStateRX.fault = fault_value;
+        
+    }
+    
+    
+    
+    
 }
 
 

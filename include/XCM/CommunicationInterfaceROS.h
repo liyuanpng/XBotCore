@@ -40,7 +40,7 @@ class CommunicationInterfaceROS : public CommunicationInterface {
 public:
 
     CommunicationInterfaceROS();
-    CommunicationInterfaceROS(XBotInterface::Ptr robot);
+    CommunicationInterfaceROS(XBotInterface::Ptr robot, XBot::XBotXDDP::Ptr xddp_handler);
 
     virtual void sendRobotState();
     virtual void receiveReference();

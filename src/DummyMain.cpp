@@ -43,7 +43,7 @@ int main(int argc, char **argv){
     else{
 
     }
-
+    
 
     RobotInterface::Ptr robot = RobotInterface::getRobot(path_to_cfg, AnyMapPtr(), framework);
 
@@ -55,6 +55,9 @@ int main(int argc, char **argv){
 
     plugin_handler.load_plugins();
     plugin_handler.init_plugins(shared_memory);
+    
+    // starts CommunicationHandler
+//     system(std::string("CommunicationHandler " + std::string(argv[1])).c_str());
 
     double time = 0;
     
@@ -96,6 +99,8 @@ int main(int argc, char **argv){
 
 
     }
+    
+    nh.setParam("/use_sim_time", false);
 
     plugin_handler.close();
 
