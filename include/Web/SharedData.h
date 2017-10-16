@@ -49,11 +49,11 @@ class SharedData {
     
     std::string getSwitch(std::string key);
     
-    void insertChain(std::string key, std::vector<std::string> val);
+    void insertChain(std::string key, std::vector< std::vector<std::string> > val);
     
-    std::vector<std::string> getChain(std::string key);
+    std::vector< std::vector<std::string> > getChain(std::string key);
     
-    std::map<std::string, std::vector<std::string>> getChainMap();
+    std::map<std::string, std::vector< std::vector<std::string> > > getChainMap();
 
     void insertCmd(std::string key, std::string val);
     
@@ -91,7 +91,7 @@ class SharedData {
     std::map<int,double> _joint_map;
     std::mutex j_mutex;
     
-    std::map<std::string, std::vector<std::string>> _chain;
+    std::map<std::string, std::vector< std::vector<std::string>> > _chain;
     std::mutex chain_mutex;
 };
 

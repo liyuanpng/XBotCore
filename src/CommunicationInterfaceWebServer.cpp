@@ -79,11 +79,34 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
     for ( auto &chainmap : _robot->getChainMap()){
 	std::string key =chainmap.first;
 	XBot::KinematicChain::Ptr chain = chainmap.second;
-	std::vector<int> ids = chain->getJointIds();
-	std::vector<std::string> val = chain->getJointNames();
-	for( int i=0; i<ids.size();i ++){
-	  val[i] = val[i] + "|"+std::to_string(ids[i]);
+	std::vector<std::string> ids;
+	//populate ids
+	for( int i=0; i<chain->getJointIds().size();i ++){
+	  ids.push_back(std::to_string(chain->getJointIds()[i]));
 	}
+	
+	std::vector<std::string> names = chain->getJointNames();
+	std::vector<std::string> jvals;
+	//populate jvals
+	
+	std::vector <std::string> lowlimit;
+	std::vector <std::string> uplimit;
+	for( int i=0; i<ids.size();i ++){
+	  jvals.push_back(std::to_string(chain->getJointPosition(i)));
+	  double llimit, ulimit;
+	  chain->getJointLimits(i,llimit,ulimit);
+	  lowlimit.push_back(std::to_string(llimit));
+	  uplimit.push_back(std::to_string(ulimit));
+	}
+	
+	std::vector < std::vector<std::string> > val;
+	//populate val
+	val.push_back(ids);
+	val.push_back(names);
+	val.push_back(jvals);
+	val.push_back(lowlimit);
+	val.push_back(uplimit);
+	
 	sharedData->insertChain(key,val);
     }
     
@@ -152,20 +175,34 @@ void CommunicationInterfaceWebServer::receiveReference()
          eigVec(i) = vec[i];
       }     
       _robot->setPositionReference(eigVec);
+      
+      //NOTE send velocityref for each joint
+    
     }
     
       //set single joint value      
-      JointIdMap tmp;
-      _robot->getPositionReference(tmp);
+      JointIdMap pmap, vmap;
+      _robot->getPositionReference(pmap);
+      _robot->getVelocityReference(vmap);
       std::map<int,double> map = sharedData->getJointMap();
       for( auto& m : map){
         int id = m.first;
         double val = m.second;
-        tmp.at(id)= val;      
+	std::string jname =_robot->getJointByID(id)->getJointName();
+	if( _robot->getUrdf().getJoint(jname)->type == urdf::Joint::CONTINUOUS) {
+	  vmap.at(id)= val;
+	  pmap.at(id)= 0.0;
+	}
+	else {
+	  pmap.at(id)= val;
+	  vmap.at(id)= 0.0;
+	}
+	
       } 
-      if(!map.empty())
-        _robot->setPositionReference(tmp);  
-    
+      if(!map.empty()){
+        _robot->setPositionReference(pmap); 
+        _robot->setVelocityReference(vmap);
+	}
 }
 
 bool CommunicationInterfaceWebServer::advertiseSwitch(const std::string& port_name)
@@ -218,8 +255,7 @@ bool CommunicationInterfaceWebServer::receiveFromSwitch(const std::string& port_
 
 bool XBot::CommunicationInterfaceWebServer::receiveFromCmd(const std::string& port_name, std::string& message)
 {
-    
-    message = sharedData->getCmd(port_name);   
+    message = sharedData->getCmd(port_name); 
     sharedData->insertCmd(port_name, "");
     if (message.compare("")==0) return false;
     return true;    
