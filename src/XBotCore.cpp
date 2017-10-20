@@ -30,6 +30,8 @@
 #include <boost/bind.hpp>
 #include <XBotCore/HALInterfaceFactory.h>
 
+#include <XBotCore/Loader.h>
+
 XBot::XBotCore::XBotCore(const char* config_yaml,  const char* param) : 
     _path_to_config(config_yaml)
 {        
@@ -102,6 +104,11 @@ void XBot::XBotCore::init_internal()
     
     //
     _pluginHandler->init_plugins(shared_memory, xbot_joint, xbot_ft, xbot_imu);
+    
+    Loader loader = Loader(_pluginHandler,shared_memory,xbot_joint, xbot_ft, xbot_imu);
+    std::thread lth (loader);
+    lth.detach();
+    
     
     return;
 }

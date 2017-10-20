@@ -24,19 +24,16 @@
 
 std::atomic<bool> t;
 
+std::string Loader::name;
+
 bool Loader::callback(std_srvs::SetBoolRequest& req, std_srvs::SetBoolResponse& res, const std::string& port_name)
 {    
     res.success = true;
     std::cout<<"restart "<<port_name<<std::endl;
 
-    t.store(true);
-   // _pluginHandler->replacePlugin("HomingExample");//, _shared_memory, _joint, _ft, _imu );
-    
+    Loader::name = port_name;
+    t.store(true);    
     return true;
-}
-void Loader::doit(const std::string& port_name)
-{
-
 }
 
 Loader::Loader(XBot::PluginHandler::Ptr pluginH,
@@ -75,8 +72,6 @@ Loader::Loader(XBot::PluginHandler::Ptr pluginH,
     
     t.store(false);
   
-   //_pluginHandler->replacePlugin("HomingExample");
-  
 }
 
 Loader::~Loader()
@@ -91,11 +86,9 @@ void Loader::operator()()
 
   while(1){
     
-     sleep(5);
-//      _pluginHandler->replacePlugin("HomingExample");
-     
+     sleep(1);
     if(t.load())
-      _pluginHandler->replacePlugin("Homing");
+      _pluginHandler->replacePlugin(Loader::name);
     t.store(false);
     ros::spinOnce();
     

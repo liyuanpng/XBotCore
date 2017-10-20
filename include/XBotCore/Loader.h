@@ -42,7 +42,7 @@ public:
   void operator()();
 
   void doit(const std::string& port_name);
-    
+    static std::string name;
 private:
     
   XBot::PluginHandler::Ptr _pluginHandler;
@@ -57,6 +57,7 @@ private:
   
   std::shared_ptr<ros::NodeHandle> nh;
   std::map<std::string, ros::ServiceServer> _services;
+  
   
 };
 #endif
