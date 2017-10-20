@@ -58,9 +58,9 @@ namespace XBot {
 
         void close();
         
-        std::shared_ptr<shlibpp::SharedLibraryClass<XBot::XBotControlPlugin>> loadPlugin(const std::string& plugin_name);
+        std::shared_ptr<XBot::XBotControlPlugin> loadPlugin(const std::string& plugin_name);
         
-        void initPlugin(std::shared_ptr<shlibpp::SharedLibraryClass<XBot::XBotControlPlugin>> plugin_ptr,
+        void initPlugin(std::shared_ptr<XBot::XBotControlPlugin> plugin_ptr,
                           const std::string& name/*,
                           XBot::SharedMemory::Ptr shared_memory,
                           std::shared_ptr< IXBotJoint> joint    = nullptr,
@@ -107,9 +107,9 @@ namespace XBot {
         bool _close_was_called;
 
         // Dynamic loading related variables
-        std::vector<std::shared_ptr<shlibpp::SharedLibraryClassFactory<XBot::XBotControlPlugin>>> _rtplugin_factory;
+        //std::vector<std::shared_ptr<shlibpp::SharedLibraryClassFactory<XBot::XBotControlPlugin>>> _rtplugin_factory;
         std::vector<std::string> _rtplugin_names;
-        std::vector<std::shared_ptr<shlibpp::SharedLibraryClass<XBot::XBotControlPlugin>>> _rtplugin_vector;
+        std::vector<std::shared_ptr<XBot::XBotControlPlugin>> _rtplugin_vector;
         std::vector<bool> _plugin_init_success;
         std::vector<std::shared_ptr<XBot::Subscriber<XBot::Command>>> _plugin_switch;
         std::vector<std::shared_ptr<XBot::Publisher<XBot::Command>>>  _plugin_status;  
@@ -136,7 +136,7 @@ namespace XBot {
         
         std::shared_ptr<XBot::IXBotJoint> _xbot_joint;
         
-        std::map< std::string, std::shared_ptr<shlibpp::SharedLibraryClass<XBot::XBotControlPlugin>> > pluginMap;
+        std::map< std::string, std::shared_ptr<XBot::XBotControlPlugin> > pluginMap;
         std::map < std::string , int > pluginPos;
         
 

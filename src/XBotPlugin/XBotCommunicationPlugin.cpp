@@ -19,8 +19,16 @@
 
 #include <XBotPlugin/XBotCommunicationPlugin.h>
 
-REGISTER_XBOT_PLUGIN(XBotCommunicationPlugin, XBot::XBotCommunicationPlugin)
+//REGISTER_XBOT_PLUGIN(XBotCommunicationPlugin, XBot::XBotCommunicationPlugin)
+extern "C" XBot::XBotControlPlugin* create_instance()
+{
+  return new  XBot::XBotCommunicationPlugin();
+}
 
+extern "C" void destroy_instance( XBot::XBotControlPlugin* instance )
+{
+  delete instance;
+}
 XBot::XBotCommunicationPlugin::XBotCommunicationPlugin()
 {
 

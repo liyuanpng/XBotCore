@@ -20,8 +20,16 @@
 #include <XBotPlugin/XBotLoggingPlugin.h>
 #include <XCM/XBotUtils.h>
 
-REGISTER_XBOT_PLUGIN(XBotLoggingPlugin, XBot::XBotLoggingPlugin)
+//REGISTER_XBOT_PLUGIN(XBotLoggingPlugin, XBot::XBotLoggingPlugin)
+extern "C" XBot::XBotControlPlugin* create_instance()
+{
+  return new  XBot::XBotLoggingPlugin();
+}
 
+extern "C" void destroy_instance( XBot::XBotControlPlugin* instance )
+{
+  delete instance;
+}
 XBot::XBotLoggingPlugin::XBotLoggingPlugin()
 {
 
