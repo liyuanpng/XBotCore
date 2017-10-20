@@ -36,6 +36,8 @@ public:
   static std::shared_ptr<XBot::XBotControlPlugin> getFactory(const std::string& file_name, const std::string& lib_name);
 
   static void unloadLib(const std::string& file_name,XBot::XBotControlPlugin* plugin);
+  
+  static void unloadLib(const std::string& file_name);
 
 private:
 

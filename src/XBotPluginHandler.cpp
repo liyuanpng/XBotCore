@@ -154,26 +154,6 @@ bool PluginHandler::load_plugins()
     int pos = 0;
     
     for( const std::string& plugin_name : _rtplugin_names ){
-
-        //std::string path_to_so;
-        //computeAbsolutePath(plugin_name, "/build/install/lib/lib", path_to_so);
-        //path_to_so += std::string(".so");
-
-        //std::string factory_name = plugin_name + std::string("_factory");
-
-        /*auto factory_ptr = std::make_shared<shlibpp::SharedLibraryClassFactory<XBot::XBotControlPlugin>>(path_to_so.c_str(), factory_name.c_str());
-
-        if (!factory_ptr->isValid()) {
-            // NOTE print to celebrate the wizard
-            printf("error (%s) : %s\n", shlibpp::Vocab::decode(factory_ptr->getStatus()).c_str(),
-                factory_ptr->getLastNativeError().c_str());
-            std::cout << "Unable to load plugin " << plugin_name << "!" << std::endl;
-            success = false;
-            continue;
-        }
-        else{
-            std::cout << "Found plugin " << plugin_name << "!" << std::endl;
-        }*/
         
          std::shared_ptr<XBot::XBotControlPlugin> plugin_ptr = PluginFactory::getFactory("lib"+plugin_name, plugin_name);
          if(!plugin_ptr) {
@@ -181,50 +161,31 @@ bool PluginHandler::load_plugins()
            continue;
           }
 
-        //_rtplugin_factory.push_back(factory_ptr);
-
-        //auto plugin_ptr = std::make_shared<shlibpp::SharedLibraryClass<XBot::XBotControlPlugin>>(*factory_ptr);
-
-        _rtplugin_vector.push_back(plugin_ptr);
-
+          _rtplugin_vector.push_back(plugin_ptr);
+          
         _pluginhandler_log->createScalarVariable(plugin_name + "_exec_time");
         
         std::string plugin_name1 = plugin_name;
         pluginMap[plugin_name1] = plugin_ptr;
         pluginPos [plugin_name1] = pos;
-        
-          std::cout<<"pos"<< plugin_name<<" "<<pluginPos [plugin_name1]<<std::endl;
-
         pos = pos +1;
     }
-
     _time.resize(_rtplugin_vector.size());
     _last_time.resize(_rtplugin_vector.size());
-    _period.resize(_rtplugin_vector.size());
-
-      std::cout<<"pos"<<pluginPos ["Homing"]<<std::endl;
-      
+    _period.resize(_rtplugin_vector.size());      
     return success;
 }
 
-
 void PluginHandler::initPlugin(std::shared_ptr<XBot::XBotControlPlugin> plugin_ptr,
-                                 const std::string& name
-                                 /*XBot::SharedMemory::Ptr shared_memory,
-                                 std::shared_ptr< IXBotJoint> joint,
-                                 std::shared_ptr< IXBotFT > ft,
-                                 std::shared_ptr< IXBotIMU > imu,
-                                 std::shared_ptr< IXBotHand > hand,
-                                 std::shared_ptr< IXBotModel > model*/)
+                                 const std::string& name)
 {
   
   
         bool plugin_init_success = false;
-         int i=0;
-          i = pluginPos[name];
+        int i=0;
+        i = pluginPos[name];
        
          _plugin_state[i] == "RESTARTING";
-        //_plugin_custom_status[i] = std::make_shared<PluginStatus>();
         try{
             /* Try to init the current plugin */
             plugin_init_success = ( plugin_ptr)->init( _path_to_cfg,
@@ -294,11 +255,11 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
 {
 
     _shared_memory = shared_memory;
-  _joint = joint;
-  _ft = ft;
-  _imu = imu;
-  _hand = hand;
-  _model = model;
+    _joint = joint;
+    _ft = ft;
+    _imu = imu;
+    _hand = hand;
+    _model = model;
   
     // Save xbot_joint
     _xbot_joint = joint;
@@ -468,22 +429,13 @@ void XBot::PluginHandler::fill_robot_state()
 
 std::shared_ptr<XBot::XBotControlPlugin> tmp;
 
-void PluginHandler::replacePlugin(const std::string& name/*,
-                                 XBot::SharedMemory::Ptr shared_memory,
-                                 std::shared_ptr< IXBotJoint> joint,
-                                 std::shared_ptr< IXBotFT > ft,
-                                 std::shared_ptr< IXBotIMU > imu,
-                                 std::shared_ptr< IXBotHand > hand,
-                                 std::shared_ptr< IXBotModel > model*/){
-  
+void PluginHandler::replacePlugin(const std::string& name){
   
     unloadPlugin(name);
     std::shared_ptr<XBot::XBotControlPlugin> plugin_ptr = loadPlugin(name);
-    initPlugin(plugin_ptr, name);//, shared_memory, joint, ft, imu);
-    tmp = _rtplugin_vector[0];
+    initPlugin(plugin_ptr, name);
     _rtplugin_vector[0] = plugin_ptr;
-    //pluginMap[name] = plugin_ptr;
-  
+    //pluginMap[name] = plugin_ptr;  
 }
 
 void PluginHandler::run()
@@ -580,9 +532,9 @@ void PluginHandler::run()
 
 void PluginHandler::unloadPlugin(const std::string& port_name)
 {
-    //(pluginMap[port_name])->close();
-   PluginFactory::unloadLib("lib"+port_name, _rtplugin_vector[0].get());
-    
+   int pos = pluginPos[port_name];
+   _rtplugin_vector[pos].reset();
+   PluginFactory::unloadLib("lib"+port_name);    
 }
 
 void PluginHandler::close()
@@ -593,10 +545,9 @@ void PluginHandler::close()
 
     int i=0;
     for( const auto& plugin : _rtplugin_vector ){
-      PluginFactory::unloadLib("lib"+_rtplugin_names[i], plugin.get());
+      PluginFactory::unloadLib("lib"+_rtplugin_names[i]);
       i++;
     }
-
     _pluginhandler_log->flush();
 }
 

@@ -72,6 +72,13 @@ void PluginFactory::unloadLib(const std::string& file_name, XBot::XBotControlPlu
   std::cout << file_name <<" Plugin unloaded! " << std::endl;
 }
 
+void PluginFactory::unloadLib(const std::string& file_name)
+{
+
+  dlclose( handles[file_name] );
+  std::cout << file_name <<" Plugin unloaded! " << std::endl;
+}
+
 bool PluginFactory::computeAbsolutePath (  const std::string& input_path,
                                                         const std::string& middle_path,
                                                         std::string& absolute_path)
