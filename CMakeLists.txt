@@ -74,7 +74,7 @@ find_package(catkin QUIET COMPONENTS roscpp sensor_msgs std_srvs message_generat
 find_package(YARP QUIET)
 find_package(kdl_parser REQUIRED)
 
-# find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS program_options)
 
 
 option(BUILD_TESTS "Compile XCM tests" FALSE)
@@ -258,7 +258,7 @@ if ( Xenomai_FOUND )
 endif()
 
 add_executable(DummyMain src/DummyMain.cpp)
-target_link_libraries(DummyMain XCM)
+target_link_libraries(DummyMain XCM ${Boost_LIBRARIES})
 # target_link_libraries(DummyMain webserver )
 
 install(TARGETS DummyMain
