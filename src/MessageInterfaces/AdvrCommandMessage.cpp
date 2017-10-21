@@ -18,6 +18,7 @@
 */
 
 #include <XCM/MessageInterfaces/AdvrCommandMessage.h>
+#include <ros/transport_hints.h> 
 
 SHLIBPP_DEFINE_SHARED_SUBCLASS(advrcommandmessage_control_message, XBot::CommandAdvr, XBot::GenericControlMessage);
 
@@ -73,6 +74,8 @@ bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::Gener
 {
 
     std::cout << "Initializing CommandAdvr message interface" << std::endl;
+    
+    
 
     YAML::Node root_cfg = YAML::LoadFile(path_to_config_file);
 
@@ -83,10 +86,11 @@ bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::Gener
 
     ros::NodeHandle nh;
 
-    _sub = nh.subscribe(command_topic_name, 1, &XBot::CommandAdvr::callback, this);
-    _pub = nh.advertise<XCM::CommandAdvr>(command_topic_name, 1);
-
+    
+    
     if( type == XBot::GenericControlMessage::Type::Rx ){
+        
+        _sub = nh.subscribe(command_topic_name, 1, &XBot::CommandAdvr::callback, this, ros::TransportHints().tcpNoDelay());
 
         auto robot = XBot::RobotInterface::getRobot(path_to_config_file);
         robot->sense();
@@ -113,6 +117,9 @@ bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::Gener
 
 
     if( type == XBot::GenericControlMessage::Type::Tx ){
+        
+        _pub = nh.advertise<XCM::CommandAdvr>(command_topic_name, 1);
+
 
         ros::ServiceClient client = nh.serviceClient<XCM::advr_controller_joint_names>(joint_service_name);
         XCM::advr_controller_joint_namesRequest req;
@@ -142,6 +149,8 @@ bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::Gener
         }
 
     }
+    
+    
     
     return true;
 
