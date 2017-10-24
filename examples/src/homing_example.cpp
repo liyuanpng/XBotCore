@@ -19,7 +19,7 @@
 
 #include <homing_example.h>
 
-REGISTER_XBOT_PLUGIN(HomingExample)
+REGISTER_XBOT_PLUGIN(XBot::HomingExample)
 
 namespace XBot {
 

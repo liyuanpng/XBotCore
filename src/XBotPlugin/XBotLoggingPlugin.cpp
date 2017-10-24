@@ -20,7 +20,7 @@
 #include <XBotPlugin/XBotLoggingPlugin.h>
 #include <XCM/XBotUtils.h>
 
-REGISTER_XBOT_PLUGIN(XBotLoggingPlugin)
+REGISTER_XBOT_PLUGIN(XBot::XBotLoggingPlugin)
 
 XBot::XBotLoggingPlugin::XBotLoggingPlugin()
 {

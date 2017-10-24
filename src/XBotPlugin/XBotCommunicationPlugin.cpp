@@ -19,7 +19,7 @@
 
 #include <XBotPlugin/XBotCommunicationPlugin.h>
 
-REGISTER_XBOT_PLUGIN(XBotCommunicationPlugin)
+REGISTER_XBOT_PLUGIN(XBot::XBotCommunicationPlugin)
 
 XBot::XBotCommunicationPlugin::XBotCommunicationPlugin()
 {
