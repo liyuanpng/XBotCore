@@ -18,6 +18,7 @@
 */
 
 #include <XCM/MessageInterfaces/AdvrJointState.h>
+#include <ros/transport_hints.h>
 
 SHLIBPP_DEFINE_SHARED_SUBCLASS(advrjointstate_jointstate_message, XBot::AdvrJointState, XBot::GenericJointStateMessage);
 
@@ -45,7 +46,7 @@ bool XBot::AdvrJointState::init(const std::string& path_to_config_file, GenericJ
     _topic_name = jointstate_root["joint_state_topic_name"].as<std::string>();
 
     ros::NodeHandle nh;
-    _sub = nh.subscribe(_topic_name, 1, &AdvrJointState::callback, this);
+    _sub = nh.subscribe(_topic_name, 1, &AdvrJointState::callback, this, ros::TransportHints().tcpNoDelay());
 
 
     // Max number of attempts to connect to /joint_states topic

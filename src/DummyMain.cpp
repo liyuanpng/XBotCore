@@ -13,37 +13,64 @@
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/rolling_mean.hpp>
 
+#include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
+
+namespace po = boost::program_options;
+namespace fs = boost::filesystem;
+
 
 int main(int argc, char **argv){
 
     ros::init(argc, argv, "DummyMain");
     ros::NodeHandle nh;
+    
+    /* Command line parsing */
+    
+    std::string path_to_cfg;
+    bool provide_clock = false;
+    
+    {
+        po::options_description desc("Locomotion server. Available options:");
+        desc.add_options()
+            ("config,C", po::value<std::string>(),"config file with custom parameters")
+            ("clock,P", "provide /clock messages and set /use_sim_time = true")
+        ;
 
-    nh.setParam("/use_sim_time", true);
+        
+        po::positional_options_description p;
+        p.add("config", -1);
+
+        po::variables_map vm;
+        po::store(po::command_line_parser(argc, argv).
+                options(desc).positional(p).run(), vm);
+        po::notify(vm);
+
+        if (vm.count("config")) {
+            path_to_cfg = fs::absolute(vm["config"].as<std::string>()).string();
+        }
+        else{
+            std::cout << desc << std::endl;
+            return -1;
+        }
+        
+        if (vm.count("clock")) {
+            provide_clock = true;
+        }
+    }
+
+
+    if(provide_clock){
+        nh.setParam("/use_sim_time", true);
+    }
     
     ros::Publisher clock_pub = nh.advertise<rosgraph_msgs::Clock>("/clock", 1);
 
 
     using namespace XBot;
 
-    std::string path_to_cfg;
-
-    if(argc > 1){
-        path_to_cfg = std::string(argv[1]);
-    }
-    else{
-
-    }
 
     std::string framework = "DUMMY";
-
-    if(argc > 2){
-        framework = std::string(argv[2]);
-    }
-    else{
-
-    }
-    
 
     RobotInterface::Ptr robot = RobotInterface::getRobot(path_to_cfg, AnyMapPtr(), framework);
 
@@ -72,7 +99,10 @@ int main(int argc, char **argv){
 
         rosgraph_msgs::Clock msg;
         msg.clock = ros::Time(time);
-        clock_pub.publish(msg);
+        
+        if(provide_clock){
+            clock_pub.publish(msg);
+        }
         
         std::clock_t tic = std::clock();
 
@@ -100,7 +130,9 @@ int main(int argc, char **argv){
 
     }
     
-    nh.setParam("/use_sim_time", false);
+    if(provide_clock){
+        nh.setParam("/use_sim_time", false);
+    }
 
     plugin_handler.close();
 
