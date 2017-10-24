@@ -25,8 +25,17 @@
 
 #include <XBotCore-interfaces/XDomainCommunication.h>
 #include <XCM/XBotPluginStatus.h>
-#define REGISTER_XBOT_PLUGIN(plugin_name, scoped_class_name) SHLIBPP_DEFINE_SHARED_SUBCLASS(plugin_name ## _factory, scoped_class_name, XBot::XBotControlPlugin);
 
+#define REGISTER_XBOT_PLUGIN(plugin_name) \
+extern "C" XBot::XBotControlPlugin* create_instance() \
+{ \
+  return new  plugin_name(); \
+}\
+\
+extern "C" void destroy_instance( XBot::XBotControlPlugin* instance ) \
+{ \
+  delete instance; \
+}\
 
 namespace XBot {
 

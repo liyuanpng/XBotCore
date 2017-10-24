@@ -19,17 +19,7 @@
 
 #include <homing_example.h>
 
-//SHLIBPP_DEFINE_SHARED_SUBCLASS(HomingExample_factory, XBot::HomingExample, XBot::XBotControlPlugin);
-
-extern "C" XBot::XBotControlPlugin* create_instance()
-{
-  return new  XBot::HomingExample();
-}
-
-extern "C" void destroy_instance( XBot::XBotControlPlugin* instance )
-{
-  delete instance;
-}
+REGISTER_XBOT_PLUGIN(HomingExample)
 
 namespace XBot {
 
@@ -69,7 +59,7 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file,
 
 //     _robot->initLog("/tmp/homing_example_log", 100000);
 
-     std::cout << name << " IT" << std::endl;
+     std::cout << name << " IaaTa125" << std::endl;
     return true;
 
 
@@ -80,7 +70,7 @@ void HomingExample::on_start(double time)
     _first_loop_time = time;
     _robot->sense();
     _robot->getJointPosition(_q0);
-    std::cout << name << " STARTED NEWAA2222!!" << std::endl;
+    std::cout << name << " STARTED aasssdsA2222!!" << std::endl;
     
     
 // NOTE if you want to grasp use this piece of code    
@@ -160,6 +150,7 @@ void HomingExample::control_loop(double time, double period)
 bool HomingExample::close()
 {
 //     _robot->flushLog();
+  std::cout<<"ONCLOSE"<<std::endl;
     return true;
 }
 

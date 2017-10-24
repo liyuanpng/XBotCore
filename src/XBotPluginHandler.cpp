@@ -166,7 +166,7 @@ bool PluginHandler::load_plugins()
         _pluginhandler_log->createScalarVariable(plugin_name + "_exec_time");
         
         std::string plugin_name1 = plugin_name;
-        pluginMap[plugin_name1] = plugin_ptr;
+        //pluginMap[plugin_name1] = plugin_ptr;
         pluginPos [plugin_name1] = pos;
         pos = pos +1;
     }
@@ -545,6 +545,8 @@ void PluginHandler::close()
 
     int i=0;
     for( const auto& plugin : _rtplugin_vector ){
+      plugin->close();
+      _rtplugin_vector[i].reset();
       PluginFactory::unloadLib("lib"+_rtplugin_names[i]);
       i++;
     }

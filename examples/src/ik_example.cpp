@@ -19,7 +19,7 @@
 
 #include <ik_example.h>
 
-SHLIBPP_DEFINE_SHARED_SUBCLASS(IkExample_factory, XBot::IkExample, XBot::XBotControlPlugin);
+REGISTER_XBOT_PLUGIN(IkExample)
 
 void computeCartesianError(const Eigen::Affine3d& ref, const Eigen::Affine3d& actual, Eigen::VectorXd& error);
 
