@@ -86,7 +86,7 @@ void Loader::operator()()
 
   while(1){
     
-     sleep(1);
+     //sleep(1);
     if(t.load())
       _pluginHandler->replacePlugin(Loader::name);
     t.store(false);
