@@ -6,4 +6,7 @@
   </description>
   <maintainer email="giuseppe.rigano@iit.it">IIT</maintainer>
   <license>GNU</license>
+  
+  <build_depend>message_generation</build_depend>
+  
 </package>
