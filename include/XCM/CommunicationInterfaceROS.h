@@ -124,6 +124,7 @@ private:
     std::map<int, ros::Subscriber> _hand_sub_map;
     std::map<int, double> _hand_value_map;
 
+    bool _publish_tf = true;
 
 
 };

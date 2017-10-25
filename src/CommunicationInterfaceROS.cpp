@@ -213,6 +213,14 @@ void CommunicationInterfaceROS::load_ros_message_interfaces() {
         _jointid_to_jointstate_msg_idx[id] = _jointstate_message->getIndex(joint_name);
         _jointid_to_command_msg_idx[id] = _control_message->getIndex(joint_name);;
     }
+    
+    /* check the flag to publish or not the /tf */
+    if(ros_interface_root["publish_tf"]) { 
+        _publish_tf = ros_interface_root["publish_tf"].as<bool>();
+    }
+    else {
+        std::cout << "WARNING in " << __func__ << "! " << ros_interface_root << " node does NOT contain optional node publish_tf. I will assume it to TRUE" << std::endl;
+    }
 
 }
 void CommunicationInterfaceROS::sendRobotState()
@@ -223,8 +231,10 @@ void CommunicationInterfaceROS::sendRobotState()
     _robot->getJointPosition(_joint_name_map);
     std::map<std::string, double> _joint_name_std_map(_joint_name_map.begin(), _joint_name_map.end());
 
-    _robot_state_pub->publishTransforms(_joint_name_std_map, ros::Time::now(), "");
-    _robot_state_pub->publishFixedTransforms("");
+    if(_publish_tf){
+        _robot_state_pub->publishTransforms(_joint_name_std_map, ros::Time::now(), "");
+        _robot_state_pub->publishFixedTransforms("");
+    }
 
     /* Joint states */
 
