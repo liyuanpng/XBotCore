@@ -53,6 +53,8 @@ PluginHandler::PluginHandler(RobotInterface::Ptr robot,
 
     _pluginhandler_log = XBot::MatLogger::getLogger("/tmp/PluginHandler_log");
     std::cout << "With plugin set name : " << _plugins_set_name << std::endl;
+    
+    curr_plg.store(-1);
 }
 
 void XBot::PluginHandler::update_plugins_set_name(const std::string& plugins_set_name)
@@ -86,7 +88,6 @@ std::shared_ptr<XBot::XBotControlPlugin> PluginHandler::loadPlugin(const std::st
         std::cout << "Restarting plugin " << plugin_name << "!" << std::endl;
     }    
    
-
     return plugin_ptr;
 }
 
@@ -179,7 +180,6 @@ bool PluginHandler::load_plugins()
 void PluginHandler::initPlugin(std::shared_ptr<XBot::XBotControlPlugin> plugin_ptr,
                                  const std::string& name)
 {
-  
   
         bool plugin_init_success = false;
         int i=0;
@@ -422,20 +422,18 @@ void XBot::PluginHandler::fill_robot_state()
         
     }
     
-    
-    
-    
 }
-
-std::shared_ptr<XBot::XBotControlPlugin> tmp;
 
 void PluginHandler::replacePlugin(const std::string& name){
   
+    int pos = pluginPos[name];
+    curr_plg.store(pos);
+    if( _plugin_state[pos].compare("STOPPED") != 0) {curr_plg.store(-1); return;}
     unloadPlugin(name);
     std::shared_ptr<XBot::XBotControlPlugin> plugin_ptr = loadPlugin(name);
     initPlugin(plugin_ptr, name);
     _rtplugin_vector[0] = plugin_ptr;
-    //pluginMap[name] = plugin_ptr;  
+    curr_plg.store(-1);
 }
 
 void PluginHandler::run()
@@ -454,7 +452,6 @@ void PluginHandler::run()
 
     XBot::Command cmd;
 
-    if(true){
     for( int i = 0; i < _rtplugin_vector.size(); i++){
         
         _time[i] = _time_provider->get_time();
@@ -474,9 +471,10 @@ void PluginHandler::run()
 
         /* STATE STOPPED */
 
+	if( curr_plg.load() != i)
         if( _plugin_state[i] == "STOPPED" ){
           
-            _plugin_status[i]->write(XBot::Command("STOPPED"));//+_plugin_custom_status[i]->getStatus()));
+            _plugin_status[i]->write(XBot::Command("STOPPED"+_plugin_custom_status[i]->getStatus()));
 
             if( _plugin_switch[i]->read(cmd) ){
 
@@ -492,10 +490,11 @@ void PluginHandler::run()
 
         /* STATE RUNNING */
 
+	if( curr_plg.load() != i)
         if( _plugin_state[i] == "RUNNING" ){
 
             const auto& plugin = _rtplugin_vector[i];
-            _plugin_status[i]->write(XBot::Command("RUNNING"));//+_plugin_custom_status[i]->getStatus()));
+            _plugin_status[i]->write(XBot::Command("RUNNING"+_plugin_custom_status[i]->getStatus()));
 
             if( _plugin_switch[i]->read(cmd) ){
 
@@ -524,8 +523,6 @@ void PluginHandler::run()
         }
 
     }
-    }
-
     _last_time = _time;
 
 }

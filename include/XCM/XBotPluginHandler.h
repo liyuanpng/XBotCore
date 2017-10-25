@@ -152,11 +152,13 @@ namespace XBot {
         bool _is_RT_plugin_handler;
         
         XBot::SharedMemory::Ptr _shared_memory;
-  std::shared_ptr< XBot::IXBotJoint> _joint;
-  std::shared_ptr< XBot::IXBotFT > _ft;
-  std::shared_ptr< XBot::IXBotIMU > _imu;
-  std::shared_ptr< XBot::IXBotHand > _hand;
-  std::shared_ptr< XBot::IXBotModel > _model;
+	std::shared_ptr< XBot::IXBotJoint> _joint;
+	std::shared_ptr< XBot::IXBotFT > _ft;
+	std::shared_ptr< XBot::IXBotIMU > _imu;
+	std::shared_ptr< XBot::IXBotHand > _hand;
+	std::shared_ptr< XBot::IXBotModel > _model;
+	
+	std::atomic<int> curr_plg;
 
     };
 }
