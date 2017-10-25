@@ -1,6 +1,6 @@
 #include <id_example.h>
 
-REGISTER_XBOT_PLUGIN(XBot::IdExample)
+REGISTER_XBOT_PLUGIN_(XBot::IdExample)
 
 
 XBot::IdExample::IdExample()

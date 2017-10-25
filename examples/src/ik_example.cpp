@@ -19,7 +19,7 @@
 
 #include <ik_example.h>
 
-REGISTER_XBOT_PLUGIN(XBot::IkExample)
+REGISTER_XBOT_PLUGIN_(XBot::IkExample)
 
 void computeCartesianError(const Eigen::Affine3d& ref, const Eigen::Affine3d& actual, Eigen::VectorXd& error);
 

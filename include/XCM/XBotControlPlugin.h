@@ -26,7 +26,19 @@
 #include <XBotCore-interfaces/XDomainCommunication.h>
 #include <XCM/XBotPluginStatus.h>
 
-#define REGISTER_XBOT_PLUGIN(plugin_name) \
+#define REGISTER_XBOT_PLUGIN_(plugin_name) \
+extern "C" XBot::XBotControlPlugin* create_instance() \
+{ \
+  return new  plugin_name(); \
+}\
+\
+extern "C" void destroy_instance( XBot::XBotControlPlugin* instance ) \
+{ \
+  delete instance; \
+}\
+
+//for reverse compatibility
+#define REGISTER_XBOT_PLUGIN(others,plugin_name) \
 extern "C" XBot::XBotControlPlugin* create_instance() \
 { \
   return new  plugin_name(); \

@@ -203,6 +203,7 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/XBotPluginStatus.cpp    
                         src/XBotCommunicationInterfaceFactory.cpp
                         src/PluginFactory.cpp
+                        src/IOPluginFactory.cpp
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES}
                         ${RT_NRT_SRC}                        
                         )
@@ -221,6 +222,7 @@ add_library(XCM_no_xeno SHARED ${XBotInterface_INCLUDES}
                         src/XBotPluginStatus.cpp 
                         src/XBotCommunicationInterfaceFactory.cpp
                         src/PluginFactory.cpp
+                        src/IOPluginFactory.cpp
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES}       
                         src/XBotNRT_thread.cpp
                         )                        

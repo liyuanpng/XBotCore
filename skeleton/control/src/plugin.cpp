@@ -20,7 +20,7 @@
 #include <_MODULE_PREFIX__plugin.h>
 
 /* Specify that the class XBotPlugin::_MODULE_PREFIX_ is a XBot RT plugin with name "_MODULE_PREFIX_" */
-REGISTER_XBOT_PLUGIN(XBotPlugin::_MODULE_PREFIX_)
+REGISTER_XBOT_PLUGIN_(XBotPlugin::_MODULE_PREFIX_)
 
 namespace XBotPlugin {
 

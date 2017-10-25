@@ -21,11 +21,30 @@
 #define __XCM_IOPLUGIN_H__
 
 #include <string>
-#include <SharedLibraryClassFactory.h>
-#include <SharedLibraryClass.h>
 #include <XBotInterface/XBotInterface.h>
 
-#define REGISTER_XBOT_IO_PLUGIN(plugin_name, scoped_class_name) SHLIBPP_DEFINE_SHARED_SUBCLASS(plugin_name ## _factory, scoped_class_name, XBot::IOPlugin);
+#define REGISTER_XBOT_IO_PLUGIN(others,plugin_name) \
+extern "C" XBot::IOPlugin* create_instance() \
+{ \
+  return new  plugin_name(); \
+}\
+\
+extern "C" void destroy_instance( XBot::IOPlugin* instance ) \
+{ \
+  delete instance; \
+}\
+
+
+#define REGISTER_XBOT_IO_PLUGIN_(plugin_name) \
+extern "C" XBot::IOPlugin* create_instance() \
+{ \
+  return new  plugin_name(); \
+}\
+\
+extern "C" void destroy_instance( XBot::IOPlugin* instance ) \
+{ \
+  delete instance; \
+}\
 
 namespace XBot {
 
@@ -40,7 +59,7 @@ public:
     virtual void close() = 0;
 
 };
-
+/*
 class IOPluginLoader {
 
 public:
@@ -59,7 +78,7 @@ private:
 
     bool _load_success;
 
-};
+};*/
 
 
 
