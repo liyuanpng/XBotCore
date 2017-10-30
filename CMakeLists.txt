@@ -71,6 +71,7 @@ include_directories(include ${XBotCoreModel_INCLUDE_DIRS}
 add_executable(${PROJECT_NAME}
     src/XBotMain.cpp
     src/Loader.cpp
+    src/XBotLoaderThread.cpp
 )
 
 # lib

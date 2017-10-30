@@ -32,7 +32,6 @@
 
 #include <XCM/XBotUtils.h>
 
-// #include <XBotCore/XBotEcat.h>
 #include <XBotCore-interfaces/XBotPipes.h>
 
 #include <XBotInterface/RobotInterface.h>
@@ -40,6 +39,7 @@
 #include <XCM/XBotPluginHandler.h>
 #include <XBotCore/HALInterface.h>
 #include <XBotCore/ControllerInterface.h>
+#include <XBotCore/XBotLoaderThread.h>
 
 namespace XBot
 {
@@ -79,6 +79,7 @@ protected:
     
 private:    
   
+    XBot::Thread_hook* th_loader;
     double get_time();
   
     std::shared_ptr<HALInterface> halInterface;

@@ -105,10 +105,9 @@ void XBot::XBotCore::init_internal()
     //
     _pluginHandler->init_plugins(shared_memory, xbot_joint, xbot_ft, xbot_imu);
     
-//     Loader loader = Loader(_pluginHandler,shared_memory,xbot_joint, xbot_ft, xbot_imu);
-//     std::thread lth (loader);
-//     lth.detach();
-    
+    std::shared_ptr<Loader> loaderptr = std::make_shared<Loader>(_pluginHandler,shared_memory,xbot_joint, xbot_ft, xbot_imu);
+    th_loader = new XBot::XBotLoaderThread(loaderptr);
+    th_loader->create(false, 2);
     
     return;
 }
@@ -147,4 +146,7 @@ XBot::XBotCore::~XBotCore() {
     //if( lib_file != "")
         //HALInterfaceFactory::unloadLib(lib_file, halInterface.get());
     printf("~XBotCore()\n");
+    th_loader->stop();
+    th_loader->join();
+    delete th_loader;
 }

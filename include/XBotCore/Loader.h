@@ -24,10 +24,11 @@
 #include <ros/ros.h>
 #include <std_srvs/SetBool.h>
 
+
 class Loader {
     
 public:
-  Loader(){};
+  
   Loader(XBot::PluginHandler::Ptr,
          XBot::SharedMemory::Ptr shared_memory,
         std::shared_ptr< XBot::IXBotJoint> joint    = nullptr,
@@ -39,10 +40,11 @@ public:
   
   ~Loader();
   
-  void operator()();
+  void init_internal();
+  void loop_internal();
 
-  void doit(const std::string& port_name);
-    static std::string name;
+  static std::string name;
+  
 private:
     
   XBot::PluginHandler::Ptr _pluginHandler;

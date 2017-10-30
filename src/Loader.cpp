@@ -36,23 +36,9 @@ bool Loader::callback(std_srvs::SetBoolRequest& req, std_srvs::SetBoolResponse& 
     return true;
 }
 
-Loader::Loader(XBot::PluginHandler::Ptr pluginH,
-                XBot::SharedMemory::Ptr shared_memory,
-                std::shared_ptr< XBot::IXBotJoint> joint,
-                std::shared_ptr< XBot::IXBotFT > ft,
-                std::shared_ptr< XBot::IXBotIMU > imu,
-                std::shared_ptr< XBot::IXBotHand > hand,
-                std::shared_ptr< XBot::IXBotModel > model): 
-                _pluginHandler(pluginH),
-                _shared_memory(shared_memory),
-                _joint(joint),
-                _ft(ft),
-                _imu(imu),
-                _hand(hand),
-                _model(model)
-                
+void Loader::init_internal()
 {
-  
+
     int argc = 1;
     const char *arg = "Loader";
     char* argg = const_cast<char*>(arg);
@@ -71,27 +57,39 @@ Loader::Loader(XBot::PluginHandler::Ptr pluginH,
     }
     
     t.store(false);
+}
+
+void Loader::loop_internal()
+{
+
+   if(t.load())
+      _pluginHandler->replacePlugin(Loader::name);
+    t.store(false);
+    ros::spinOnce();
   
+}
+
+Loader::Loader(XBot::PluginHandler::Ptr pluginH,
+                XBot::SharedMemory::Ptr shared_memory,
+                std::shared_ptr< XBot::IXBotJoint> joint,
+                std::shared_ptr< XBot::IXBotFT > ft,
+                std::shared_ptr< XBot::IXBotIMU > imu,
+                std::shared_ptr< XBot::IXBotHand > hand,
+                std::shared_ptr< XBot::IXBotModel > model): 
+                _pluginHandler(pluginH),
+                _shared_memory(shared_memory),
+                _joint(joint),
+                _ft(ft),
+                _imu(imu),
+                _hand(hand),
+                _model(model)
+                
+{
+  
+    
 }
 
 Loader::~Loader()
 {
-
-}
-
-
-
-void Loader::operator()()
-{
-
-  while(1){
-    
-     //sleep(1);
-    if(t.load())
-      _pluginHandler->replacePlugin(Loader::name);
-    t.store(false);
-    ros::spinOnce();
-    
-  }
 
 }
