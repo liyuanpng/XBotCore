@@ -18,9 +18,10 @@
 */
 
 #include <XBotCore/XBotLoaderThread.h>
+#include <XBotCore/XBotCore.h>
 
 
-XBot::XBotLoaderThread::XBotLoaderThread(std::shared_ptr<Loader> loaderptr) //const char* config_yaml, const char* param)   
+XBot::XBotLoaderThread::XBotLoaderThread() 
 {
   
     int period = 5000;
@@ -35,7 +36,7 @@ XBot::XBotLoaderThread::XBotLoaderThread(std::shared_ptr<Loader> loaderptr) //co
     // set thread priority
     set_thread_priority();
     
-    loader = loaderptr;
+   
 }
 
 void XBot::XBotLoaderThread::set_thread_name(std::string thread_name)
@@ -74,6 +75,8 @@ void XBot::XBotLoaderThread::set_thread_priority()
 
 void XBot::XBotLoaderThread::th_init( void * ){
   
+  sleep(3);
+  loader = XBot::XBotCore::getLoader();
   loader->init_internal();
     
 }

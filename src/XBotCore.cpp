@@ -30,7 +30,7 @@
 #include <boost/bind.hpp>
 #include <XBotCore/HALInterfaceFactory.h>
 
-#include <XBotCore/Loader.h>
+std::shared_ptr<Loader> XBot::XBotCore::loaderptr;
 
 XBot::XBotCore::XBotCore(const char* config_yaml,  const char* param) : 
     _path_to_config(config_yaml)
@@ -71,6 +71,11 @@ XBot::XBotCore::XBotCore(const char* config_yaml, std::shared_ptr<HALInterface> 
     if(!halInterface) exit(1);
 }
 
+std::shared_ptr<Loader> XBot::XBotCore::getLoader(){
+  
+  return loaderptr;  
+}
+
 void XBot::XBotCore::init_internal()
 {
     // create robot from config file and any map
@@ -105,9 +110,9 @@ void XBot::XBotCore::init_internal()
     //
     _pluginHandler->init_plugins(shared_memory, xbot_joint, xbot_ft, xbot_imu);
     
-    std::shared_ptr<Loader> loaderptr = std::make_shared<Loader>(_pluginHandler,shared_memory,xbot_joint, xbot_ft, xbot_imu);
-    th_loader = new XBot::XBotLoaderThread(loaderptr);
-    th_loader->create(false, 2);
+    loaderptr = std::make_shared<Loader>(_pluginHandler);
+    loaderth = new XBot::XBotLoaderThread();
+    loaderth->create(false, 2);
     
     return;
 }
@@ -146,7 +151,7 @@ XBot::XBotCore::~XBotCore() {
     //if( lib_file != "")
         //HALInterfaceFactory::unloadLib(lib_file, halInterface.get());
     printf("~XBotCore()\n");
-    th_loader->stop();
-    th_loader->join();
-    delete th_loader;
+    loaderth->stop();
+    loaderth->join();
+    delete loaderth;
 }

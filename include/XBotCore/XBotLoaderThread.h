@@ -37,7 +37,7 @@ class XBot::XBotLoaderThread : public XBot::Thread_hook
 {
 public:
     
-    XBotLoaderThread(std::shared_ptr<Loader> loaderptr);//const char * config_yaml,  const char* param);
+    XBotLoaderThread();
     virtual ~XBotLoaderThread();    
     
     virtual void th_init ( void * );

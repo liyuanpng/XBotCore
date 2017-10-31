@@ -69,9 +69,7 @@ include_directories(include ${XBotCoreModel_INCLUDE_DIRS}
                        
 # exe
 add_executable(${PROJECT_NAME}
-    src/XBotMain.cpp
-    src/Loader.cpp
-    src/XBotLoaderThread.cpp
+    src/XBotMain.cpp    
 )
 
 # lib
@@ -80,6 +78,8 @@ add_library(XBotCoreThread SHARED
     src/XBotCoreThread.cpp
     src/HALInterfaceFactory.cpp
     src/signal_handler.cpp
+    src/Loader.cpp
+    src/XBotLoaderThread.cpp
 )
 
 

@@ -39,6 +39,7 @@
 #include <XCM/XBotPluginHandler.h>
 #include <XBotCore/HALInterface.h>
 #include <XBotCore/ControllerInterface.h>
+#include <XBotCore/Loader.h>
 #include <XBotCore/XBotLoaderThread.h>
 
 namespace XBot
@@ -57,7 +58,9 @@ public:
     
     XBotCore(const char * config_yaml,  const char* param);
     XBotCore(const char * config_yaml, std::shared_ptr<HALInterface> halInterface);
-    virtual ~XBotCore();  
+    virtual ~XBotCore();
+    
+    static std::shared_ptr<Loader> getLoader();
 
 protected:
     
@@ -79,7 +82,6 @@ protected:
     
 private:    
   
-    XBot::Thread_hook* th_loader;
     double get_time();
   
     std::shared_ptr<HALInterface> halInterface;
@@ -106,6 +108,10 @@ private:
     void loop_internal();
 
     std::string lib_file;
+    
+    static std::shared_ptr<Loader> loaderptr;
+    
+    XBot::Thread_hook* loaderth;
 };
 
 #endif //__X_BOT_CORE_H__

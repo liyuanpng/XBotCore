@@ -69,20 +69,8 @@ void Loader::loop_internal()
   
 }
 
-Loader::Loader(XBot::PluginHandler::Ptr pluginH,
-                XBot::SharedMemory::Ptr shared_memory,
-                std::shared_ptr< XBot::IXBotJoint> joint,
-                std::shared_ptr< XBot::IXBotFT > ft,
-                std::shared_ptr< XBot::IXBotIMU > imu,
-                std::shared_ptr< XBot::IXBotHand > hand,
-                std::shared_ptr< XBot::IXBotModel > model): 
-                _pluginHandler(pluginH),
-                _shared_memory(shared_memory),
-                _joint(joint),
-                _ft(ft),
-                _imu(imu),
-                _hand(hand),
-                _model(model)
+Loader::Loader(XBot::PluginHandler::Ptr pluginH): 
+                _pluginHandler(pluginH)
                 
 {
   

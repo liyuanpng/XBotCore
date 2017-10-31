@@ -29,14 +29,7 @@ class Loader {
     
 public:
   
-  Loader(XBot::PluginHandler::Ptr,
-         XBot::SharedMemory::Ptr shared_memory,
-        std::shared_ptr< XBot::IXBotJoint> joint    = nullptr,
-        std::shared_ptr< XBot::IXBotFT > ft         = nullptr,
-        std::shared_ptr< XBot::IXBotIMU > imu       = nullptr,
-        std::shared_ptr< XBot::IXBotHand > hand     = nullptr ,
-        std::shared_ptr< XBot::IXBotModel > model   = nullptr 
-  );
+  Loader(XBot::PluginHandler::Ptr pluginH);
   
   ~Loader();
   
@@ -48,13 +41,7 @@ public:
 private:
     
   XBot::PluginHandler::Ptr _pluginHandler;
-  XBot::SharedMemory::Ptr _shared_memory;
-  std::shared_ptr< XBot::IXBotJoint> _joint;
-  std::shared_ptr< XBot::IXBotFT > _ft;
-  std::shared_ptr< XBot::IXBotIMU > _imu;
-  std::shared_ptr< XBot::IXBotHand > _hand;
-  std::shared_ptr< XBot::IXBotModel > _model;
-  
+    
   bool callback(std_srvs::SetBoolRequest& req, std_srvs::SetBoolResponse& res, const std::string& port_name);
   
   std::shared_ptr<ros::NodeHandle> nh;
