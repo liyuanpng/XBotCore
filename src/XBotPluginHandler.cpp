@@ -220,27 +220,27 @@ void PluginHandler::initPlugin(std::shared_ptr<XBot::XBotControlPlugin> plugin_p
             plugin_init_success = false;
         }
        
-       // allocate concrete pub/sub classes
-        if( _is_RT_plugin_handler ) {
-            _plugin_switch[i] = std::make_shared<XBot::SubscriberRT<XBot::Command>>();
-            _plugin_status[i] = std::make_shared<XBot::PublisherRT<XBot::Command>>();
-        }
-        else {
-            _plugin_switch[i] = std::make_shared<XBot::NRT_ROS_Subscriber>();
-            _plugin_status[i] = std::make_shared<XBot::NRT_ROS_Publisher>();
-            // NOTE handling cmd for NRTPlugin in CH style
-            _plugin_cmd[i] = std::make_shared<XBot::NRT_ROS_Subscriber>();
-            _plugin_cmd[i]->init(_rtplugin_names[i]+"_cmd");
-            // pipes
-            std::string command_name = _rtplugin_names[i] + "_cmd";
-            _command_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(command_name));
-        }
-
-                  
-        // initialize pub/sub
-        _plugin_init_success[i] = plugin_init_success;
-        _plugin_switch[i]->init(_rtplugin_names[i]+"_switch");
-        _plugin_status[i]->init(_rtplugin_names[i]+"_status");
+//        // allocate concrete pub/sub classes
+//         if( _is_RT_plugin_handler ) {
+//             _plugin_switch[i] = std::make_shared<XBot::SubscriberRT<XBot::Command>>();
+//             _plugin_status[i] = std::make_shared<XBot::PublisherRT<XBot::Command>>();
+//         }
+//         else {
+//             _plugin_switch[i] = std::make_shared<XBot::NRT_ROS_Subscriber>();
+//             _plugin_status[i] = std::make_shared<XBot::NRT_ROS_Publisher>();
+//             // NOTE handling cmd for NRTPlugin in CH style
+//             _plugin_cmd[i] = std::make_shared<XBot::NRT_ROS_Subscriber>();
+//             _plugin_cmd[i]->init(_rtplugin_names[i]+"_cmd");
+//             // pipes
+//             std::string command_name = _rtplugin_names[i] + "_cmd";
+//             _command_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(command_name));
+//         }
+// 
+//                   
+//         // initialize pub/sub
+//         _plugin_init_success[i] = plugin_init_success;
+//         _plugin_switch[i]->init(_rtplugin_names[i]+"_switch");
+//         _plugin_status[i]->init(_rtplugin_names[i]+"_status");
         
         _plugin_state[i] == "STOPPED";
   

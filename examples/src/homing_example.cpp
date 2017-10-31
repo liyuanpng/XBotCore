@@ -59,7 +59,6 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file,
 
 //     _robot->initLog("/tmp/homing_example_log", 100000);
 
-     std::cout << name << " IaaTa125" << std::endl;
     return true;
 
 
@@ -70,8 +69,9 @@ void HomingExample::on_start(double time)
     _first_loop_time = time;
     _robot->sense();
     _robot->getJointPosition(_q0);
-    std::cout << name << " STARTED aasssdsA2222!!" << std::endl;
+    std::cout << name << " STARTED!!" << std::endl;
     
+   
     
 // NOTE if you want to grasp use this piece of code    
 //     _robot->setPositionReference(_q0);
@@ -102,6 +102,19 @@ void HomingExample::control_loop(double time, double period)
 {
 
 
+   if(command.read(current_command)){
+
+        if(current_command.str() == "MY_COMMAND_1"){
+            /* Handle command */
+            std::cout<<"MY_COMMAND_1qq"<<std::endl;
+        }
+
+        if(current_command.str() == "MY_COMMAND_2"){
+            /* Handle command */
+             std::cout<<"MY_COMMAND_2"<<std::endl;
+        }
+
+    }
 
 //     _robot->sense();
 //     _robot->log(time);
