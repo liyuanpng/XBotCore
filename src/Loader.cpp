@@ -45,7 +45,7 @@ void Loader::init_internal()
     char** argv = &argg;
 
     if(!ros::isInitialized()){
-        ros::init(argc, argv, "Loader");
+        ros::init(argc, argv, "Loader_" + std::to_string(XBot::get_time_ns()),ros::init_options::NoSigintHandler);
     }
       
     nh = std::make_shared<ros::NodeHandle>();
