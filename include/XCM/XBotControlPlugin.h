@@ -79,12 +79,16 @@ public:
 
     virtual void run(double time, double period) final;
     
+    XBot::Command& getCmd();
+    
+    void setCmd( XBot::Command& cmd);
+    
 
 protected:
 
     virtual void control_loop(double time, double period) = 0;
 
-    XBot::SubscriberRT<XBot::Command> command;
+    //XBot::SubscriberRT<XBot::Command> command;
     XBot::Command current_command;
     
     std::shared_ptr<PluginStatus> _custom_status;

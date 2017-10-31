@@ -102,8 +102,6 @@ void HomingExample::control_loop(double time, double period)
 {
 
 
-   if(command.read(current_command)){
-
         if(current_command.str() == "MY_COMMAND_1"){
             /* Handle command */
             std::cout<<"MY_COMMAND_1qq"<<std::endl;
@@ -114,8 +112,7 @@ void HomingExample::control_loop(double time, double period)
              std::cout<<"MY_COMMAND_2"<<std::endl;
         }
 
-    }
-
+  
 //     _robot->sense();
 //     _robot->log(time);
 

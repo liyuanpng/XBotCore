@@ -49,7 +49,7 @@ void XBot::IdExample::control_loop(double time, double period)
     static double OMEGA = 2.0 * 3.1415 / PERIOD;
 
     /* If "damp" command is received, start decreasing OMEGA so as to come to a stop */
-    if(command.read(current_command)){
+    //if(command.read(current_command)){
 
         if(current_command.str() == "damp"){
             damp_motion = true;
@@ -69,7 +69,7 @@ void XBot::IdExample::control_loop(double time, double period)
             torque_ctrl = true;
             std::cout << "torque_ctrl!" << std::endl;
         }
-    }
+    //}
 
     if( damp_motion ) OMEGA *= 0.999;
 

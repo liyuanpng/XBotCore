@@ -328,6 +328,8 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
         if( _is_RT_plugin_handler ) {
             _plugin_switch[i] = std::make_shared<XBot::SubscriberRT<XBot::Command>>();
             _plugin_status[i] = std::make_shared<XBot::PublisherRT<XBot::Command>>();
+            _plugin_cmd[i] = std::make_shared<XBot::SubscriberRT<XBot::Command>>();
+            _plugin_cmd[i]->init(_rtplugin_names[i] + "_cmd");
         }
         else {
             _plugin_switch[i] = std::make_shared<XBot::NRT_ROS_Subscriber>();
@@ -506,6 +508,8 @@ void PluginHandler::run()
                 }
             }
             
+           _plugin_cmd[i]->read((plugin)->getCmd());
+            
             // NOTE in the NRT case read the cmd from ROS and send it trough the pipes
             if( !_is_RT_plugin_handler ) {
                 
@@ -518,6 +522,9 @@ void PluginHandler::run()
             (plugin)->run(_time[i], _period[i]);
             double toc = _time_provider->get_time();
 
+            XBot::Command cm;
+            (plugin)->setCmd(cm);
+            
             _pluginhandler_log->add(_rtplugin_names[i] + "_exec_time", toc-tic);
 
         }
