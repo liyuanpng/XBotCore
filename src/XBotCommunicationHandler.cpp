@@ -129,7 +129,7 @@ void XBot::CommunicationHandler::th_init(void*)
     (*anymap)["XBotHand"] = boost::any(xbot_hand);
     (*anymap)["EnableReferenceReading"] = boost::any(_enable_ref_read);
 
-    _robot = XBot::RobotInterface::getRobot(_path_to_config, anymap, "XBotRT");
+    _robot = XBot::RobotInterface::getRobot(_path_to_config, "xddp_robot", anymap, "XBotRT");
 
     _logger = XBot::MatLogger::getLogger("/tmp/CommunicationHandler_log");
 

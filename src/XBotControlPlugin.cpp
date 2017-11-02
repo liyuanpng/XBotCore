@@ -65,7 +65,7 @@ bool XBotControlPlugin::init(std::string path_to_config_file,
     (*any_map)["XBotIMU"] = boost::any(imu);
     (*any_map)["XBotHand"] = boost::any(hand);
     
-    RobotInterface::Ptr robotinterface = RobotInterface::getRobot(path_to_config_file, any_map);
+    RobotInterface::Ptr robotinterface = RobotInterface::getRobot(path_to_config_file, "", any_map);
     
     // initialize the command port
     //command.init(name + "_cmd");

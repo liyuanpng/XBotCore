@@ -72,7 +72,7 @@ int main(int argc, char **argv){
 
     std::string framework = "DUMMY";
 
-    RobotInterface::Ptr robot = RobotInterface::getRobot(path_to_cfg, AnyMapPtr(), framework);
+    RobotInterface::Ptr robot = RobotInterface::getRobot(path_to_cfg, "", AnyMapPtr(), framework);
 
 
     auto time_provider = std::make_shared<SimpleTimeProvider>();
