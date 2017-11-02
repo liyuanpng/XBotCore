@@ -25,6 +25,22 @@ XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config) :
     _master_communication_ifc(nullptr),
     loadWebServer(true)
 {
+    // set thread name
+    name = "XBOT_COMMHANDLER"; //TBD understand why pthread_setname_np return code error 3
+    
+    // set thread period - not periodic
+    task_period_t t;
+    memset(&t, 0, sizeof(t));
+    t.period = {0,5000};
+    period.task_time = t.task_time;
+    period.period = t.period;
+    
+    // set scheduler policy
+    schedpolicy = SCHED_OTHER;
+    
+    // set scheduler priority and stacksize
+    priority = sched_get_priority_max(schedpolicy);
+    stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
 }
 
 void XBot::CommunicationHandler::th_init(void*)
@@ -229,24 +245,6 @@ void XBot::CommunicationHandler::th_init(void*)
         }
     }
 
-    // set thread name
-    name = "ch"; //TBD understand why pthread_setname_np return code error 3
-    // set thread period - not periodic
-    task_period_t t;
-    memset(&t, 0, sizeof(t));
-    t.period = {0,5000};
-    period.task_time = t.task_time;
-    period.period = t.period;
-    // set scheduler policy
-    #ifdef __XENO__
-        schedpolicy = SCHED_FIFO;
-    #else
-        schedpolicy = SCHED_OTHER;
-    #endif
-    // set scheduler priority and stacksize
-    priority = sched_get_priority_max(schedpolicy);
-    stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
-    
     /* Initialize references */
     Eigen::VectorXd q0;
     _robot->getMotorPosition(q0);
