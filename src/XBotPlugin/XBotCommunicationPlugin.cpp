@@ -56,12 +56,7 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
     _robot->getStiffness(_kref);
     _robot->getDamping(_dref);
     _robot->getJointVelocity(_qdotref);
-
-    _filter_q.reset(_qref);
-    _filter_k.reset(_kref);
-    _filter_d.reset(_dref);
-    _filter_qdot.reset(_qdotref);
-    
+ 
     DPRINTF("Filter ON by default\n");
 
     for (auto& p: _robot->getHand())
@@ -78,7 +73,7 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
 void XBot::XBotCommunicationPlugin::on_start(double time)
 {
     _start_time = time;
-    _robot->getJointPosition(_q0);
+    _robot->getMotorPosition(_q0);
     _robot->getStiffness(_k0);
     _robot->getDamping(_d0);
     _robot->getJointVelocity(_qdot0);
@@ -86,7 +81,7 @@ void XBot::XBotCommunicationPlugin::on_start(double time)
     _filter_q.reset(_q0);
     _filter_k.reset(_k0);
     _filter_d.reset(_d0);
-    _filter_qdot.reset(_qdot0);
+    _filter_qdot.reset(_qdot0 * 0.0);
 
     _robot->getJointPosition(_pos_ref_map);
     _robot->getStiffness(_k_ref_map);
