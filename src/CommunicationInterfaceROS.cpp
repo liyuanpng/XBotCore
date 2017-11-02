@@ -79,7 +79,7 @@ CommunicationInterfaceROS::CommunicationInterfaceROS():
     char** argv = &argg;
 
     if(!ros::isInitialized()){
-        ros::init(argc, argv, "ros_communication_interface_" + std::to_string(XBot::get_time_ns()));
+        ros::init(argc, argv, "ros_communication_interface_" + std::to_string(XBot::get_time_ns()), ros::init_options::NoSigintHandler);
     }
 
     _nh = std::make_shared<ros::NodeHandle>();
@@ -95,7 +95,7 @@ CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot, X
     char** argv = &argg;
 
     if(!ros::isInitialized()){
-        ros::init(argc, argv, "ros_communication_interface_" + std::to_string(XBot::get_time_ns()));
+        ros::init(argc, argv, "ros_communication_interface_" + std::to_string(XBot::get_time_ns()), ros::init_options::NoSigintHandler);
     }
 
     _nh = std::make_shared<ros::NodeHandle>();
