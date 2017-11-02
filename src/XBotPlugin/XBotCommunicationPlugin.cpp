@@ -19,7 +19,7 @@
 
 #include <XBotPlugin/XBotCommunicationPlugin.h>
 
-REGISTER_XBOT_PLUGIN(XBotCommunicationPlugin, XBot::XBotCommunicationPlugin)
+REGISTER_XBOT_PLUGIN_(XBot::XBotCommunicationPlugin)
 
 XBot::XBotCommunicationPlugin::XBotCommunicationPlugin()
 {
@@ -98,7 +98,7 @@ void XBot::XBotCommunicationPlugin::on_stop(double time)
 void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
 {
 
-    if(command.read(current_command)){
+    //if(command.read(current_command)){
         if(current_command.str() == "filter ON"){
             _filter_q.setOmega(2*3.1415*1.0);
             _filter_k.setOmega(2*3.1415*1.0);
@@ -111,7 +111,7 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
             _filter_d.setOmega(2*3.1415*200);
             _filter_qdot.setOmega(2*3.1415*200);
         }
-    }
+    //}
     
    
      

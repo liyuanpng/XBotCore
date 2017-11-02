@@ -19,7 +19,7 @@
 
 #include <homing_example.h>
 
-SHLIBPP_DEFINE_SHARED_SUBCLASS(HomingExample_factory, XBot::HomingExample, XBot::XBotControlPlugin);
+REGISTER_XBOT_PLUGIN_(XBot::HomingExample)
 
 namespace XBot {
 
@@ -69,8 +69,9 @@ void HomingExample::on_start(double time)
     _first_loop_time = time;
     _robot->sense();
     _robot->getJointPosition(_q0);
-    std::cout << name << " STARTED!!!" << std::endl;
+    std::cout << name << " STARTED!!" << std::endl;
     
+   
     
 // NOTE if you want to grasp use this piece of code    
 //     _robot->setPositionReference(_q0);
@@ -101,7 +102,17 @@ void HomingExample::control_loop(double time, double period)
 {
 
 
+        if(current_command.str() == "MY_COMMAND_1"){
+            /* Handle command */
+            std::cout<<"MY_COMMAND_1qq"<<std::endl;
+        }
 
+        if(current_command.str() == "MY_COMMAND_2"){
+            /* Handle command */
+             std::cout<<"MY_COMMAND_2"<<std::endl;
+        }
+
+  
 //     _robot->sense();
 //     _robot->log(time);
 
@@ -149,6 +160,7 @@ void HomingExample::control_loop(double time, double period)
 bool HomingExample::close()
 {
 //     _robot->flushLog();
+  std::cout<<"ONCLOSE"<<std::endl;
     return true;
 }
 

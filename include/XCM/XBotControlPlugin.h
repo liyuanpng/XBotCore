@@ -25,8 +25,29 @@
 
 #include <XBotCore-interfaces/XDomainCommunication.h>
 #include <XCM/XBotPluginStatus.h>
-#define REGISTER_XBOT_PLUGIN(plugin_name, scoped_class_name) SHLIBPP_DEFINE_SHARED_SUBCLASS(plugin_name ## _factory, scoped_class_name, XBot::XBotControlPlugin);
 
+#define REGISTER_XBOT_PLUGIN_(plugin_name) \
+extern "C" XBot::XBotControlPlugin* create_instance() \
+{ \
+  return new  plugin_name(); \
+}\
+\
+extern "C" void destroy_instance( XBot::XBotControlPlugin* instance ) \
+{ \
+  delete instance; \
+}\
+
+//for reverse compatibility
+#define REGISTER_XBOT_PLUGIN(others,plugin_name) \
+extern "C" XBot::XBotControlPlugin* create_instance() \
+{ \
+  return new  plugin_name(); \
+}\
+\
+extern "C" void destroy_instance( XBot::XBotControlPlugin* instance ) \
+{ \
+  delete instance; \
+}\
 
 namespace XBot {
 
@@ -58,12 +79,16 @@ public:
 
     virtual void run(double time, double period) final;
     
+    XBot::Command& getCmd();
+    
+    void setCmd( XBot::Command& cmd);
+    
 
 protected:
 
     virtual void control_loop(double time, double period) = 0;
 
-    XBot::SubscriberRT<XBot::Command> command;
+    //XBot::SubscriberRT<XBot::Command> command;
     XBot::Command current_command;
     
     std::shared_ptr<PluginStatus> _custom_status;

@@ -18,6 +18,7 @@
 */
 
 #include <XCM/XBotCommunicationHandler.h>
+#include <XCM/IOPluginFactory.h>
 
 XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config) :
     _path_to_config(path_to_config),
@@ -204,15 +205,9 @@ void XBot::CommunicationHandler::th_init(void*)
 
     /* Load IO plugins */
     for(const std::string& name : _io_plugin_names) {
-        XBot::IOPluginLoader io_plugin_loader;
-        if(io_plugin_loader.load(name)){
-            _io_plugin_loader.push_back(io_plugin_loader);
-            _io_plugin_ptr.push_back(io_plugin_loader.getPtr());
-            io_plugin_loader.getPtr()->init(_path_to_config);
-        }
-        else{
-            // TBD print error
-        }
+	std::shared_ptr<XBot::IOPlugin> plugin_ptr = IOPluginFactory::getFactory("lib"+name, name);
+	_io_plugin_ptr.push_back(plugin_ptr);
+	plugin_ptr->init(_path_to_config);
     }
 
     /* Advertise switch/cmd ports for all plugins on all frameworks */
@@ -363,7 +358,7 @@ void XBot::CommunicationHandler::th_loop(void*)
     }
     
     /* Run external plugins */
-    for( XBot::IOPlugin * io_plugin_ptr : _io_plugin_ptr ){
+    for( std::shared_ptr<XBot::IOPlugin> io_plugin_ptr : _io_plugin_ptr ){
         if(io_plugin_ptr) io_plugin_ptr->run();
     }
 
