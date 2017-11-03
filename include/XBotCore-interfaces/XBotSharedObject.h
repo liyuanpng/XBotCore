@@ -50,6 +50,10 @@ public:
     
     void get(T& obj) const;
     
+    bool try_set(const T& obj);
+    
+    bool try_get(T& obj) const;
+    
     explicit operator bool() const;
     
     bool isValid() const;
@@ -97,6 +101,34 @@ void SharedObject<T>::set(const T& obj)
     std::lock_guard<Mutex> guard(*_mtx);
     
     *_obj = obj;
+}
+
+template< typename T >
+bool SharedObject<T>::try_get(T& obj) const
+{
+    if(!_mtx->try_lock()){
+        return false;
+    }
+    
+    obj = *_obj;
+    
+    _mtx->unlock();
+    
+    return true;
+}
+
+template< typename T >
+bool SharedObject<T>::try_set(const T& obj)
+{
+    if(!_mtx->try_lock()){
+        return false;
+    }
+    
+    *_obj = obj;
+    
+    _mtx->unlock();
+    
+    return true;
 }
 
 template< typename T >
