@@ -56,6 +56,16 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file,
 
     _l_hand_pos = _l_hand_ref = 0.0;
     _close_hand = true;
+    
+    auto sh_int_1 = shared_memory->get<int>("test_int");
+    int my_int = 666;
+    sh_int_1.set(my_int);
+    
+    auto sh_int_2 = shared_memory->get<int>("test_int");
+    int my_int_2 = 666;
+    sh_int_2.get(my_int_2);
+    
+    std::cout << my_int_2 << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << std::endl;
 
 //     _robot->initLog("/tmp/homing_example_log", 100000);
 
