@@ -59,6 +59,8 @@ void XBot::CommandAdvr::callback(XCM::CommandAdvrConstPtr msg)
         if(msg->velocity.size() > i){
             _msg.velocity[idx] = msg->velocity[i];
         }
+        
+        _msg.seq_id++;
     }
 }
 
@@ -88,7 +90,7 @@ bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::Gener
 
     
     
-    if( type == XBot::GenericControlMessage::Type::Rx ){
+    if( type == XBot::GenericControlMessage::Type::Rx ) {
         
         _sub = nh.subscribe(command_topic_name, 1, &XBot::CommandAdvr::callback, this, ros::TransportHints().tcpNoDelay());
 
@@ -111,12 +113,14 @@ bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::Gener
             _msg.stiffness.push_back(_joint_stiffness.at(jname));
             _msg.velocity.push_back(0);
         }
+        
+        _msg.seq_id = 0;
 
         _joint_names_srv = nh.advertiseService(joint_service_name, &XBot::CommandAdvr::service_callback, this);
     }
 
 
-    if( type == XBot::GenericControlMessage::Type::Tx ){
+    if( type == XBot::GenericControlMessage::Type::Tx ) {
         
         _pub = nh.advertise<XCM::CommandAdvr>(command_topic_name, 1);
 
@@ -138,6 +142,8 @@ bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::Gener
             _msg.stiffness.push_back(0);
             _msg.velocity.push_back(0);
         }
+        
+        _msg.seq_id = 0;
     }
 
     // Populate _idx_map
@@ -195,11 +201,6 @@ double& XBot::CommandAdvr::position(int index)
     return _msg.position[index];
 }
 
-void XBot::CommandAdvr::publish()
-{
-    _pub.publish(_msg);
-}
-
 double& XBot::CommandAdvr::stiffness(int index)
 {
     return _msg.stiffness[index];
@@ -208,4 +209,14 @@ double& XBot::CommandAdvr::stiffness(int index)
 double& XBot::CommandAdvr::velocity(int index)
 {
     return _msg.velocity[index];
+}
+
+int& XBot::CommandAdvr::seq_id()
+{
+    return _msg.seq_id;
+}
+
+void XBot::CommandAdvr::publish()
+{
+    _pub.publish(_msg);
 }
