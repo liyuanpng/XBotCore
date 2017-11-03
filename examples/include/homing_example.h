@@ -46,6 +46,8 @@ namespace XBot {
         virtual void control_loop(double time, double period);
 
     private:
+        
+        XBot::SharedObject<XBot::JointIdMap> _pos_ref_map;
 
         RobotInterface::Ptr _robot;
         Eigen::VectorXd _q0, _q_home, _q, _k, _d, _k0, _d0, _qref;
