@@ -549,10 +549,10 @@ void PluginHandler::close()
 
     int i=0;
     for( const auto& plugin : _rtplugin_vector ){
-      plugin->close();
-      _rtplugin_vector[i].reset();
-      PluginFactory::unloadLib("lib"+_rtplugin_names[i]);
-      i++;
+        plugin->close();
+        _rtplugin_vector[i].reset();
+//         PluginFactory::unloadLib("lib"+_rtplugin_names[i]);
+        i++;
     }
     _pluginhandler_log->flush();
 }
