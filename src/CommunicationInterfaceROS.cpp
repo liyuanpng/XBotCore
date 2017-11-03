@@ -416,28 +416,24 @@ void CommunicationInterfaceROS::resetReference()
          _control_message->position(pair.second) = _joint_id_map[pair.first];
     }
 
-    
     _robot->getVelocityReference(_joint_id_map);
 
     for( const auto& pair : _jointid_to_command_msg_idx ){
         _control_message->velocity(pair.second) = _joint_id_map[pair.first];
     }
 
-    
     _robot->getEffortReference(_joint_id_map);
 
     for( const auto& pair : _jointid_to_command_msg_idx ){
         _control_message->effort(pair.second) = _joint_id_map[pair.first];
     }
 
-    
     _robot->getStiffness(_joint_id_map);
 
     for( const auto& pair : _jointid_to_command_msg_idx ){
         _control_message->stiffness(pair.second) = _joint_id_map[pair.first];
     }
 
-    
     _robot->getDamping(_joint_id_map);
 
     for( const auto& pair : _jointid_to_command_msg_idx ){
@@ -453,42 +449,49 @@ void CommunicationInterfaceROS::receiveReference()
     if( !_receive_commands_ok ) return;
 
     ros::spinOnce();
-
-
-    for( const auto& pair : _jointid_to_command_msg_idx ){
-        _joint_id_map[pair.first] = _control_message->position(pair.second);
-    }
-
-    _robot->setPositionReference(_joint_id_map);
-
-
-    for( const auto& pair : _jointid_to_command_msg_idx ){
-        _joint_id_map[pair.first] = _control_message->velocity(pair.second);
-    }
-
-    _robot->setVelocityReference(_joint_id_map);
-
-
-    for( const auto& pair : _jointid_to_command_msg_idx ){
-        _joint_id_map[pair.first] = _control_message->effort(pair.second);
-    }
-
-    _robot->setEffortReference(_joint_id_map);
-
-
-    for( const auto& pair : _jointid_to_command_msg_idx ){
-        _joint_id_map[pair.first] = _control_message->stiffness(pair.second);
-    }
-
-    _robot->setStiffness(_joint_id_map);
-
-
-    for( const auto& pair : _jointid_to_command_msg_idx ){
-        _joint_id_map[pair.first] = _control_message->damping(pair.second);
-    }
-
-    _robot->setDamping(_joint_id_map);
     
+    if (current_seq_id < _control_message->seq_id()) {
+        
+        current_seq_id = _control_message->seq_id();
+
+        for( const auto& pair : _jointid_to_command_msg_idx ){
+            _joint_id_map[pair.first] = _control_message->position(pair.second);
+        }
+
+        _robot->setPositionReference(_joint_id_map);
+
+
+        for( const auto& pair : _jointid_to_command_msg_idx ){
+            _joint_id_map[pair.first] = _control_message->velocity(pair.second);
+        }
+
+        _robot->setVelocityReference(_joint_id_map);
+
+
+        for( const auto& pair : _jointid_to_command_msg_idx ){
+            _joint_id_map[pair.first] = _control_message->effort(pair.second);
+        }
+
+        _robot->setEffortReference(_joint_id_map);
+
+
+        for( const auto& pair : _jointid_to_command_msg_idx ){
+            _joint_id_map[pair.first] = _control_message->stiffness(pair.second);
+        }
+
+        _robot->setStiffness(_joint_id_map);
+
+
+        for( const auto& pair : _jointid_to_command_msg_idx ){
+            _joint_id_map[pair.first] = _control_message->damping(pair.second);
+        }
+
+        _robot->setDamping(_joint_id_map);
+    }
+//     else {
+//         resetReference();
+//     }
+//     
     
     /* HAND */
 

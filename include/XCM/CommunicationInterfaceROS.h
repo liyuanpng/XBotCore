@@ -125,6 +125,8 @@ private:
     std::map<int, double> _hand_value_map;
 
     bool _publish_tf = true;
+    
+    int current_seq_id = 0;
 
 
 };
