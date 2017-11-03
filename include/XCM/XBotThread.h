@@ -24,6 +24,7 @@
 #include <XCM/XBotUtils.h>
 
 namespace XBot{
+    
 typedef struct {
     struct timeval task_time;
     struct timeval period;
@@ -31,7 +32,7 @@ typedef struct {
 
 
 typedef struct {
-    char                thread_name[8];
+    char                thread_name[20];
     unsigned long long  start_time_ns;
     unsigned long long  loop_time_ns;
     unsigned long long  elapsed_time_ns;
@@ -42,11 +43,18 @@ typedef struct {
 }
 
 namespace XBot{
-class Thread_hook;
+    
+    class Thread_hook;
+    
+    class Mutex;
+    
 }
 
 namespace XBot{
+    
+    
 typedef XBot::Thread_hook* Thread_hook_Ptr;
+
 void * rt_periodic_thread ( Thread_hook_Ptr );
 void * rt_non_periodic_thread ( Thread_hook_Ptr );
 void * nrt_thread ( Thread_hook_Ptr );
@@ -57,6 +65,8 @@ inline void tsnorm ( struct timespec *ts ) {
         ts->tv_sec++;
     }
 }
+
+
 }
 
 class XBot::Thread_hook {
@@ -98,6 +108,35 @@ protected:
 
 };
 
+class XBot::Mutex {
+    
+public:
+    
+    typedef std::shared_ptr<Mutex> Ptr;
+    
+    Mutex();
+    
+    void lock();
+    
+    bool try_lock();
+    
+    void unlock();
+    
+    
+    
+private:
+    
+    Mutex(const Mutex&) = delete;
+    Mutex(const Mutex&&) = delete;
+    Mutex& operator=(const Mutex&) = delete;
+    Mutex& operator=(const Mutex&&) = delete;
+    
+    pthread_mutex_t _mtx;
+    
+    
+};
+
+
 
 inline XBot::Thread_hook::~Thread_hook() {
 
@@ -111,30 +150,19 @@ inline int XBot::Thread_hook::is_non_periodic() {
 
 inline void * XBot::Thread_hook::nrt_th_helper ( void *kls ) {
 
-//     try {
-        return nrt_thread ( ( Thread_hook_Ptr ) kls );
-//     } catch ( std::exception &e ) {
-//         DPRINTF ( "In function %s catch ::%s::\n\tThread %s quit\n",
-//                   __FUNCTION__, e.what(), ( ( Thread_hook_Ptr ) kls )->name );
-//         return 0;
-//     }
+    return nrt_thread ( ( Thread_hook_Ptr ) kls );
 
 }
 
 inline void * XBot::Thread_hook::rt_th_helper ( void *kls )  {
 
-//     try {
 
-        if ( ( ( Thread_hook_Ptr ) kls )->is_non_periodic() ) {
-            return rt_non_periodic_thread ( ( Thread_hook_Ptr ) kls );
-        }
-        return rt_periodic_thread ( ( Thread_hook_Ptr ) kls );
 
-//     } catch ( std::exception &e ) {
-//         DPRINTF ( "In function %s catch ::%s::\n\tThread %s quit\n",
-//                   __FUNCTION__, e.what(), ( ( Thread_hook_Ptr ) kls )->name );
-//         return 0;
-//     }
+    if ( ( ( Thread_hook_Ptr ) kls )->is_non_periodic() ) {
+        return rt_non_periodic_thread ( ( Thread_hook_Ptr ) kls );
+    }
+    return rt_periodic_thread ( ( Thread_hook_Ptr ) kls );
+
 }
 
 
@@ -143,7 +171,8 @@ inline void XBot::Thread_hook::stop() {
 }
 
 inline void XBot::Thread_hook::join() {
-    /*pthread_cancel(thread_id);*/ pthread_join ( thread_id, 0 );
+    
+    pthread_join ( thread_id, 0 );
 }
 
 inline void XBot::Thread_hook::create ( int rt=true, int cpu_nr=0 ) {
@@ -192,6 +221,50 @@ inline void XBot::Thread_hook::create ( int rt=true, int cpu_nr=0 ) {
     }
 
 }
+
+
+inline XBot::Mutex::Mutex()
+{
+    pthread_mutexattr_t attr;
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
+    
+    pthread_mutex_init(&_mtx, &attr);
+    
+}
+
+inline void XBot::Mutex::lock()
+{
+    printf("lock()");
+    int ret = pthread_mutex_lock(&_mtx);
+    if(ret != 0){
+        printf("Error acquiring the mutex, code %d", ret);
+    }
+}
+
+inline bool XBot::Mutex::try_lock()
+{
+    printf("try_lock()");
+    int ret = pthread_mutex_trylock(&_mtx);
+    if(ret == EBUSY){
+        return false;
+    }
+    if(ret != 0){
+        printf("Error acquiring the mutex, code %d", ret);
+        return false;
+    }
+    return true;
+}
+
+inline void XBot::Mutex::unlock()
+{
+    printf("unlock()");
+    int ret = pthread_mutex_unlock(&_mtx);
+    if(ret != 0){
+        printf("Error unlocking the mutex, code %d", ret);
+    }
+}
+
 
 #endif //__XBOT_THREAD_H__
 
