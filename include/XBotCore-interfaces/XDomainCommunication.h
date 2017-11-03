@@ -246,6 +246,11 @@ PublisherNRT<DataType>::PublisherNRT(const std::string& socket_name) :
 template <typename DataType>
 void PublisherNRT<DataType>::init(const std::string& socket_name)
 {
+    #ifndef __XENO__
+      const char* env_user = std::getenv("USER");
+      std::string pipe_prefix = std::string("/tmp/")+env_user+std::string("/");
+    #endif    
+	    
     while( _fd < 0 ){
         _fd = open((pipe_prefix + socket_name).c_str(), O_WRONLY | O_NONBLOCK);
         //std::cout << "Waiting for some RT subscriber to create pipe " << pipe_prefix+socket_name << "..." << std::endl;
@@ -309,6 +314,11 @@ SubscriberNRT<DataType>::SubscriberNRT(const std::string& socket_name) :
 template <typename DataType>
 void SubscriberNRT<DataType>::init(const std::string& socket_name)
 {
+   #ifndef __XENO__
+      const char* env_user = std::getenv("USER");
+      std::string pipe_prefix = std::string("/tmp/")+env_user+std::string("/");
+    #endif    
+      
     while( _fd < 0 ){
         _fd = open((pipe_prefix + socket_name).c_str(), O_RDONLY | O_NONBLOCK);
         //std::cout << "Waiting for some RT publisher to create pipe " << pipe_prefix+socket_name << "..." << std::endl;

@@ -18,6 +18,7 @@
 */
 
 #include <XCM/XBotCommunicationHandler.h>
+#include <dirent.h>
 
 XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config) :
     _path_to_config(path_to_config),
@@ -28,6 +29,24 @@ XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config) :
 
 void XBot::CommunicationHandler::th_init(void*)
 {
+    
+    const char* env_user = std::getenv("USER");
+    std::cout << "USER is: " << env_user << '\n';
+    std::string folder = std::string("/tmp/")+env_user;
+    DIR* dir = opendir(folder.c_str());
+    if (dir)
+    {
+	/* Directory exists. */
+	closedir(dir);
+    }else{
+      const int dir_err = mkdir(folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+      if (-1 == dir_err)
+      {
+	  std::cout<<"Error creating user directory!"<<std::endl;
+	  exit(1);
+      }
+    }
+      
     // check that config file exists
     std::ifstream fin(_path_to_config);
     if (fin.fail()) {

@@ -79,6 +79,11 @@ namespace XBot{
          */
         void init ( const std::string pipe_name ) {
 
+	   #ifndef __XENO__
+	    const char* env_user = std::getenv("USER");
+	    std::string pipe_prefix = std::string("/tmp/")+env_user+std::string("/");
+	   #endif    
+   
             std::string pipe = pipe_prefix + pipe_name;
 
             #ifdef __XENO__
