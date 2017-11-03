@@ -9,6 +9,9 @@ endif(COMMAND cmake_policy)
 # XBotPlugin
 project(XBotPlugin)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+include(MacroYCMInstallLibrary)
+
 # C++11
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
@@ -35,6 +38,11 @@ add_library(XBotLoggingPlugin SHARED
     XBotLoggingPlugin.cpp
 )
 
+# lib
+add_library(XBotNRTRef SHARED
+    XBotNRTRef.cpp
+)
+
 # set Xenomain flags if Xenomai is found
 if ( Xenomai_FOUND )
     set_xeno_flags(XBotCommunicationPlugin)
@@ -43,82 +51,16 @@ endif()
 # linking
 target_link_libraries(XBotCommunicationPlugin XCM)
 target_link_libraries(XBotLoggingPlugin XCM)
+target_link_libraries(XBotNRTRef XCM)
 
-
-# install include)
+# install include
 
 install(DIRECTORY include/
         DESTINATION include
         FILES_MATCHING PATTERN "*.h*")
+ 
+ycm_library_install(XBotCommunicationPlugin 1 0 0)
 
-######################################################################## XBotCommunicationPlugin
+ycm_library_install(XBotLoggingPlugin 1 0 0)       
 
-set(VARS_PREFIX XBotCommunicationPlugin)
-
-set(XBotCommunicationPlugin_MAJOR_VERSION 0)
-set(XBotCommunicationPlugin_MINOR_VERSION 0)
-set(XBotCommunicationPlugin_PATCH_VERSION 1)
-set(XBotCommunicationPlugin_VERSION ${XBotCommunicationPlugin_MAJOR_VERSION}.${XBotCommunicationPlugin_MINOR_VERSION}.${XBotCommunicationPlugin_PATCH_VERSION})
-
-find_package(YCM REQUIRED)
-include(YCMDefaultDirs)
-ycm_default_dirs(${VARS_PREFIX})
-
-target_include_directories(XBotCommunicationPlugin PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
-                                                "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
-
-set_target_properties(XBotCommunicationPlugin PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
-                                               SOVERSION ${${VARS_PREFIX}_VERSION})
-install(TARGETS XBotCommunicationPlugin
-        EXPORT XBotCommunicationPlugin
-        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
-        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
-        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
-
-
-#enabling it will add all XBotInterface dependencies as dependencies for third party users
-set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS XBotCommunicationPlugin)
-
-
-include(InstallBasicPackageFiles)
-install_basic_package_files(XBotCommunicationPlugin VARS_PREFIX ${VARS_PREFIX}
-                                    VERSION ${${VARS_PREFIX}_VERSION}
-                                    COMPATIBILITY SameMajorVersion
-                                    TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
-                                    NO_CHECK_REQUIRED_COMPONENTS_MACRO)
-                                    
-######################################################################## XBotLoggingPlugin
-
-set(VARS_PREFIX XBotLoggingPlugin)
-
-set(XBotLoggingPlugin_MAJOR_VERSION 0)
-set(XBotLoggingPlugin_MINOR_VERSION 0)
-set(XBotLoggingPlugin_PATCH_VERSION 1)
-set(XBotLoggingPlugin_VERSION ${XBotLoggingPlugin_MAJOR_VERSION}.${XBotLoggingPlugin_MINOR_VERSION}.${XBotLoggingPlugin_PATCH_VERSION})
-
-find_package(YCM REQUIRED)
-include(YCMDefaultDirs)
-ycm_default_dirs(${VARS_PREFIX})
-
-target_include_directories(XBotLoggingPlugin PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
-                                                "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
-
-set_target_properties(XBotLoggingPlugin PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
-                                               SOVERSION ${${VARS_PREFIX}_VERSION})
-install(TARGETS XBotLoggingPlugin
-        EXPORT XBotLoggingPlugin
-        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
-        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
-        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
-
-
-#enabling it will add all XBotInterface dependencies as dependencies for third party users
-set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS XBotLoggingPlugin)
-
-
-include(InstallBasicPackageFiles)
-install_basic_package_files(XBotLoggingPlugin VARS_PREFIX ${VARS_PREFIX}
-                                    VERSION ${${VARS_PREFIX}_VERSION}
-                                    COMPATIBILITY SameMajorVersion
-                                    TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
-                                    NO_CHECK_REQUIRED_COMPONENTS_MACRO)                                    
+ycm_library_install(XBotNRTRef 1 0 0)

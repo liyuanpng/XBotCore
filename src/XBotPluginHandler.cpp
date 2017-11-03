@@ -121,6 +121,17 @@ bool PluginHandler::load_plugins()
                 else{
                     _logging_plugin_idx = std::distance(_rtplugin_names.begin(), it);
                 }
+                
+                // loading by default the XBotNRTRef
+                std::string nrtref_plugin_name = "XBotNRTRef";
+                it = std::find(_rtplugin_names.begin(), _rtplugin_names.end(), nrtref_plugin_name);
+                if( it == _rtplugin_names.end() ) {
+                    _rtplugin_names.push_back(nrtref_plugin_name);
+                    _nrtref_plugin_idx = _rtplugin_names.size() - 1;
+                }
+                else{
+                    _nrtref_plugin_idx = std::distance(_rtplugin_names.begin(), it);
+                }
             }
             
         }
@@ -193,6 +204,8 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
         
         // NOTE starting by default the logging plugin
         _plugin_state[_logging_plugin_idx] = "RUNNING";
+        // NOTE starting by default the nrtref plugin
+        _plugin_state[_nrtref_plugin_idx] = "RUNNING";
     }
 
     bool ret = true;
@@ -488,6 +501,12 @@ bool PluginHandler::plugin_can_start(int plugin_idx)
         if( plugin_idx == _logging_plugin_idx ){
             return true;
         }
+        
+        /* nrtref can always start */
+        
+        if( plugin_idx == _nrtref_plugin_idx ){
+            return true;
+        }
 
         /* We are asked to run the communication plugin,
         allow it if and ONLY if all plugins are stopped,
@@ -498,7 +517,7 @@ bool PluginHandler::plugin_can_start(int plugin_idx)
             bool can_start = true;
 
             for(int i = 0; i < _plugin_state.size(); i++){
-                can_start = can_start && ( _plugin_state[i] == "STOPPED" || i == _logging_plugin_idx );
+                can_start = can_start && ( _plugin_state[i] == "STOPPED" || i == _logging_plugin_idx || i == _nrtref_plugin_idx );
             }
 
             return can_start;
