@@ -27,7 +27,7 @@ namespace XBot {
 
 /**
 * @brief SharedMemory provides a means for RT plugins to communicate with
-* each other in a fast way. SharedObjects are created by the get() method,
+* each other in a fast way. SharedObjects are created by the getSharedObject() method,
 * and provide access to the underlying objects via get/set semantics, in a
 * synchronized (thread-safe) way. As the only requirement, types to be shared
 * over SharedMemory must be default-constuctible AND copy-assignable.
@@ -38,8 +38,37 @@ public:
 
     typedef std::shared_ptr<SharedMemory> Ptr;
 
+    
+    /**
+    * @brief This method returns a SharedObject<T> which is linked to the provided object_name.
+    * The SharedObject provide access to the underlying objects via get/set semantics, in a
+    * synchronized (thread-safe) way. If a shared object with the provided
+    * name does not exist, it is created and constructed with its default constructor.
+    *
+    * @Requirement: T must be default-constructible and copy-assignable.
+    *
+    * @param object_name The name of the requested shared object.
+    * @return The requested SharedObject
+    */
     template <typename T>
-    SharedObject<T> get(const std::string& object_name);
+    SharedObject<T> getSharedObject(const std::string& object_name);
+    
+    /**
+     * @brief Check if the requested object exists inside the shared memory
+     * 
+     * @param object_name The name of the requested shared object.
+     * @return True if object exists.
+     */
+    bool hasObject(const std::string& object_name) const;
+    
+    /**
+     * @brief Check if the requested object exists and has the provided type.
+     * 
+     * @param object_name The name of the requested shared object.
+     * @return True if object exists and has the provided type.
+     */
+    template <typename T>
+    bool objectIsType(const std::string& object_name) const;
 
 protected:
 
@@ -51,19 +80,8 @@ private:
 };
 
 
-/**
- * @brief This method returns a SharedObject<T> which is linked to the provided object_name.
- * The SharedObject has pointer semantics, meaning that it provides access to the underlying
- * shared object of type T by the operator* and operator->. If a shared object with the provided
- * name does not exist, it is created and constructed with its default constructor.
- *
- * @Requirement: T must be default-constructible
- *
- * @param object_name The name of the requested shared object.
- * @return The requested SharedObject
- */
 template <typename T>
-SharedObject<T> SharedMemory::get(const std::string& object_name)
+SharedObject<T> SharedMemory::getSharedObject(const std::string& object_name)
 {
 
     if( _obj_map.count(object_name) == 0 ){
@@ -89,6 +107,21 @@ SharedObject<T> SharedMemory::get(const std::string& object_name)
 
 
 }
+
+
+bool SharedMemory::hasObject(const std::string& object_name) const
+{
+    return _obj_map.find(object_name) != _obj_map.end();
+}
+
+
+template <typename T>
+bool SharedMemory::objectIsType(const std::string& object_name) const
+{
+    T* objptr = boost::any_cast<T>(&(_obj_map.at(object_name)));
+    return objptr;
+}
+
 
 
 
