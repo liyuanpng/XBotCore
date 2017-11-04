@@ -10,6 +10,9 @@
 void * XBot::rt_periodic_thread ( Thread_hook_Ptr th_hook ) {
     int             ret = 0;
     struct timespec starttp, periodtp;
+#ifdef __COBALT__
+    struct itimerspec   period_timer_conf;
+#endif
     unsigned long   overruns;
 
     // thread specific initialization
@@ -18,7 +21,12 @@ void * XBot::rt_periodic_thread ( Thread_hook_Ptr th_hook ) {
     DPRINTF ( "THREAD INIT: name = %s, period %ld us\n",
               th_hook->name, th_hook->period.period.tv_usec );
 
+#ifdef __COBALT__
+    ret = pthread_setname_np ( pthread_self(), th_hook->name );
+#else
     ret = pthread_set_name_np ( pthread_self(), th_hook->name );
+#endif
+    
     if ( ret != 0 ) {
         DPRINTF ( "%s : pthread_set_name_np() return code %d\n",
                   th_hook->name, ret );
@@ -27,7 +35,12 @@ void * XBot::rt_periodic_thread ( Thread_hook_Ptr th_hook ) {
 
     // PTHREAD_WARNSW, when set, cause the signal SIGXCPU to be sent to the
     // current thread, whenever it involontary switches to secondary mode;
-    ret = pthread_set_mode_np ( 0, PTHREAD_WARNSW );
+#ifdef __COBALT__
+    ret = pthread_setmode_np ( 0, PTHREAD_WARNSW, 0);
+#else
+    ret = pthread_set_mode_np ( 0, PTHREAD_WARNSW);
+#endif
+    
     if ( ret != 0 ) {
         DPRINTF ( "%s : pthread_set_mode_np() return code %d\n",
                   th_hook->name, ret );
@@ -40,15 +53,48 @@ void * XBot::rt_periodic_thread ( Thread_hook_Ptr th_hook ) {
     starttp.tv_nsec += periodtp.tv_nsec;
     tsnorm ( &starttp );
 
+#ifdef __XENO__
     ret = pthread_make_periodic_np ( pthread_self(), &starttp, &periodtp );
     if ( ret != 0 ) {
         DPRINTF ( "%s : pthread_make_periodic_np() return code %d\n",
                   th_hook->name, ret );
         exit ( 1 );
     }
+#endif
+
+#ifdef __COBALT__
+
+    th_hook->fd_timer = timerfd_create(CLOCK_MONOTONIC, 0);
+    if ( th_hook->fd_timer == -1 ) {
+        DPRINTF ( "%s : timerfd_create() return code %d\n",
+                  th_hook->name, errno );
+        exit ( 1 );        
+    }
+
+    clock_gettime ( CLOCK_MONOTONIC, &starttp );
+    starttp.tv_sec  += th_hook->period.period.tv_sec;
+    starttp.tv_nsec += th_hook->period.period.tv_usec * 1000ULL;
+    tsnorm ( &starttp );
+
+    period_timer_conf.it_value = starttp;
+    period_timer_conf.it_interval.tv_sec =  th_hook->period.period.tv_sec;
+    period_timer_conf.it_interval.tv_nsec = th_hook->period.period.tv_usec * 1000ULL;
+    if ( timerfd_settime( th_hook->fd_timer, TFD_TIMER_ABSTIME, &period_timer_conf, NULL) == -1 )
+    {
+        DPRINTF ( "%s : timerfd_settime() return code %d\n",    
+                  th_hook->name, errno );
+        exit ( 1 );        
+    }
+    
+    DPRINTF ( "%s %s : start looping ...\n", 
+              __FUNCTION__, th_hook->name );
+    
+#endif
 
     DPRINTF ( "THREAD INIT: start looping ...\n" );
 
+#if defined(__XENO__)
+    
     while ( th_hook->_run_loop ) {
 
         // return 0 if the period expires as expected
@@ -74,6 +120,26 @@ void * XBot::rt_periodic_thread ( Thread_hook_Ptr th_hook ) {
         th_hook->th_loop ( 0 );
 
     } // end while
+    
+#elif defined(__COBALT__)
+
+    while ( th_hook->_run_loop ) {
+
+        uint64_t ticks;
+        ret = read( th_hook->fd_timer, &ticks, sizeof(ticks));
+        if ( ret < 0 ) {
+            printf( "fd_timer wait period failed for thread: err %d\n", ret );
+        }
+        if ( ticks > 1 ) {
+            printf( "fd_timer wait period missed for thread: overruns: %lu\n", (long unsigned int)ticks );
+        }
+        // thread specific loop
+        th_hook->th_loop ( 0 );
+
+    } // end while
+
+
+#endif
 
 
     return 0;

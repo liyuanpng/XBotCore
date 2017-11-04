@@ -32,7 +32,7 @@
 #include <XBotCore-interfaces/XBotPipes.h>
 #include <XBotCore-interfaces/XBotESC.h>
 
-#ifdef __XENO__
+#if defined( __XENO__ ) || defined( __COBALT__ )
 #include <XBotCore-interfaces/XBotRT_ipc.h>
 #endif
 

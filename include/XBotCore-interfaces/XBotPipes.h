@@ -24,7 +24,7 @@
 #include <memory>
 #include <iostream>
 
-#ifdef __XENO__
+#if defined( __XENO__ ) || defined( __COBALT__ )
 #include <XBotCore-interfaces/XBotRT_ipc.h>
 #else
 #include <sys/types.h>
@@ -36,7 +36,7 @@
 
 #include <XCM/XBotUtils.h>
 
-#ifdef __XENO__
+#if defined( __XENO__ ) || defined( __COBALT__ )
     static const std::string pipe_prefix ( "/proc/xenomai/registry/rtipc/xddp/" );
 #else
     static const std::string pipe_prefix ( "/tmp/" );
@@ -81,7 +81,7 @@ namespace XBot{
 
             std::string pipe = pipe_prefix + pipe_name;
 
-            #ifdef __XENO__
+            #if defined( __XENO__ ) || defined( __COBALT__ )
                     fd = xddp_bind ( pipe_name.c_str(), pool_size );
             #else
                     mkfifo ( pipe.c_str(), S_IRWXU|S_IRWXG );
@@ -104,7 +104,7 @@ namespace XBot{
             std::cout << "Closing socket fd " << fd << std::endl;
 
             close ( fd );
-    #ifndef __XENO__
+    #if !defined(__XENO__) && !defined(__COBALT__)
             std::string pipe = pipe_prefix + pipe_name;
             unlink ( pipe.c_str() );
     #endif
@@ -148,7 +148,7 @@ namespace XBot{
             if ( fd <= 0 ) { return 0; }
             /////////////////////////////////////////////////////////
             // NON-BLOCKING, read buff_size byte from pipe or cross domain socket
-    #if __XENO__
+    #if defined( __XENO__ ) || defined( __COBALT__ )
             return recvfrom ( fd, ( void* ) &rx, sizeof ( rx ), MSG_DONTWAIT, NULL, 0 );
     #else
             // NON-BLOCKING
@@ -169,7 +169,7 @@ namespace XBot{
             if ( fd <= 0 ) { return 0; }
             /////////////////////////////////////////////////////////
             // NON-BLOCKING, read buff_size byte from pipe or cross domain socket
-    #if __XENO__
+    #if defined( __XENO__ ) || defined( __COBALT__ )
             return recvfrom ( fd, (void*)buffer, size, MSG_DONTWAIT, NULL, 0 );
     #else
             // NON-BLOCKING

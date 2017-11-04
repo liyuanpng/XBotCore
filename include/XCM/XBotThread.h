@@ -21,6 +21,10 @@
 #include <iostream>
 #include <memory>
 
+#ifdef __COBALT__
+#include <sys/timerfd.h>
+#endif
+
 #include <XCM/XBotUtils.h>
 
 namespace XBot{
@@ -201,7 +205,7 @@ inline void XBot::Thread_hook::create ( int rt=true, int cpu_nr=0 ) {
     pthread_attr_setdetachstate ( &attr, PTHREAD_CREATE_JOINABLE );
     pthread_attr_setaffinity_np ( &attr, sizeof ( cpu_set ), &cpu_set );
 
-#ifdef __XENO__
+#if defined( __XENO__ ) || defined( __COBALT__ )
     if ( rt ) {
         ret = pthread_create ( &thread_id, &attr, &rt_th_helper, this );
     } else {
@@ -225,6 +229,7 @@ inline void XBot::Thread_hook::create ( int rt=true, int cpu_nr=0 ) {
 
 inline XBot::Mutex::Mutex()
 {
+   
     pthread_mutexattr_t attr;
     pthread_mutexattr_init(&attr);
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
@@ -235,7 +240,7 @@ inline XBot::Mutex::Mutex()
 
 inline void XBot::Mutex::lock()
 {
-    printf("lock()");
+    DPRINTF("lock()");
     int ret = pthread_mutex_lock(&_mtx);
     if(ret != 0){
         printf("Error acquiring the mutex, code %d", ret);
@@ -244,7 +249,7 @@ inline void XBot::Mutex::lock()
 
 inline bool XBot::Mutex::try_lock()
 {
-    printf("try_lock()");
+    DPRINTF("try_lock()");
     int ret = pthread_mutex_trylock(&_mtx);
     if(ret == EBUSY){
         return false;
@@ -258,7 +263,7 @@ inline bool XBot::Mutex::try_lock()
 
 inline void XBot::Mutex::unlock()
 {
-    printf("unlock()");
+    DPRINTF("unlock()");
     int ret = pthread_mutex_unlock(&_mtx);
     if(ret != 0){
         printf("Error unlocking the mutex, code %d", ret);
