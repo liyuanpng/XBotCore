@@ -81,7 +81,7 @@ private:
 
 
 template <typename T>
-SharedObject<T> SharedMemory::getSharedObject(const std::string& object_name)
+inline SharedObject<T> SharedMemory::getSharedObject(const std::string& object_name)
 {
 
     if( _obj_map.count(object_name) == 0 ){
@@ -109,14 +109,14 @@ SharedObject<T> SharedMemory::getSharedObject(const std::string& object_name)
 }
 
 
-bool SharedMemory::hasObject(const std::string& object_name) const
+inline bool SharedMemory::hasObject(const std::string& object_name) const
 {
     return _obj_map.find(object_name) != _obj_map.end();
 }
 
 
 template <typename T>
-bool SharedMemory::objectIsType(const std::string& object_name) const
+inline bool SharedMemory::objectIsType(const std::string& object_name) const
 {
     T* objptr = boost::any_cast<T>(&(_obj_map.at(object_name)));
     return objptr;
