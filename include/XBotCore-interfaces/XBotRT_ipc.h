@@ -7,7 +7,7 @@
 #include <rtdk.h>
 #include <rtdm/rtipc.h>
 #elif defined(__COBALT__)
-#include <stdio>
+#include <stdio.h>
 #include <rtdm/ipc.h>
 #endif
 

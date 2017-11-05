@@ -159,7 +159,11 @@ void * XBot::rt_non_periodic_thread ( Thread_hook_Ptr th_hook ) {
     DPRINTF ( "THREAD INIT: name = %s, period %ld us\n",
               th_hook->name, th_hook->period.period.tv_usec );
 
+#ifdef __COBALT__
+    ret = pthread_setname_np ( pthread_self(), th_hook->name );
+#else
     ret = pthread_set_name_np ( pthread_self(), th_hook->name );
+#endif
     if ( ret != 0 ) {
         DPRINTF ( "%s : pthread_set_name_np() return code %d\n",
                   th_hook->name, ret );
@@ -168,7 +172,12 @@ void * XBot::rt_non_periodic_thread ( Thread_hook_Ptr th_hook ) {
 
     // PTHREAD_WARNSW, when set, cause the signal SIGXCPU to be sent to the
     // current thread, whenever it involontary switches to secondary mode;
-    ret = pthread_set_mode_np ( 0, PTHREAD_WARNSW );
+#ifdef __COBALT__
+    ret = pthread_setmode_np ( 0, PTHREAD_WARNSW, 0);
+#else 
+    ret = pthread_set_mode_np ( 0, PTHREAD_WARNSW);
+#endif
+    
     if ( ret != 0 ) {
         DPRINTF ( "%s : pthread_set_mode_np() return code %d\n",
                   th_hook->name, ret );

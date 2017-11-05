@@ -99,6 +99,10 @@ protected:
 
     const char *    name;
     task_period_t   period;
+    
+#ifdef __COBALT__
+    int fd_timer;
+#endif
 
     pthread_t       thread_id;
     // pthread attribute
