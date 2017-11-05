@@ -88,6 +88,15 @@ SharedObject<T>::SharedObject(T * obj, Mutex * mtx, std::string name):
 }
 
 template< typename T >
+SharedObject<T>::SharedObject():
+    _mtx(nullptr),
+    _obj(nullptr),
+    _name("")
+{
+    
+}
+
+template< typename T >
 void SharedObject<T>::get(T& obj) const
 {
     std::lock_guard<Mutex> guard(*_mtx);
