@@ -31,6 +31,7 @@
 #include <exception>
 
 #include <XBotCore/XBotCoreThread.h>
+#include <XBotCore/XBotLoaderThread.h>
 
 extern void main_common(__sighandler_t sig_handler);
 
@@ -60,6 +61,9 @@ int main(int argc, char *argv[]) try {
     
     threads["boards_ctrl"] = new XBot::XBotCoreThread(argv[1], argv[2]);
     threads["boards_ctrl"]->create(true, 2);
+  
+//     threads["loader"] = new XBot::XBotLoaderThread();
+//     threads["loader"]->create(false, 2);
 
     while (main_loop) {
         sleep(1); 
