@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <cstring>
 #include <unistd.h> // needed for sysconf(int name);    
 #include <malloc.h>
 #include <sys/time.h> // needed for getrusage
@@ -34,7 +36,7 @@ static void set_signal_handler ( __sighandler_t sig_handler ) {
     signal ( SIGINT, sig_handler );
     signal ( SIGINT, sig_handler );
     signal ( SIGKILL, sig_handler );
-#ifdef __XENO__
+#if defined( __XENO__ ) || defined( __COBALT__ )
     // call pthread_set_mode_np(0, PTHREAD_WARNSW) to cause a SIGXCPU
     // signal to be sent when the calling thread involontary switches to secondary mode
     signal ( SIGXCPU, warn_upon_switch );
@@ -96,7 +98,7 @@ static int lock_mem ( int byte_size ) {
 
 void set_main_sched_policy ( int priority ) {
 
-#ifdef __XENO__
+#if defined( __XENO__ ) || defined( __COBALT__ )
     int policy = SCHED_FIFO;
 #else
     int policy = SCHED_OTHER;
@@ -113,7 +115,7 @@ void main_common ( __sighandler_t sig_handler ) {
 
     set_signal_handler ( sig_handler );
 
-#ifdef __XENO__
+#if defined( __XENO__ ) || defined( __COBALT__ )
 
     /* Prevent any memory-swapping for this program */
     //ret = mlockall(MCL_CURRENT | MCL_FUTURE);
@@ -122,6 +124,10 @@ void main_common ( __sighandler_t sig_handler ) {
         printf ( "mlockall failed (ret=%d) %s\n", ret, strerror ( ret ) );
         exit ( 0 );
     }
+#endif
+
+#ifdef __XENO__
+    
     /*
      * This is a real-time compatible printf() package from
      * Xenomai's RT Development Kit (RTDK), that does NOT cause
@@ -129,6 +135,7 @@ void main_common ( __sighandler_t sig_handler ) {
      * writing output.
      */
     rt_print_auto_init ( 1 );
+    
 #endif
 
     return;

@@ -79,7 +79,7 @@ void XBot::XBotCoreThread::set_thread_priority()
 {
 
     // set scheduler policy
-#ifdef __XENO__
+#if defined( __XENO__ ) || defined( __COBALT__ )
     schedpolicy = SCHED_FIFO;
 #else
     schedpolicy = SCHED_OTHER;
