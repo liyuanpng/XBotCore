@@ -85,14 +85,13 @@ void XBot::XBotCore::init_internal()
     std::shared_ptr<XBot::IXBotIMU> xbot_imu(halInterface);
     std::shared_ptr<XBot::IXBotHand> xbot_hand(halInterface);
     
-    
     (*anymap)["XBotJoint"] = boost::any(xbot_joint);
     (*anymap)["XBotFT"] = boost::any(xbot_ft);
     (*anymap)["XBotIMU"] = boost::any(xbot_imu);
     (*anymap)["XBotHand"] = boost::any(xbot_hand);
     
     //TODO use isRT from RobotControlInterface robotInterface.IsRt()
-    _robot = XBot::RobotInterface::getRobot(_path_to_config, "",  anymap, "XBotRT");
+    _robot = XBot::RobotInterface::getRobot(_path_to_config, "", anymap, "XBotRT");
     
     // create time provider function
     boost::function<double()> time_func = boost::bind(&XBot::XBotCore::get_time, this);
