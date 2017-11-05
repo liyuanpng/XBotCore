@@ -3,6 +3,7 @@
 
    Developer:
        Luca Muratore (2016-, luca.muratore@iit.it)
+       Arturo Laurenzi (2016-, arturo.laurenzi@iit.it)
        Giuseppe Rigano (2017, giuseppe.rigano@iit.it)
        
  * This program is free software: you can redistribute it and/or modify
@@ -23,12 +24,16 @@
 /**
  *
  * @author Luca Muratore (2016-, luca.muratore@iit.it)
+ * @author Arturo Laurenzi (2016-, arturo.laurenzi@iit.it)
  * @author Giuseppe Rigano (2017-, giuseppe.rigano@iit.it)
 */
 
-#include <XBotCore/XBotCore.h>
+
 #include <boost/bind.hpp>
+#include <XBotCore/XBotCore.h>
 #include <XBotCore/HALInterfaceFactory.h>
+
+#include <XBotInterface/Utils.h>
 
 std::shared_ptr<Loader> XBot::XBotCore::loaderptr;
 
@@ -37,7 +42,25 @@ XBot::XBotCore::XBotCore(const char* config_yaml,  const char* param) :
 {        
    
     YAML::Node root_cfg = YAML::LoadFile(config_yaml);
-    const YAML::Node &hal_lib = root_cfg["HALInterface"];
+    
+    YAML::Node x_bot_core, root;
+    
+    // check gains in XBotCore node specifing config path YAML
+    if(root_cfg["XBotCore"]) {
+        x_bot_core = root_cfg["XBotCore"];
+            
+        if(x_bot_core["config_path"]) {
+            
+            std::cout << x_bot_core["config_path"].as<std::string>() << std::endl;
+            
+            std::cout << XBot::Utils::computeAbsolutePath(x_bot_core["config_path"].as<std::string>()) << std::endl;
+            
+            root = YAML::LoadFile(XBot::Utils::computeAbsolutePath(x_bot_core["config_path"].as<std::string>()));
+        }
+    }
+
+    
+    const YAML::Node &hal_lib = root["HALInterface"];
     
     lib_file = "";
     std::string lib_name="";

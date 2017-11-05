@@ -35,6 +35,8 @@
 
 #include <XCM/XBotCommunicationHandler.h>
 
+#include <XBotInterface/Utils.h>
+
 extern void main_common(__sighandler_t sig_handler);
 
 static int main_loop = 1;
@@ -47,6 +49,16 @@ void shutdown(int sig __attribute__((unused)))
 
 }
 
+bool getDefaultConfig(std::string& config, char *argv[]) 
+{
+    config = XBot::Utils::getXBotConfig();
+    if(config == "") {
+        printf ( "Usage: %s config.yaml\nOr set_xbot_config config.yaml && %s\n", argv[0], argv[0] );
+        return false;
+    }
+    return true;
+}
+
 ////////////////////////////////////////////////////
 // Main
 ////////////////////////////////////////////////////
@@ -54,15 +66,38 @@ void shutdown(int sig __attribute__((unused)))
 int main(int argc, char *argv[]) try {
 
     std::map<std::string, XBot::Thread_hook*> threads;
-    if ( argc < 2) {
-        printf("Usage: %s config.yaml\n", argv[0]);
-        return 0;
+    
+    // config file handling
+    std::string path_to_cfg;
+    char* dummy_arg = argv[2];
+    
+    if ( argc != 2 ) {
+        // check the default path
+        if(!getDefaultConfig(path_to_cfg, argv)) {
+            return 0;
+        }
+    }
+    else {
+            
+        // NOTE the user can also call XBotCore dummy -> Config file must have been set through set_xbot_config
+        if(strcmp(argv[1], "dummy") == 0){
+            dummy_arg = argv[1];
+            // check the default path
+            if(!getDefaultConfig(path_to_cfg, argv)) {
+                return 0;
+            }
+        }
+        else {
+            path_to_cfg = argv[1];
+        }
     }
 
+
     main_common(shutdown);
-    
-    XBot::XBotCoreThread xbc(argv[1], argv[2]);
-    XBot::CommunicationHandler ch(argv[1]);
+
+
+    XBot::XBotCoreThread xbc( path_to_cfg.c_str(), dummy_arg );
+    XBot::CommunicationHandler ch( path_to_cfg.c_str() );
     
     threads["boards_ctrl"] = &xbc;
     threads["boards_ctrl"]->create(true, 2);
