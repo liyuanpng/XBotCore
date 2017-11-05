@@ -19,6 +19,7 @@
 
 #include <XCM/MessageInterfaces/AdvrJointState.h>
 #include <ros/transport_hints.h>
+#include <XBotInterface/Utils.h>
 
 SHLIBPP_DEFINE_SHARED_SUBCLASS(advrjointstate_jointstate_message, XBot::AdvrJointState, XBot::GenericJointStateMessage);
 
@@ -34,19 +35,24 @@ bool XBot::AdvrJointState::init(const std::string& path_to_config_file, GenericJ
 
     std::cout << "Initializing AdvrJointState message interface!" << std::endl;
 
-    YAML::Node root_cfg = YAML::LoadFile(path_to_config_file);
+    // core YAML
+    std::string core_absolute_path = XBot::Utils::computeAbsolutePath("core.yaml");
+    YAML::Node core_cfg = YAML::LoadFile(core_absolute_path);
 
     // TBD check if they exist
-    const YAML::Node &jointstate_root = root_cfg["AdvrJointStateMessage"];
+    const YAML::Node &jointstate_root = core_cfg["AdvrJointStateMessage"];
     if(!jointstate_root){
         std::cerr << "ERROR in " << __func__ << "! Provided config file does not contain mandatory node \"JointState\" " << std::endl;
         return false;
     }
 
-    _topic_name = jointstate_root["joint_state_topic_name"].as<std::string>();
+//     _topic_name = jointstate_root["joint_state_topic_name"].as<std::string>();
 
+    std::string robot_name = XBot::ModelInterface::getModel(path_to_config_file)->getUrdf().getName();
+    _topic_name = "/xbotcore/" + robot_name + "/joint_states";
+    
     ros::NodeHandle nh;
-    _sub = nh.subscribe(_topic_name, 1, &AdvrJointState::callback, this, ros::TransportHints().tcpNoDelay());
+    _sub = nh.subscribe(_topic_name, 1, &AdvrJointState::callback, this);
 
 
     // Max number of attempts to connect to /joint_states topic
