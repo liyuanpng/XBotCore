@@ -20,6 +20,7 @@
 #include <typeinfo>
 #include <iostream>
 #include <memory>
+#include <mutex>
 
 #ifdef __COBALT__
 #include <sys/timerfd.h>
@@ -233,7 +234,6 @@ inline void XBot::Thread_hook::create ( int rt=true, int cpu_nr=0 ) {
 
 inline XBot::Mutex::Mutex()
 {
-   
     pthread_mutexattr_t attr;
     pthread_mutexattr_init(&attr);
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
