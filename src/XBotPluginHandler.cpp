@@ -434,7 +434,7 @@ void PluginHandler::replacePlugin(const std::string& name){
     unloadPlugin(name);
     std::shared_ptr<XBot::XBotControlPlugin> plugin_ptr = loadPlugin(name);
     initPlugin(plugin_ptr, name);
-    _rtplugin_vector[0] = plugin_ptr;
+    _rtplugin_vector[pos] = plugin_ptr;
     curr_plg.store(-1);
 }
 
