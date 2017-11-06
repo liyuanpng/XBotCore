@@ -33,7 +33,11 @@
 #include <XBotCore/XBotCore.h>
 #include <XBotCore/HALInterfaceFactory.h>
 
+
 #include <XBotInterface/Utils.h>
+#include <XBotInterface/RtLog.hpp>
+
+using XBot::Logger;
 
 std::shared_ptr<Loader> XBot::XBotCore::loaderptr;
 
@@ -51,9 +55,9 @@ XBot::XBotCore::XBotCore(const char* config_yaml,  const char* param) :
             
         if(x_bot_core["config_path"]) {
             
-            std::cout << x_bot_core["config_path"].as<std::string>() << std::endl;
+            Logger::info() << "Path to config is " << x_bot_core["config_path"].as<std::string>() << Logger::endl();
             
-            std::cout << XBot::Utils::computeAbsolutePath(x_bot_core["config_path"].as<std::string>()) << std::endl;
+            Logger::info() << "Abs path to config is " << XBot::Utils::computeAbsolutePath(x_bot_core["config_path"].as<std::string>()) << Logger::endl();
             
             root = YAML::LoadFile(XBot::Utils::computeAbsolutePath(x_bot_core["config_path"].as<std::string>()));
         }
@@ -170,10 +174,9 @@ void XBot::XBotCore::loop_internal()
 XBot::XBotCore::~XBotCore() {
     
     _pluginHandler->close();
-    printf("Iteration: %d \n", _iter);
-    //if( lib_file != "")
-        //HALInterfaceFactory::unloadLib(lib_file, halInterface.get());
-    printf("~XBotCore()\n");
+    
+    Logger::info() << "~XBotCore()" << Logger::endl();
+    
     loaderth->stop();
     loaderth->join();
     delete loaderth;

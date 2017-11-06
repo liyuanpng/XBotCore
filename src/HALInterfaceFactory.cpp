@@ -18,6 +18,9 @@
 */
 
 #include <XBotCore/HALInterfaceFactory.h>
+#include <XBotInterface/RtLog.hpp>
+
+using XBot::Logger;
 
 std::map<std::string, void*> HALInterfaceFactory::handles;
 
@@ -37,13 +40,11 @@ std::shared_ptr<HALInterface> HALInterfaceFactory::getFactory(const std::string&
     void* lib_handle;
     lib_handle = dlopen(path_to_so.c_str(), RTLD_NOW);
     if (!lib_handle) {
-        std::cout << lib_name <<" INTERFACE NOT found! " << std::endl;
-        fprintf(stderr, "%s\n", dlerror());
-        //exit(1);
+        Logger::error() << lib_name << " HAL interface NOT found! \n" << dlerror() << Logger::endl();
     }
     else     
     {
-        std::cout << lib_name <<" INTERFACE found! " << std::endl;
+        Logger::success(Logger::Severity::HIGH) << lib_name << " HAL interface found! " << Logger::endl();
         handles[file_name] = lib_handle;
       
         HALInterface* (*create)(const char * config);
@@ -90,7 +91,7 @@ bool HALInterfaceFactory::computeAbsolutePath (  const std::string& input_path,
             return true;
         }
         else {
-            std::cerr << "ERROR in " << __func__ << " : the input path  " << input_path << " is neither an absolute path nor related with the robotology superbuild. Download it!" << std::endl;
+            Logger::error() << "in " << __func__ << " : the input path  " << input_path << " is neither an absolute path nor related with the robotology superbuild." << Logger::endl();
             return false;
         }
     }

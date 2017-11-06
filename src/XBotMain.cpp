@@ -36,6 +36,13 @@
 #include <XCM/XBotCommunicationHandler.h>
 
 #include <XBotInterface/Utils.h>
+#include <XBotInterface/RtLog.hpp>
+
+#include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
+
+namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 extern void main_common(__sighandler_t sig_handler);
 
@@ -45,15 +52,12 @@ static int main_loop = 1;
 void shutdown(int sig __attribute__((unused)))
 {
     main_loop = 0;
-    printf("got signal .... Shutdown\n");
-
 }
 
-bool getDefaultConfig(std::string& config, char *argv[]) 
+bool getDefaultConfig(std::string& config) 
 {
     config = XBot::Utils::getXBotConfig();
     if(config == "") {
-        printf ( "Usage: %s config.yaml\nOr set_xbot_config config.yaml && %s\n", argv[0], argv[0] );
         return false;
     }
     return true;
@@ -64,77 +68,105 @@ bool getDefaultConfig(std::string& config, char *argv[])
 ////////////////////////////////////////////////////
 
 int main(int argc, char *argv[]) try {
-
-    //std::map<std::string, XBot::Thread_hook*> threads;
     
-    // config file handling
+    using XBot::Logger;
+    
+    /* Command line parsing */
+    
     std::string path_to_cfg;
-    char* dummy_arg = argv[2];
+    bool use_dummy_hal = false;
+    bool run_ch = true;
     
-    if ( argc != 2 ) {
-        // check the default path
-        if(!getDefaultConfig(path_to_cfg, argv)) {
+    
+    {
+        po::options_description desc("XBotCore. Available options");
+        desc.add_options()
+            ("config,C", po::value<std::string>(),"Path to custom config file. If not set, a default config file must be configured via set_xbot_config.")
+            ("dummy,D", "Use the dummy HAL implementation.")
+            ("no-ch", "Do not run the CommunicationHandler")
+            ("verbose,V", "Verbose mode.")
+            ("help", "Shows this help message.")
+        ;
+
+        
+        po::positional_options_description p;
+        p.add("config", -1);
+
+        po::variables_map vm;
+        po::store(po::command_line_parser(argc, argv).
+                options(desc).positional(p).run(), vm);
+        po::notify(vm);
+        
+        if(vm.count("help")){
+            std::cout << desc << std::endl;
             return 0;
         }
-    }
-    else {
-            
-        // NOTE the user can also call XBotCore dummy -> Config file must have been set through set_xbot_config
-        if(strcmp(argv[1], "dummy") == 0){
-            dummy_arg = argv[1];
-            // check the default path
-            if(!getDefaultConfig(path_to_cfg, argv)) {
-                return 0;
+        
+        if(vm.count("verbose")){
+            Logger::SetVerbosityLevel(Logger::Severity::LOW);
+        }
+        else{
+            Logger::SetVerbosityLevel(Logger::Severity::MID);
+        }
+
+        if(vm.count("no-ch")) {
+            run_ch = false;
+        }
+        
+        if(vm.count("config")) {
+            path_to_cfg = fs::absolute(vm["config"].as<std::string>()).string();
+        }
+        else{
+            if(!getDefaultConfig(path_to_cfg)){
+                std::cout << desc << std::endl;
+                return -1;
             }
         }
-        else {
-            path_to_cfg = argv[1];
+        
+        if(vm.count("dummy")) {
+            use_dummy_hal = true;
         }
+        
+        
     }
 
+
+    Logger::info(Logger::Severity::HIGH) << "XBotCore using config file " << path_to_cfg << Logger::endl();
 
     main_common(shutdown);
 
 
-    XBot::XBotCoreThread xbc( path_to_cfg.c_str(), dummy_arg );
+    XBot::XBotCoreThread xbc( path_to_cfg.c_str(), use_dummy_hal ? "dummy" : nullptr );
     XBot::CommunicationHandler ch( path_to_cfg.c_str() );
     
-    //threads["boards_ctrl"] = &xbc;
-    //threads["boards_ctrl"]->create(true, 2);
     xbc.create(true, 2);
     
-    //threads["ch"] = &ch;
-    //threads["ch"]->create(false, 3);
-    ch.create(false, 3);
+    if(run_ch){
+        ch.create(false, 3);
+    }
   
-//     threads["loader"] = new XBot::XBotLoaderThread();
-//     threads["loader"]->create(false, 2);
-
     while (main_loop) {
         sleep(1); 
     }
     
-    std::cout << "main_loop " <<  main_loop << std::endl;
+    Logger::info(Logger::Severity::HIGH) << "XBotCore exiting after " <<  main_loop << " seconds. Joining threads..." << Logger::endl();
     
-//     for ( auto const& item : threads ) {
-//         item.second->stop();
-//         item.second->join();
-// //         delete item.second;
-//     }
 
     xbc.stop();
     xbc.join();
     
-    ch.stop();
-    ch.join();
+    if(run_ch){
+        ch.stop();
+        ch.join();
+    }
 
-    std::cout << "Exit main" << std::endl;
+    Logger::info() << "XBotMain exiting" << Logger::endl();
 
     return 0;
 
 } catch (std::exception& e) {
 
-    std::cout << "Main catch .... " <<  e.what() << std::endl;
+    XBot::Logger::error() << "Main catch exception: " <<  e.what() << XBot::Logger::endl();
 
 }
 

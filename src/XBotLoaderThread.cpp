@@ -24,7 +24,7 @@
 XBot::XBotLoaderThread::XBotLoaderThread() 
 {
   
-    int period = 5000;
+    int period = 500000;
       
     set_thread_name("Loader");
     // set thread period - not periodic
@@ -62,12 +62,9 @@ void XBot::XBotLoaderThread::set_thread_priority()
 {
 
     // set scheduler policy
-#ifdef __XENO__
-    schedpolicy = SCHED_FIFO;
-#else
+
     schedpolicy = SCHED_OTHER;
-#endif
-    
+
     // set scheduler priority and stacksize
     priority = sched_get_priority_max(schedpolicy);
     stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
@@ -89,5 +86,5 @@ void XBot::XBotLoaderThread::th_loop( void * ){
 
 XBot::XBotLoaderThread::~XBotLoaderThread() {
     
-    printf("~XBotLoaderThread()\n");
+    Logger::info() << "~XBotLoaderThread()" << Logger::endl();
 }

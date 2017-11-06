@@ -63,7 +63,7 @@ static int lock_mem ( int byte_size ) {
     buffer = ( char* ) malloc ( byte_size );
 
     getrusage ( RUSAGE_SELF, &usage );
-    printf ( "Major-pagefaults:%ld, Minor Pagefaults:%ld\n", usage.ru_majflt, usage.ru_minflt );
+//     printf ( "Major-pagefaults:%ld, Minor Pagefaults:%ld\n", usage.ru_majflt, usage.ru_minflt );
 
     // Touch page to prove there will be no page fault later
     for ( i=0; i < byte_size; i+=page_size ) {
@@ -78,7 +78,7 @@ static int lock_mem ( int byte_size ) {
     }
 
     getrusage ( RUSAGE_SELF, &usage );
-    printf ( "Major-pagefaults:%ld, Minor Pagefaults:%ld\n", usage.ru_majflt, usage.ru_minflt );
+//     printf ( "Major-pagefaults:%ld, Minor Pagefaults:%ld\n", usage.ru_majflt, usage.ru_minflt );
 
     free ( buffer );
     // buffer is now released. As glibc is configured such that it never gives back memory to

@@ -46,6 +46,7 @@ endif()
 # find packages 
 find_package(XBotCoreModel REQUIRED)
 find_package(XCM REQUIRED)
+find_package(Boost REQUIRED COMPONENTS program_options)
 
 
 find_package(sharedlibpp REQUIRED)
@@ -92,6 +93,7 @@ endif()
 target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
                                       ${XBotCoreModel_LIBRARIES}                                      
                                       XBotCoreThread
+                                      ${Boost_LIBRARIES}
                                       )
 
                                       

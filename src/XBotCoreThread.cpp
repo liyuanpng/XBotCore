@@ -102,5 +102,5 @@ void XBot::XBotCoreThread::th_loop( void * ){
 
 XBot::XBotCoreThread::~XBotCoreThread() {
     
-    printf("~XBotCoreThread()\n");
+   Logger::info() << "~XBotCoreThread()" << Logger::endl();
 }
