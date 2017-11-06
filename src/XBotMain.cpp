@@ -65,7 +65,7 @@ bool getDefaultConfig(std::string& config, char *argv[])
 
 int main(int argc, char *argv[]) try {
 
-    std::map<std::string, XBot::Thread_hook*> threads;
+    //std::map<std::string, XBot::Thread_hook*> threads;
     
     // config file handling
     std::string path_to_cfg;
@@ -99,11 +99,13 @@ int main(int argc, char *argv[]) try {
     XBot::XBotCoreThread xbc( path_to_cfg.c_str(), dummy_arg );
     XBot::CommunicationHandler ch( path_to_cfg.c_str() );
     
-    threads["boards_ctrl"] = &xbc;
-    threads["boards_ctrl"]->create(true, 2);
+    //threads["boards_ctrl"] = &xbc;
+    //threads["boards_ctrl"]->create(true, 2);
+    xbc.create(true, 2);
     
-    threads["ch"] = &ch;
-    threads["ch"]->create(false, 3);
+    //threads["ch"] = &ch;
+    //threads["ch"]->create(false, 3);
+    ch.create(false, 3);
   
 //     threads["loader"] = new XBot::XBotLoaderThread();
 //     threads["loader"]->create(false, 2);
@@ -114,12 +116,17 @@ int main(int argc, char *argv[]) try {
     
     std::cout << "main_loop " <<  main_loop << std::endl;
     
-    for ( auto const& item : threads ) {
-        item.second->stop();
-        item.second->join();
-//         delete item.second;
-    }
+//     for ( auto const& item : threads ) {
+//         item.second->stop();
+//         item.second->join();
+// //         delete item.second;
+//     }
 
+    xbc.stop();
+    xbc.join();
+    
+    ch.stop();
+    ch.join();
 
     std::cout << "Exit main" << std::endl;
 
