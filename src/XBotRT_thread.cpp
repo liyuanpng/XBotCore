@@ -2,6 +2,9 @@
 #include <stdlib.h>
 
 #include <XCM/XBotThread.h>
+#include <XBotInterface/RtLog.hpp>
+
+using XBot::Logger;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -18,8 +21,7 @@ void * XBot::rt_periodic_thread ( Thread_hook_Ptr th_hook ) {
     // thread specific initialization
     th_hook->th_init ( 0 );
 
-    DPRINTF ( "THREAD INIT: name = %s, period %ld us\n",
-              th_hook->name, th_hook->period.period.tv_usec );
+    Logger::info() << "THREAD INIT: name = " << th_hook->name << ", period " << th_hook->period.period.tv_usec << " us" << Logger::endl();
 
 #ifdef __COBALT__
     ret = pthread_setname_np ( pthread_self(), th_hook->name );
@@ -86,12 +88,10 @@ void * XBot::rt_periodic_thread ( Thread_hook_Ptr th_hook ) {
         exit ( 1 );        
     }
     
-    DPRINTF ( "%s %s : start looping ...\n", 
-              __FUNCTION__, th_hook->name );
     
 #endif
 
-    DPRINTF ( "THREAD INIT: start looping ...\n" );
+    Logger::success(Logger::Severity::HIGH) << "Thread " << th_hook->name << ": start looping" << Logger::endl();
 
 #if defined(__XENO__)
     
@@ -156,8 +156,7 @@ void * XBot::rt_non_periodic_thread ( Thread_hook_Ptr th_hook ) {
     // thread specific initialization
     th_hook->th_init ( 0 );
 
-    DPRINTF ( "THREAD INIT: name = %s, period %ld us\n",
-              th_hook->name, th_hook->period.period.tv_usec );
+    Logger::info() << "THREAD INIT: name = " << th_hook->name << ", period " << th_hook->period.period.tv_usec << " us" << Logger::endl();
 
 #ifdef __COBALT__
     ret = pthread_setname_np ( pthread_self(), th_hook->name );
@@ -184,7 +183,7 @@ void * XBot::rt_non_periodic_thread ( Thread_hook_Ptr th_hook ) {
         exit ( 1 );
     }
 
-    DPRINTF ( "THREAD INIT: start looping ...\n" );
+    Logger::success(Logger::Severity::HIGH) << "Thread " << th_hook->name << ": start looping" << Logger::endl();
 
     while ( th_hook->_run_loop ) {
 
@@ -192,6 +191,8 @@ void * XBot::rt_non_periodic_thread ( Thread_hook_Ptr th_hook ) {
         th_hook->th_loop ( 0 );
 
     } // end while
+    
+    Logger::info(Logger::Severity::HIGH) << "Cleanly exiting RT thread: " << ( *th_hook ).name << Logger::endl(); 
 
     return 0;
 }

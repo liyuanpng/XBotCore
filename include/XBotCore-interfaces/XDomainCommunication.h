@@ -246,13 +246,13 @@ PublisherNRT<DataType>::PublisherNRT(const std::string& socket_name) :
 template <typename DataType>
 void PublisherNRT<DataType>::init(const std::string& socket_name)
 {
-    std::cout << "Opening " << pipe_prefix+socket_name << "..." << std::endl;
+    Logger::info() << "Opening " << pipe_prefix+socket_name << "..." << Logger::endl();
     while( _fd < 0 ){
         _fd = open((pipe_prefix + socket_name).c_str(), O_WRONLY | O_NONBLOCK);
         if(_fd < 0)
             sleep(1);
     }
-    std::cout << "Opened " << pipe_prefix+socket_name << " !" << std::endl;
+    Logger::success() << "Opened " << pipe_prefix+socket_name << " !" << Logger::endl();
 }
 
 template <typename DataType>
@@ -309,13 +309,13 @@ SubscriberNRT<DataType>::SubscriberNRT(const std::string& socket_name) :
 template <typename DataType>
 void SubscriberNRT<DataType>::init(const std::string& socket_name)
 {
-    std::cout << "Opening " << pipe_prefix+socket_name << "..." << std::endl;
+    Logger::info() << "Opening " << pipe_prefix+socket_name << "..." << Logger::endl();
     while( _fd < 0 ){
         _fd = open((pipe_prefix + socket_name).c_str(), O_RDONLY | O_NONBLOCK);
         if(_fd < 0)
             sleep(1);
     }
-    std::cout << "Opened " << pipe_prefix+socket_name << " !" << std::endl;
+    Logger::success() << "Opened " << pipe_prefix+socket_name << " !" << Logger::endl();
 }
 
 template <typename DataType>

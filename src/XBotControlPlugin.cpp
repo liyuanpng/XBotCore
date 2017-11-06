@@ -29,7 +29,7 @@ XBotControlPlugin::XBotControlPlugin()
 XBotControlPlugin::~XBotControlPlugin()
 {
 
-  std::cout<<"~XBotControlPlugin"<<std::endl;
+  Logger::info() << "~XBotControlPlugin" << Logger::endl();
 }
 
 XBot::Command&  XBotControlPlugin::getCmd(){

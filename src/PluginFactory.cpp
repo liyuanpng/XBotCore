@@ -18,6 +18,9 @@
 */
 
 #include <XCM/PluginFactory.h>
+#include <XBotInterface/RtLog.hpp>
+
+using XBot::Logger;
 
 std::map<std::string, void*> PluginFactory::handles;
 
@@ -37,13 +40,13 @@ std::shared_ptr<XBot::XBotControlPlugin> PluginFactory::getFactory(const std::st
     void* lib_handle;
     lib_handle = dlopen(path_to_so.c_str(), RTLD_NOW);
     if (!lib_handle) {
-        std::cout << lib_name <<" Plugin NOT found! " << std::endl;
+        XBot::Logger::error() << lib_name <<" RT plugin NOT found! \n" << dlerror() << XBot::Logger::endl();
         fprintf(stderr, "%s\n", dlerror());
         //exit(1);
     }
     else     
     {
-        std::cout << lib_name <<" Plugin found! " << std::endl;
+        Logger::success(Logger::Severity::MID) << lib_name << " RT plugin found! " << Logger::endl();
         handles[file_name] = lib_handle;
       
         XBot::XBotControlPlugin* (*create)();

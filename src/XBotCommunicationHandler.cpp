@@ -19,6 +19,9 @@
 
 #include <XCM/XBotCommunicationHandler.h>
 #include <XCM/IOPluginFactory.h>
+#include <XBotInterface/RtLog.hpp>
+
+using XBot::Logger;
 
 XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config) :
     _path_to_config(path_to_config),
@@ -48,7 +51,7 @@ void XBot::CommunicationHandler::th_init(void*)
     // check that config file exists
     std::ifstream fin(_path_to_config);
     if (fin.fail()) {
-        XBot::ConsoleLogger::getLogger()->error() << "ERROR in " << __func__ << "! Can NOT open config file " << _path_to_config << "!" << XBot::ConsoleLogger::getLogger()->endl();
+        Logger::error() << "in " << __func__ << "! Can NOT open config file " << _path_to_config << "!" << Logger::endl();
         exit(0);
     }
     
@@ -56,13 +59,13 @@ void XBot::CommunicationHandler::th_init(void*)
     YAML::Node root_cfg = YAML::LoadFile(_path_to_config);
 
     if(!root_cfg["XBotRTPlugins"]){
-        std::cerr << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node XBotRTPlugins!" << std::endl;
+        Logger::error() << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node XBotRTPlugins!" << Logger::endl();
         return;
     }
     else{
 
         if(!root_cfg["XBotRTPlugins"]["plugins"]){
-            std::cerr << "ERROR in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node plugins!" << std::endl;
+            Logger::error() << "ERROR in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node plugins!" << Logger::endl();
             return;
         }
         else{
@@ -78,7 +81,7 @@ void XBot::CommunicationHandler::th_init(void*)
         }
 
         if(!root_cfg["XBotRTPlugins"]["io_plugins"]){
-            std::cerr << "WARNING in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node io_plugins!" << std::endl;
+            Logger::error() << "WARNING in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node io_plugins!" << Logger::endl();
         }
         else{
 
@@ -90,11 +93,11 @@ void XBot::CommunicationHandler::th_init(void*)
     }
 
     if(!root_cfg["MasterCommunicationInterface"]) {
-        std::cerr << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node MasterCommunicationInterface!" << std::endl;
+        Logger::error() << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node MasterCommunicationInterface!" << Logger::endl();
     }
     else {
         if(!root_cfg["MasterCommunicationInterface"]["framework_name"]){
-            std::cerr << "ERROR in " << __func__ << "! MasterCommunicationInterface node does NOT contain mandatory node framework_name!" << std::endl;
+            Logger::error() << "ERROR in " << __func__ << "! MasterCommunicationInterface node does NOT contain mandatory node framework_name!" << Logger::endl();
             return;
         }
         else{
@@ -104,7 +107,7 @@ void XBot::CommunicationHandler::th_init(void*)
         _enable_ref_read = true;
         
         if(!root_cfg["MasterCommunicationInterface"]["enable_ref_read"]){
-            std::cerr << "WARNING in " << __func__ << "! MasterCommunicationInterface node does NOT contain optional node enable_ref_read: I will assume it to TRUE" << std::endl;
+            Logger::warning(Logger::Severity::LOW) << "WARNING in " << __func__ << "! MasterCommunicationInterface node does NOT contain optional node enable_ref_read: I will assume it to TRUE" << Logger::endl();
         }
         else{
             _enable_ref_read = root_cfg["MasterCommunicationInterface"]["enable_ref_read"].as<bool>();
@@ -155,7 +158,7 @@ void XBot::CommunicationHandler::th_init(void*)
 
     /* Get a vector of communication interfaces to/from NRT frameworks like ROS, YARP, ... */
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
-    std::cerr << "USE_ROS_COMMUNICATION_INTERFACE found! " << std::endl;
+    Logger::info() << "USE_ROS_COMMUNICATION_INTERFACE found! " << Logger::endl();
     _ros_communication = std::make_shared<XBot::CommunicationInterfaceROS>(_robot, _xddp_handler);
     _communication_ifc_vector.push_back( _ros_communication );
 
@@ -200,7 +203,7 @@ void XBot::CommunicationHandler::th_init(void*)
     /****************************************************************************************/
     
 #ifdef USE_YARP_COMMUNICATION_INTERFACE
-    std::cerr << "USE_YARP_COMMUNICATION_INTERFACE found! " << std::endl;
+    Logger::info() << "USE_YARP_COMMUNICATION_INTERFACE found! " << Logger::endl();
     _yarp_communication = std::make_shared<XBot::CommunicationInterfaceYARP>(_robot);
     _communication_ifc_vector.push_back( _yarp_communication );
 
@@ -214,16 +217,16 @@ void XBot::CommunicationHandler::th_init(void*)
 
     // check on master communication interface
     if( _master_communication_ifc == nullptr ) {
-        std::cerr << "ERROR in " << __func__ << "! Master Communication Interface specified in the config file but "
-                                             << "not matching with the current NRT frameworks installed in the system" << std::endl;
+        Logger::error() << "ERROR in " << __func__ << "! Master Communication Interface specified in the config file but "
+                                             << "not matching with the current NRT frameworks installed in the system" << Logger::endl();
         return;
     }
 
     /* Load IO plugins */
     for(const std::string& name : _io_plugin_names) {
-	std::shared_ptr<XBot::IOPlugin> plugin_ptr = IOPluginFactory::getFactory("lib"+name, name);
-	_io_plugin_ptr.push_back(plugin_ptr);
-	plugin_ptr->init(_path_to_config);
+        std::shared_ptr<XBot::IOPlugin> plugin_ptr = IOPluginFactory::getFactory("lib"+name, name);
+        _io_plugin_ptr.push_back(plugin_ptr);
+        plugin_ptr->init(_path_to_config);
     }
 
     /* Advertise switch/cmd ports for all plugins on all frameworks */
@@ -266,7 +269,7 @@ void XBot::CommunicationHandler::th_loop(void*)
             if ( master == "ROS" ||
                  master == "ros"
             ) {
-                std::cout << "Switching to ROS Master Communication Interface" << std::endl;
+                Logger::info(Logger::Severity::HIGH) << "Switching to ROS Master Communication Interface" << Logger::endl();
 
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
                 _master_communication_ifc = _ros_communication;
@@ -277,14 +280,14 @@ void XBot::CommunicationHandler::th_loop(void*)
                 cmd = "start";
                 _switch_pub_vector[xbot_communication_idx].write(cmd);
 #else
-                std::cerr << "ERROR: ROS Master Communication Interface not compiled" << std::endl;
+                Logger::error() << "ROS Master Communication Interface not compiled" << Logger::endl();
 #endif
             }
             
             else if ( master == "WEB" ||
                  master == "web"
             ) {
-                std::cout << "Switching to WEB Master Communication Interface" << std::endl;
+                Logger::info(Logger::Severity::HIGH) << "Switching to WEB Master Communication Interface" << Logger::endl();
 
                 _master_communication_ifc = _web_communication;
                 // HACK restarting XBotCommunicationPlugin
@@ -300,7 +303,7 @@ void XBot::CommunicationHandler::th_loop(void*)
             else if ( master == "YARP" ||
                       master == "yarp"
             ) {
-                std::cout << "Switching to YARP Master Communication Interface" << std::endl;
+                Logger::info(Logger::Severity::HIGH) << "Switching to YARP Master Communication Interface" << Logger::endl();
 
 #ifdef USE_YARP_COMMUNICATION_INTERFACE
                 _master_communication_ifc = _yarp_communication;
@@ -311,7 +314,7 @@ void XBot::CommunicationHandler::th_loop(void*)
                 cmd = "start";
                 _switch_pub_vector[xbot_communication_idx].write(cmd);
 #else
-                std::cerr << "ERROR: YARP Master Communication Interface not compiled" << std::endl;
+                Logger::error() << "ERROR: YARP Master Communication Interface not compiled" << Logger::endl();
 #endif
             }
         }

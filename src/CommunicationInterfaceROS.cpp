@@ -23,6 +23,14 @@
 #include <geometry_msgs/WrenchStamped.h>
 
 #include <XCM/XBotUtils.h>
+#include <XBotInterface/RtLog.hpp>
+
+#include <cstdio>
+#include <sys/stat.h> 
+#include <fcntl.h>
+
+
+
 
 extern "C" XBot::CommunicationInterfaceROS* create_instance(XBot::RobotInterface::Ptr robot, XBot::XBotXDDP::Ptr xddp_handler )
 {
@@ -32,6 +40,25 @@ extern "C" XBot::CommunicationInterfaceROS* create_instance(XBot::RobotInterface
 extern "C" void destroy_instance( XBot::CommunicationInterfaceROS* instance )
 {
   delete instance;
+}
+
+
+int suppress_stdout() {
+  fflush(stdout);
+
+  int ret = dup(1);
+  int nullfd = open("/dev/null", O_WRONLY);
+  // check nullfd for error omitted
+  dup2(nullfd, 1);
+  close(nullfd);
+
+  return ret;
+}
+
+void resume_stdout(int fd) {
+  fflush(stdout);
+  dup2(fd, 1);
+  close(fd);
 }
 
 namespace XBot {
@@ -131,7 +158,10 @@ CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot, X
 void CommunicationInterfaceROS::load_robot_state_publisher()
 {
     KDL::Tree kdl_tree;
+    
+    int fd = suppress_stdout();
     kdl_parser::treeFromUrdfModel(_robot->getUrdf(), kdl_tree);
+    resume_stdout(fd);
 
     _robot_state_pub = std::make_shared<robot_state_publisher::RobotStatePublisher>(kdl_tree);
 
@@ -178,7 +208,7 @@ void CommunicationInterfaceROS::load_ros_message_interfaces() {
     _controlmsg_instance.open(_controlmsg_factory);
     _receive_commands_ok = _controlmsg_instance->init(_path_to_cfg, GenericControlMessage::Type::Rx);
     if(_receive_commands_ok){
-        std::cout << "Receive commands from ROS ok!" << std::endl;
+       Logger::success() << "Receive commands from ROS ok!" << Logger::endl();
         _receive_commands_ok = true;
     }
     // save pointer to the control message
@@ -206,7 +236,7 @@ void CommunicationInterfaceROS::load_ros_message_interfaces() {
     _jointstatemsg_instance.open(_jointstatemsg_factory);
     _send_robot_state_ok = _jointstatemsg_instance->init(_path_to_cfg, GenericJointStateMessage::Type::Tx);
     if(_send_robot_state_ok){
-        std::cout << "Send robot state over ROS ok!" << std::endl;
+        Logger::success() << "Send robot state over ROS ok!" << Logger::endl();
         _send_robot_state_ok = true;
     }
     // save pointer to the jointstate message
@@ -514,7 +544,7 @@ bool CommunicationInterfaceROS::advertiseSwitch(const std::string& port_name)
                                      );
     _msgs[port_name] = "";
 
-    std::cout << "Advertised service " << port_name << std::endl;
+    Logger::info() << "Advertised service " << port_name << Logger::endl();
 
     return true;
 }
@@ -525,7 +555,7 @@ void XBot::CommunicationInterfaceROS::advertiseStatus(const std::string& plugin_
         return;
     }
 
-    std::cout << "Advertised status port for plugin " << plugin_name << std::endl;
+    Logger::info() << "Advertised status port for plugin " << plugin_name << Logger::endl();
 
     _status_services[plugin_name] = _nh->advertiseService<XCM::status_serviceRequest, XCM::status_serviceResponse>
                                                 (plugin_name + "_status",
@@ -572,7 +602,7 @@ bool XBot::CommunicationInterfaceROS::advertiseCmd(const std::string& port_name)
                                      );
     _msgs[port_name] = "";
 
-    std::cout << "Advertised service " << port_name << std::endl;
+    Logger::info() << "Advertised service " << port_name << Logger::endl();
 
     return true;
 }
@@ -590,7 +620,7 @@ bool XBot::CommunicationInterfaceROS::advertiseMasterCommunicationInterface()
                                          );
     _msgs[_master_communication_interface_port] = "";
 
-    std::cout << "Advertised service " << _master_communication_interface_port << std::endl;
+    Logger::info() << "Advertised service " << _master_communication_interface_port << Logger::endl();
 
     return true;
 }

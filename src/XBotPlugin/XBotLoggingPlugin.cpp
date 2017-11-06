@@ -82,6 +82,6 @@ bool XBot::XBotLoggingPlugin::close(void)
 
 XBot::XBotLoggingPlugin::~XBotLoggingPlugin()
 {
-    printf("~XBotLoggingPlugin()\n");
+    Logger::info() << "~XBotLoggingPlugin()" << Logger::endl();
 }
 

@@ -18,6 +18,9 @@
 */
 
 #include <XCM/XBotCommunicationInterfaceFactory.h>
+#include <XBotInterface/RtLog.hpp>
+
+using XBot::Logger;
 
 std::map<std::string, void*> CommunicationInterfaceFactory::handles;
 
@@ -34,13 +37,11 @@ std::shared_ptr<XBot::CommunicationInterface> CommunicationInterfaceFactory::get
     void* lib_handle;
     lib_handle = dlopen(path_to_so.c_str(), RTLD_NOW);
     if (!lib_handle) {
-        std::cout << lib_name <<" INTERFACE NOT found! " << std::endl;
-        fprintf(stderr, "%s\n", dlerror());
-        //exit(1);
+        Logger::error() << lib_name << " INTERFACE NOT found! \n" << dlerror() << Logger::endl();
     }
     else     
     {
-        std::cout << lib_name <<" INTERFACE found! " << std::endl;
+        Logger::success(Logger::Severity::MID) << lib_name <<" INTERFACE found! " << Logger::endl();
         handles[file_name] = lib_handle;
       
         XBot::CommunicationInterface* (*create)(XBot::RobotInterface::Ptr);
@@ -63,7 +64,7 @@ void CommunicationInterfaceFactory::unloadLib(const std::string& file_name)
 {
 
   dlclose( handles[file_name] );
-  std::cout << file_name <<" INTERFACE unloaded! " << std::endl;
+  Logger::info() << file_name <<" INTERFACE unloaded! " << Logger::endl();
 }
 
 bool CommunicationInterfaceFactory::computeAbsolutePath (  const std::string& input_path,

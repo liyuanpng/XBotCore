@@ -31,6 +31,9 @@
 
 #include <XCM/PluginFactory.h>
 
+#include <XBotInterface/RtLog.hpp>
+
+
 extern char **environ;
 
 namespace XBot {
@@ -49,10 +52,10 @@ PluginHandler::PluginHandler(RobotInterface::Ptr robot,
     
     // Path
     _path_to_cfg = _robot->getPathToConfig();
-    std::cout << "Plugin Handler is using config file: " << _path_to_cfg << std::endl;
+    Logger::info() << "Plugin Handler is using config file: " << _path_to_cfg << Logger::endl();
 
     _pluginhandler_log = XBot::MatLogger::getLogger("/tmp/PluginHandler_log");
-    std::cout << "With plugin set name : " << _plugins_set_name << std::endl;
+    Logger::info() << "With plugin set name : " << _plugins_set_name << Logger::endl();
     
     curr_plg.store(-1);
 }
@@ -82,10 +85,10 @@ std::shared_ptr<XBot::XBotControlPlugin> PluginHandler::loadPlugin(const std::st
  
      std::shared_ptr<XBot::XBotControlPlugin> plugin_ptr = PluginFactory::getFactory("lib"+plugin_name, plugin_name);
      if(!plugin_ptr) {
-      std::cout << "Unable to load plugin " << plugin_name << "!" << std::endl;
+      Logger::error() << "Unable to load plugin " << plugin_name << "!" << Logger::endl();
           }
        else{
-        std::cout << "Restarting plugin " << plugin_name << "!" << std::endl;
+        Logger::info(Logger::Severity::HIGH) << "Restarting plugin " << plugin_name << "!" << Logger::endl();
     }    
    
     return plugin_ptr;
@@ -96,7 +99,7 @@ bool PluginHandler::load_plugins()
 
     std::ifstream fin(_path_to_cfg);
     if (fin.fail()) {
-        std::cerr << "ERROR in " << __func__ << "! Can NOT open config file " << _path_to_cfg << "!" << std::endl;
+        Logger::error() << "in " << __func__ << "! Can NOT open config file " << _path_to_cfg << "!" << Logger::endl();
         return false;
     }
     
@@ -104,14 +107,14 @@ bool PluginHandler::load_plugins()
 
 
     if(!_root_cfg[_plugins_set_name]){
-        std::cout << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node " << _plugins_set_name << "!" << std::endl;
+        Logger::error() << "in " << __func__ << "! Config file does NOT contain mandatory node " << _plugins_set_name << "!" << Logger::endl();
         return false;
     }
     else{
 
         // NOTE we always expect a subfield plugins inside _plugins_set_name
         if(!_root_cfg[_plugins_set_name]["plugins"]){
-            std::cout << "ERROR in " << __func__ << "! " << _plugins_set_name << " node does NOT contain mandatory node plugins!" << std::endl;
+            Logger::error() << "in " << __func__ << "! " << _plugins_set_name << " node does NOT contain mandatory node plugins!" << Logger::endl();
         return false;
         }
         else{
@@ -181,6 +184,8 @@ void PluginHandler::initPlugin(std::shared_ptr<XBot::XBotControlPlugin> plugin_p
                                  const std::string& name)
 {
   
+        Logger::info(Logger::Severity::HIGH) << "Initializing plugin " << plugin_ptr->name << Logger::endl();
+    
         bool plugin_init_success = false;
         int i=0;
         i = pluginPos[name];
@@ -200,23 +205,23 @@ void PluginHandler::initPlugin(std::shared_ptr<XBot::XBotControlPlugin> plugin_p
 
             /* Handle return value if init() was performed cleanly */
             if(!plugin_init_success){
-                std::cout << "ERROR: plugin " << (plugin_ptr)->name << " - init() failed. Plugin init() returned false!" << std::endl;              
+                Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. Plugin init() returned false!" << Logger::endl();           
 
             }
             else{
-                std::cout << "Plugin " << (plugin_ptr)->name << " initialized successfully!" << std::endl;
+                Logger::success(Logger::Severity::HIGH) << "Plugin " << (plugin_ptr)->name << " initialized successfully!" << Logger::endl();
             }
         }
 
         /* Handle exceptions inheriting from std::exception */
         catch(std::exception& e){
-            std::cerr << "ERROR: plugin " << (plugin_ptr)->name << " - init() failed.\n An exception was thrown: " << e.what() << std::endl;            
+            Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. \n An exception was thrown: " << e.what() << Logger::endl();            
             plugin_init_success = false;
         }
 
         /* Handle all other exceptions */
         catch(...){
-            std::cerr << "ERROR: plugin " << (plugin_ptr)->name << " - init() failed.\n An exception was thrown!" << std::endl;           
+            Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. \n An exception was thrown: " << Logger::endl();
             plugin_init_success = false;
         }
        
@@ -283,6 +288,8 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
     bool ret = true;
 
     for(int i = 0; i < _rtplugin_vector.size(); i++) {
+        
+        Logger::info(Logger::Severity::HIGH) << "Initializing plugin " << _rtplugin_names[i] << Logger::endl();
 
         bool plugin_init_success = false;
         _plugin_custom_status[i] = std::make_shared<PluginStatus>();
@@ -299,28 +306,24 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
                                                                 imu,
                                                                 hand );
 
-            /* Handle return value if init() was performed cleanly */
             if(!plugin_init_success){
-                std::cout << "ERROR: plugin " << (_rtplugin_vector[i])->name << " - init() failed. Plugin init() returned false!" << std::endl;
-                ret = false;
+                Logger::error() << "plugin " << (_rtplugin_vector[i])->name << "::init() failed. Plugin init() returned false!" << Logger::endl();           
 
             }
             else{
-                std::cout << "Plugin " << (_rtplugin_vector[i])->name << " initialized successfully!" << std::endl;
+                Logger::success(Logger::Severity::HIGH) << "Plugin " << (_rtplugin_vector[i])->name << " initialized successfully!" << Logger::endl();
             }
         }
 
         /* Handle exceptions inheriting from std::exception */
         catch(std::exception& e){
-            std::cerr << "ERROR: plugin " << (_rtplugin_vector[i])->name << " - init() failed.\n An exception was thrown: " << e.what() << std::endl;
-            ret = false;
+            Logger::error() << "plugin " << (_rtplugin_vector[i])->name << "::init() failed. \n An exception was thrown: " << e.what() << Logger::endl();            
             plugin_init_success = false;
         }
 
         /* Handle all other exceptions */
         catch(...){
-            std::cerr << "ERROR: plugin " << (_rtplugin_vector[i])->name << " - init() failed.\n An exception was thrown!" << std::endl;
-            ret = false;
+            Logger::error() << "plugin " << (_rtplugin_vector[i])->name << "::init() failed. \n An exception was thrown: " << Logger::endl();
             plugin_init_success = false;
         }
         
@@ -473,60 +476,62 @@ void PluginHandler::run()
 
         /* STATE STOPPED */
 
-	if( curr_plg.load() != i)
-        if( _plugin_state[i] == "STOPPED" ){
-          
-            _plugin_status[i]->write(XBot::Command("STOPPED"+_plugin_custom_status[i]->getStatus()));
+        if( curr_plg.load() != i){
+            if( _plugin_state[i] == "STOPPED" ){
+            
+                _plugin_status[i]->write(XBot::Command("STOPPED"+_plugin_custom_status[i]->getStatus()));
 
-            if( _plugin_switch[i]->read(cmd) ){
+                if( _plugin_switch[i]->read(cmd) ){
 
-                /* If start command has been received, set plugin to RUNNING */
-                if( cmd.str() == "start" && plugin_can_start(i) ){
-                    const auto& plugin = _rtplugin_vector[i];
-                    std::cout << "Starting plugin : " << (plugin)->name << std::endl;
-                    (plugin)->on_start(_time[i]);
-                    _plugin_state[i] = "RUNNING";
+                    /* If start command has been received, set plugin to RUNNING */
+                    if( cmd.str() == "start" && plugin_can_start(i) ){
+                        const auto& plugin = _rtplugin_vector[i];
+                        Logger::info(Logger::Severity::HIGH) << "Starting plugin : " << (plugin)->name << Logger::endl();
+                        (plugin)->on_start(_time[i]);
+                        _plugin_state[i] = "RUNNING";
+                    }
                 }
             }
         }
 
         /* STATE RUNNING */
 
-	if( curr_plg.load() != i)
-        if( _plugin_state[i] == "RUNNING" ){
+        if( curr_plg.load() != i){
+            if( _plugin_state[i] == "RUNNING" ){
 
-            const auto& plugin = _rtplugin_vector[i];
-            _plugin_status[i]->write(XBot::Command("RUNNING"+_plugin_custom_status[i]->getStatus()));
+                const auto& plugin = _rtplugin_vector[i];
+                _plugin_status[i]->write(XBot::Command("RUNNING"+_plugin_custom_status[i]->getStatus()));
 
-            if( _plugin_switch[i]->read(cmd) ){
+                if( _plugin_switch[i]->read(cmd) ){
 
-                /* If stop command has been received, set plugin to STOPPED */
-                if( cmd.str() == "stop" ){
-                    std::cout << "Stopping plugin : " << (plugin)->name << std::endl;
-                    (plugin)->on_stop(_time[i]);
-                    _plugin_state[i] = "STOPPED";
+                    /* If stop command has been received, set plugin to STOPPED */
+                    if( cmd.str() == "stop" ){
+                        Logger::info(Logger::Severity::HIGH) << "Stopping plugin : " << (plugin)->name << Logger::endl();
+                        (plugin)->on_stop(_time[i]);
+                        _plugin_state[i] = "STOPPED";
+                    }
                 }
-            }
-            
-           _plugin_cmd[i]->read((plugin)->getCmd());
-            
-            // NOTE in the NRT case read the cmd from ROS and send it trough the pipes
-            if( !_is_RT_plugin_handler ) {
                 
-                if( _plugin_cmd[i]->read(cmd) ) {
-                    _command_pub_vector[i].write(cmd);
+                _plugin_cmd[i]->read((plugin)->getCmd());
+                
+                // NOTE in the NRT case read the cmd from ROS and send it trough the pipes
+                if( !_is_RT_plugin_handler ) {
+                    
+                    if( _plugin_cmd[i]->read(cmd) ) {
+                        _command_pub_vector[i].write(cmd);
+                    }
                 }
+
+                double tic = _time_provider->get_time();
+                (plugin)->run(_time[i], _period[i]);
+                double toc = _time_provider->get_time();
+
+                XBot::Command cm;
+                (plugin)->setCmd(cm);
+                
+                _pluginhandler_log->add(_rtplugin_names[i] + "_exec_time", toc-tic);
+
             }
-
-            double tic = _time_provider->get_time();
-            (plugin)->run(_time[i], _period[i]);
-            double toc = _time_provider->get_time();
-
-            XBot::Command cm;
-            (plugin)->setCmd(cm);
-            
-            _pluginhandler_log->add(_rtplugin_names[i] + "_exec_time", toc-tic);
-
         }
 
     }
@@ -575,7 +580,7 @@ bool PluginHandler::computeAbsolutePath(const std::string& input_path,
             return true;
         }
         else {
-            XBot::ConsoleLogger::getLogger()->error() << "ERROR in " << __func__ << " : the input path  " << input_path << " is neither an absolute path nor related with the robotology superbuild. Download it!" << XBot::ConsoleLogger::getLogger()->endl();
+            Logger::error() << "in " << __func__ << " : the input path  " << input_path << " is neither an absolute path nor related with the robotology superbuild. Download it!" << Logger::endl();
             return false;
         }
     }

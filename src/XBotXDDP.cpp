@@ -156,7 +156,6 @@ XBot::XBotCoreModel XBot::XBotXDDP::get_robot_model()
 
 bool XBot::XBotXDDP::init()
 {
-   DPRINTF("XBotXDDP INIT\n");
    return true;
 }
 
@@ -472,7 +471,7 @@ double XBot::XBotXDDP::get_grasp_state(int hand_id)
 
 XBot::XBotXDDP::~XBotXDDP()
 {
-    printf("~XBotXDDP()\n");
+//     Logger::info() << "~XBotXDDP()" << Logger::endl();
 }
 
 bool XBot::XBotXDDP::computeAbsolutePath (  const std::string& input_path,

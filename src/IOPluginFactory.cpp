@@ -18,6 +18,9 @@
 */
 
 #include <XCM/IOPluginFactory.h>
+#include <XBotInterface/RtLog.hpp>
+
+using XBot::Logger;
 
 std::map<std::string, void*> IOPluginFactory::handles;
 
@@ -37,13 +40,11 @@ std::shared_ptr<XBot::IOPlugin> IOPluginFactory::getFactory(const std::string& f
     void* lib_handle;
     lib_handle = dlopen(path_to_so.c_str(), RTLD_NOW);
     if (!lib_handle) {
-        std::cout << lib_name <<" Plugin NOT found! " << std::endl;
-        fprintf(stderr, "%s\n", dlerror());
-        //exit(1);
+        XBot::Logger::error() << lib_name <<" IO plugin NOT found! \n" << dlerror() << XBot::Logger::endl();
     }
     else     
     {
-        std::cout << lib_name <<" Plugin found! " << std::endl;
+        Logger::success(Logger::Severity::MID) << lib_name << " IO plugin found! " << Logger::endl();
         handles[file_name] = lib_handle;
       
         XBot::IOPlugin* (*create)();
@@ -69,14 +70,14 @@ void IOPluginFactory::unloadLib(const std::string& file_name, XBot::IOPlugin* pl
 
   destroy(plugin);
   dlclose( handles[file_name] );
-  std::cout << file_name <<" Plugin unloaded! " << std::endl;
+  Logger::info() << file_name <<" Plugin unloaded! " << Logger::endl();
 }
 
 void IOPluginFactory::unloadLib(const std::string& file_name)
 {
 
   dlclose( handles[file_name] );
-  std::cout << file_name <<" Plugin unloaded! " << std::endl;
+  Logger::info() << file_name <<" Plugin unloaded! " << Logger::endl();
 }
 
 bool IOPluginFactory::computeAbsolutePath (  const std::string& input_path,

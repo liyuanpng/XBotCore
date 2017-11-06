@@ -21,6 +21,9 @@
 #include <ros/transport_hints.h>
 #include <XBotInterface/Utils.h>
 
+#include <XBotInterface/RtLog.hpp>
+using XBot::Logger;
+
 SHLIBPP_DEFINE_SHARED_SUBCLASS(advrjointstate_jointstate_message, XBot::AdvrJointState, XBot::GenericJointStateMessage);
 
 
@@ -33,7 +36,7 @@ XBot::AdvrJointState::AdvrJointState():
 bool XBot::AdvrJointState::init(const std::string& path_to_config_file, GenericJointStateMessage::Type type)
 {
 
-    std::cout << "Initializing AdvrJointState message interface!" << std::endl;
+    Logger::info() << "Initializing AdvrJointState message interface!" << Logger::endl();
 
     std::string robot_name = XBot::ModelInterface::getModel(path_to_config_file)->getUrdf().getName();
     _topic_name = "/xbotcore/" + robot_name + "/joint_states";
@@ -57,7 +60,7 @@ bool XBot::AdvrJointState::init(const std::string& path_to_config_file, GenericJ
         }
 
         if (!_msg_received) {
-            std::cerr << "ERROR No message received on topic " << _topic_name << "! Read() won't work!!" << std::endl;
+            Logger::error() << "No message received on topic " << _topic_name << "! Read() won't work!!" << Logger::endl();
             return false;
         }
 
@@ -115,6 +118,8 @@ bool XBot::AdvrJointState::init(const std::string& path_to_config_file, GenericJ
     // Get a publisher
     _pub = nh.advertise<XCM::JointStateAdvr>(_topic_name, 1);
 
+    Logger::success() << "Successfully initialized AdvrJointState message interface!" << Logger::endl();
+    
     return true;
 }
 
@@ -127,7 +132,7 @@ int XBot::AdvrJointState::getIndex(const std::string& joint_name)
         return it->second;
     }
     else{
-        std::cerr << "WARNING in " << __func__ << "! Joint " << joint_name << " is not defined inside the ROS joint state message!" << std::endl;
+        Logger::warning() << "in " << __func__ << "! Joint " << joint_name << " is not defined inside the ROS joint state message!" << Logger::endl();
         return -1;
     }
 }

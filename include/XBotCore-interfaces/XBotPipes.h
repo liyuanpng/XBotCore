@@ -35,6 +35,9 @@
 #include <unistd.h>
 
 #include <XCM/XBotUtils.h>
+#include <XBotInterface/RtLog.hpp>
+
+using XBot::Logger;
 
 #if defined( __XENO__ ) || defined( __COBALT__ )
     static const std::string pipe_prefix ( "/proc/xenomai/registry/rtipc/xddp/" );
@@ -87,7 +90,7 @@ namespace XBot{
                     mkfifo ( pipe.c_str(), S_IRWXU|S_IRWXG );
                     fd = open ( pipe.c_str(), O_RDWR | O_NONBLOCK );
             #endif
-                    DPRINTF ( " .... open %s\n", pipe.c_str() );
+                    Logger::info() << "Opened pipe " << pipe << Logger::endl();
         }
 
         /**
@@ -101,7 +104,7 @@ namespace XBot{
                 return;
             }
             
-            std::cout << "Closing socket fd " << fd << std::endl;
+            Logger::info() << "Closing socket fd " << fd << Logger::endl();
 
             close ( fd );
     #if !defined(__XENO__) && !defined(__COBALT__)

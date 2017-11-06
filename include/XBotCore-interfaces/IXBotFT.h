@@ -28,6 +28,8 @@
 #ifndef __I_X_BOT_FT_H__
 #define __I_X_BOT_FT_H__
 
+#include <XBotInterface/RtLog.hpp>
+
 namespace XBot
 {
     class IXBotFT;
@@ -49,7 +51,8 @@ public:
     virtual bool get_ft_rtt(int ft_id, double& rtt) = 0;
     
     virtual ~IXBotFT() {
-        printf("~IXBotFT()\n");
+        if(Logger::GetVerbosityLevel() == Logger::Severity::LOW)
+            std::cout << __func__ << std::endl;
     };
 };
 

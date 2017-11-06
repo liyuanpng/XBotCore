@@ -18,10 +18,12 @@
 */
 
 #include <XCM/MessageInterfaces/AdvrCommandMessage.h>
+#include <XBotInterface/RtLog.hpp>
 #include <ros/transport_hints.h> 
 
 SHLIBPP_DEFINE_SHARED_SUBCLASS(advrcommandmessage_control_message, XBot::CommandAdvr, XBot::GenericControlMessage);
 
+using XBot::Logger;
 
 void XBot::CommandAdvr::callback(XCM::CommandAdvrConstPtr msg)
 {
@@ -30,7 +32,7 @@ void XBot::CommandAdvr::callback(XCM::CommandAdvrConstPtr msg)
         int idx = getIndex(msg->name[i]);
 
         if(idx < 0){
-            std::cerr << "ERROR while parsing CommandAdvr message: joint " << msg->name[i] << " undefined" << std::endl;
+            Logger::warning() << "ERROR while parsing CommandAdvr message: joint " << msg->name[i] << " undefined" << Logger::endl();
             continue;
         }
 
@@ -73,7 +75,7 @@ bool XBot::CommandAdvr::service_callback(XCM::advr_controller_joint_namesRequest
 bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::GenericControlMessage::Type type)
 {
 
-    std::cout << "Initializing CommandAdvr message interface" << std::endl;
+    Logger::info() << "Initializing CommandAdvr message interface" << Logger::endl();
    
    std::string robot_name = XBot::ModelInterface::getModel(path_to_config_file)->getUrdf().getName();
    std::string joint_service_name = "/" + robot_name + "/position_controller/get_joint_names";
@@ -136,7 +138,7 @@ bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::Gener
 
     }
     
-    
+    Logger::success() << "Successfully initialized CommandAdvr message interface!" << Logger::endl();
     
     return true;
 
@@ -150,7 +152,7 @@ int XBot::CommandAdvr::getIndex(const std::string& joint_name)
         return it->second;
     }
     else{
-        std::cerr << "WARNING in " << __func__ << "! Joint " << joint_name << " is not defined inside the ROS controller!" << std::endl;
+        Logger::warning() << " in " << __func__ << "! Joint " << joint_name << " is not defined inside the ROS controller!" << Logger::endl();
         return -1;
     }
 

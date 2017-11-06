@@ -27,6 +27,7 @@
 #endif
 
 #include <XCM/XBotUtils.h>
+#include <XBotInterface/RtLog.hpp>
 
 namespace XBot{
     
@@ -149,7 +150,8 @@ private:
 
 inline XBot::Thread_hook::~Thread_hook() {
 
-    std::cout << "~" << typeid ( this ).name() << std::endl;
+    Logger::info() << "~Thread_hook()" << Logger::endl();
+    
 }
 
 inline int XBot::Thread_hook::is_non_periodic() {
@@ -203,7 +205,7 @@ inline void XBot::Thread_hook::create ( int rt=true, int cpu_nr=0 ) {
     pthread_attr_setschedparam ( &attr, &schedparam );
 
     pthread_attr_getstacksize ( &attr, &dflt_stacksize );
-    DPRINTF ( "default stack size %ld\n", dflt_stacksize );
+//     DPRINTF ( "default stack size %ld\n", dflt_stacksize );
     if ( stacksize > 0 ) {
         pthread_attr_setstacksize ( &attr, stacksize );
     }
@@ -244,7 +246,7 @@ inline XBot::Mutex::Mutex()
 
 inline void XBot::Mutex::lock()
 {
-    DPRINTF("lock()");
+//     DPRINTF("lock()");
     int ret = pthread_mutex_lock(&_mtx);
     if(ret != 0){
         printf("Error acquiring the mutex, code %d", ret);
@@ -253,7 +255,7 @@ inline void XBot::Mutex::lock()
 
 inline bool XBot::Mutex::try_lock()
 {
-    DPRINTF("try_lock()");
+//     DPRINTF("try_lock()");
     int ret = pthread_mutex_trylock(&_mtx);
     if(ret == EBUSY){
         return false;
@@ -267,7 +269,7 @@ inline bool XBot::Mutex::try_lock()
 
 inline void XBot::Mutex::unlock()
 {
-    DPRINTF("unlock()");
+//     DPRINTF("unlock()");
     int ret = pthread_mutex_unlock(&_mtx);
     if(ret != 0){
         printf("Error unlocking the mutex, code %d", ret);
