@@ -33,6 +33,7 @@ public:
     typedef std::shared_ptr<CommunicationInterface> Ptr;
 
     CommunicationInterface() {}
+    virtual ~CommunicationInterface() {};
     CommunicationInterface(XBotInterface::Ptr robot, 
                            XBot::XBotXDDP::Ptr xddp_handler = nullptr ):
         _robot(robot),

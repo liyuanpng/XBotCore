@@ -370,11 +370,11 @@ void XBot::CommunicationHandler::th_loop(void*)
 
 XBot::CommunicationHandler::~CommunicationHandler()
 {
-    if (loadWebServer) 
-      CommunicationInterfaceFactory::unloadLib("libwebserver");
+//     if (loadWebServer) 
+//       CommunicationInterfaceFactory::unloadLib("libwebserver");
 //      CommunicationInterfaceFactory::unloadLib("libros");
 //      CommunicationInterfaceFactory::unloadLib("libyarp");
-    _logger->flush();
+    if(_logger != nullptr) _logger->flush();
 }
 
 
