@@ -72,7 +72,7 @@ void XBot::XBotLoaderThread::set_thread_priority()
 
 void XBot::XBotLoaderThread::th_init( void * ){
   
-  sleep(3);
+  //sleep(3);
   loader = XBot::XBotCore::getLoader();
   loader->init_internal();
     
