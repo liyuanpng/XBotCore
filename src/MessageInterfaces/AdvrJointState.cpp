@@ -69,7 +69,7 @@ bool XBot::AdvrJointState::init(const std::string& path_to_config_file, GenericJ
     if( type == GenericJointStateMessage::Type::Tx ){
 
         // Choosing a random joint order for publishing
-        auto robot = XBot::RobotInterface::getRobot(path_to_config_file);
+        auto robot = XBot::RobotInterface::getRobot(path_to_config_file, "xddp_robot");
 
         _msg.effort.clear();
         _msg.link_position.clear();

@@ -89,7 +89,7 @@ bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::Gener
         
         _sub = nh.subscribe(command_topic_name, 1, &XBot::CommandAdvr::callback, this, ros::TransportHints().tcpNoDelay());
 
-        auto robot = XBot::RobotInterface::getRobot(path_to_config_file);
+        auto robot = XBot::RobotInterface::getRobot(path_to_config_file, "xddp_robot");
         robot->sense();
 
         XBot::JointNameMap _joint_pos, _joint_stiffness, _joint_damping;
