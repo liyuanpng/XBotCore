@@ -74,6 +74,7 @@ int main(int argc, char *argv[]) try {
     /* Command line parsing */
     
     std::string path_to_cfg;
+    std::string path_to_ch_cfg;
     bool use_dummy_hal = false;
     bool run_ch = true;
     
@@ -82,6 +83,7 @@ int main(int argc, char *argv[]) try {
         po::options_description desc("XBotCore. Available options");
         desc.add_options()
             ("config,C", po::value<std::string>(),"Path to custom config file. If not set, a default config file must be configured via set_xbot_config.")
+            ("ch-config", po::value<std::string>(),"Path to custom config file for the CommunicationHandler. If not set, the same of XBotCore is used.")
             ("dummy,D", "Use the dummy HAL implementation.")
             ("no-ch", "Do not run the CommunicationHandler")
             ("verbose,V", "Verbose mode.")
@@ -123,6 +125,13 @@ int main(int argc, char *argv[]) try {
             }
         }
         
+        if(vm.count("ch-config")){
+            path_to_ch_cfg = vm.at("ch-config").as<std::string>();
+        }
+        else{
+            path_to_ch_cfg = path_to_cfg;
+        }
+        
         if(vm.count("dummy")) {
             use_dummy_hal = true;
         }
@@ -131,13 +140,13 @@ int main(int argc, char *argv[]) try {
     }
 
 
-    Logger::info(Logger::Severity::HIGH) << "XBotCore using config file " << path_to_cfg << Logger::endl();
+    Logger::info(Logger::Severity::HIGH) << XBot::bold_on << "XBotCore using config file " << path_to_cfg << Logger::endl();
 
     main_common(shutdown);
 
 
     XBot::XBotCoreThread xbc( path_to_cfg.c_str(), use_dummy_hal ? "dummy" : nullptr );
-    XBot::CommunicationHandler ch( path_to_cfg.c_str() );
+    XBot::CommunicationHandler ch( path_to_ch_cfg.c_str() );
     
     xbc.create(true, 2);
     
@@ -159,6 +168,8 @@ int main(int argc, char *argv[]) try {
         ch.stop();
         ch.join();
     }
+    
+    XBot::MatLogger::FlushAll();
 
     Logger::info() << "XBotMain exiting" << Logger::endl();
 
