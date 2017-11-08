@@ -57,7 +57,9 @@ class XBot::XBotCore : public ControllerInterface
 public:
     
     XBotCore(const char * config_yaml,  const char* param);
-    XBotCore(const char * config_yaml, std::shared_ptr<HALInterface> halInterface);
+    XBotCore(const char * config_yaml, 
+             std::shared_ptr<HALInterface> halInterface, 
+             std::shared_ptr<XBot::TimeProviderFunction<boost::function<double()>>> time_provider = nullptr);
     virtual ~XBotCore();
     
     static std::shared_ptr<Loader> getLoader();
@@ -85,7 +87,9 @@ private:
     double get_time();
   
     std::shared_ptr<HALInterface> halInterface;
-     
+    
+    std::shared_ptr<XBot::TimeProviderFunction<boost::function<double()>>> _time_provider;
+    
     /**
      * @brief Path to YAML config file
      * 
