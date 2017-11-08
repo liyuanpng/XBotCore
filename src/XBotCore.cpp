@@ -91,9 +91,10 @@ XBot::XBotCore::XBotCore(const char* config_yaml,  const char* param) :
     if(!halInterface) exit(1);
 }
 
-XBot::XBotCore::XBotCore(const char* config_yaml, std::shared_ptr<HALInterface> halinterface) : 
+XBot::XBotCore::XBotCore(const char* config_yaml, std::shared_ptr<HALInterface> halinterface, std::shared_ptr<XBot::TimeProviderFunction<boost::function<double()>>> time_provider) : 
     _path_to_config(config_yaml)
 {        
+    _time_provider = time_provider;
     halInterface = halinterface;
     if(!halInterface) exit(1);
 }
@@ -122,11 +123,14 @@ void XBot::XBotCore::init_internal()
     
     // create time provider function
     boost::function<double()> time_func = boost::bind(&XBot::XBotCore::get_time, this);
-    // create time provider
-    auto time_provider = std::make_shared<XBot::TimeProviderFunction<boost::function<double()>>>(time_func);
+    
+    if (!_time_provider){
+      // create time provider
+      _time_provider = std::make_shared<XBot::TimeProviderFunction<boost::function<double()>>>(time_func);
+    }
     
     // create plugin handler
-    _pluginHandler = std::make_shared<XBot::PluginHandler>(_robot, time_provider, "XBotRTPlugins");
+    _pluginHandler = std::make_shared<XBot::PluginHandler>(_robot, _time_provider, "XBotRTPlugins");
     
     // define the XBotCore shared_memory for the RT plugins
     XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
