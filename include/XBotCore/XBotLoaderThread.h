@@ -23,7 +23,7 @@
 
 #include <XCM/XBotUtils.h>
 #include <XCM/XBotThread.h>
-#include <XBotCore/Loader.h>
+#include <XCM/Loader.h>
 #include <memory>
 
 

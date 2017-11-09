@@ -39,7 +39,7 @@
 #include <XCM/XBotPluginHandler.h>
 #include <XBotCore/HALInterface.h>
 #include <XBotCore/ControllerInterface.h>
-#include <XBotCore/Loader.h>
+#include <XCM/Loader.h>
 #include <XBotCore/XBotLoaderThread.h>
 
 namespace XBot
