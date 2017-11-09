@@ -339,7 +339,7 @@ void XBot::CommunicationHandler::th_loop(void*)
     }
 
     /* Update XDDP */
-     _xddp_handler->update();
+     _xddp_handler->updateRX();
 
     /* Read robot state from RT layer and update robot */
     _robot->sense(false);
@@ -365,6 +365,8 @@ void XBot::CommunicationHandler::th_loop(void*)
 
     /* Send received commands to the RT layer */
     _robot->move();
+    
+    _xddp_handler->updateTX();
 
 }
 
