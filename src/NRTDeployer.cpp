@@ -65,12 +65,16 @@ void XBot::NRTDeployer::th_init(void*)
     // loading and init_plugins
     _plugin_handler->load_plugins();
     _plugin_handler->init_plugins(shared_memory);
+    _loader = std::make_shared<Loader>(_plugin_handler);
+    _loader->init_internal();
+
 
 }
 
 void XBot::NRTDeployer::th_loop(void*)
 {
     _plugin_handler->run();
+    _loader->loop_internal();
 }
 
 XBot::NRTDeployer::~NRTDeployer()

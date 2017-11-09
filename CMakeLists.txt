@@ -205,7 +205,8 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/PluginFactory.cpp
                         src/IOPluginFactory.cpp
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES}
-                        ${RT_NRT_SRC}                        
+                        ${RT_NRT_SRC}  
+                        src/Loader.cpp
                         )
                         
 add_library(XCM_no_xeno SHARED ${XBotInterface_INCLUDES}
@@ -225,6 +226,7 @@ add_library(XCM_no_xeno SHARED ${XBotInterface_INCLUDES}
                         src/IOPluginFactory.cpp
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES}       
                         src/XBotNRT_thread.cpp
+                        src/Loader.cpp
                         )                        
 
 if(${catkin_FOUND})
