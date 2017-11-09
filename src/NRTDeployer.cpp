@@ -66,9 +66,6 @@ void XBot::NRTDeployer::th_init(void*)
     _plugin_handler->load_plugins();
     _plugin_handler->init_plugins(shared_memory);
 
-    
-
-
 }
 
 void XBot::NRTDeployer::th_loop(void*)

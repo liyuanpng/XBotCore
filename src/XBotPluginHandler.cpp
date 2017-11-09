@@ -340,9 +340,6 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
             // NOTE handling cmd for NRTPlugin in CH style
             _plugin_cmd[i] = std::make_shared<XBot::NRT_ROS_Subscriber>();
             _plugin_cmd[i]->init(_rtplugin_names[i]+"_cmd");
-            // pipes
-            std::string command_name = _rtplugin_names[i] + "_cmd";
-            _command_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(command_name));
         }
 
         // initialize pub/sub
@@ -513,14 +510,6 @@ void PluginHandler::run()
                 }
                 
                 _plugin_cmd[i]->read((plugin)->getCmd());
-                
-                // NOTE in the NRT case read the cmd from ROS and send it trough the pipes
-                if( !_is_RT_plugin_handler ) {
-                    
-                    if( _plugin_cmd[i]->read(cmd) ) {
-                        _command_pub_vector[i].write(cmd);
-                    }
-                }
 
                 double tic = _time_provider->get_time();
                 (plugin)->run(_time[i], _period[i]);

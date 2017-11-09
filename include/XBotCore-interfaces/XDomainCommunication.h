@@ -247,13 +247,13 @@ template <typename DataType>
 void PublisherNRT<DataType>::init(const std::string& socket_name)
 {
 
-    Logger::info() << "Opening " << pipe_prefix+socket_name << "..." << Logger::endl();
-
     #ifndef __XENO__
       const char* env_user = std::getenv("USER");
       std::string pipe_prefix = std::string("/tmp/")+env_user+std::string("/");
     #endif    
-	    
+    
+    Logger::info() << "Opening " << pipe_prefix+socket_name << "..." << Logger::endl();
+    
     while( _fd < 0 ){
         _fd = open((pipe_prefix + socket_name).c_str(), O_WRONLY | O_NONBLOCK);
         if(_fd < 0)
@@ -317,12 +317,12 @@ template <typename DataType>
 void SubscriberNRT<DataType>::init(const std::string& socket_name)
 {
 
-    Logger::info() << "Opening " << pipe_prefix+socket_name << "..." << Logger::endl();
-
    #ifndef __XENO__
       const char* env_user = std::getenv("USER");
       std::string pipe_prefix = std::string("/tmp/")+env_user+std::string("/");
     #endif    
+    
+    Logger::info() << "Opening " << pipe_prefix+socket_name << "..." << Logger::endl();
       
     while( _fd < 0 ){
         _fd = open((pipe_prefix + socket_name).c_str(), O_RDONLY | O_NONBLOCK);

@@ -278,7 +278,7 @@ install(TARGETS CommunicationHandler
         RUNTIME DESTINATION bin)
 
 add_executable(NRTDeployer src/NRTDeployer.cpp src/NRTDeployerMain.cpp)
-target_link_libraries(NRTDeployer XCM_no_xeno)
+target_link_libraries(NRTDeployer XCM_no_xeno ${Boost_LIBRARIES})
 # target_link_libraries(NRTDeployer webserver )
 
 install(TARGETS NRTDeployer
