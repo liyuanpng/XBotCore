@@ -88,7 +88,7 @@ public:
   
 private:
   
-  PluginFactory() = delete;
+  SoLib() = delete;
   
   static std::map<std::string, void*> handles;
   
