@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#include <XBotCore/Loader.h>
+#include <XCM/Loader.h>
 #include <boost/bind.hpp>
 #include <string>
 #include <atomic>
