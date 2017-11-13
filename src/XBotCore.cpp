@@ -3,6 +3,7 @@
 
    Developer:
        Luca Muratore (2016-, luca.muratore@iit.it)
+       Arturo Laurenzi (2016-, arturo.laurenzi@iit.it)
        Giuseppe Rigano (2017, giuseppe.rigano@iit.it)
        
  * This program is free software: you can redistribute it and/or modify
@@ -23,12 +24,20 @@
 /**
  *
  * @author Luca Muratore (2016-, luca.muratore@iit.it)
+ * @author Arturo Laurenzi (2016-, arturo.laurenzi@iit.it)
  * @author Giuseppe Rigano (2017-, giuseppe.rigano@iit.it)
 */
 
-#include <XBotCore/XBotCore.h>
+
 #include <boost/bind.hpp>
+#include <XBotCore/XBotCore.h>
 #include <XBotCore/HALInterfaceFactory.h>
+
+
+#include <XBotInterface/Utils.h>
+#include <XBotInterface/RtLog.hpp>
+
+using XBot::Logger;
 
 std::shared_ptr<Loader> XBot::XBotCore::loaderptr;
 
@@ -37,7 +46,25 @@ XBot::XBotCore::XBotCore(const char* config_yaml,  const char* param) :
 {        
    
     YAML::Node root_cfg = YAML::LoadFile(config_yaml);
-    const YAML::Node &hal_lib = root_cfg["HALInterface"];
+    
+    YAML::Node x_bot_core, root;
+    
+    // check gains in XBotCore node specifing config path YAML
+    if(root_cfg["XBotCore"]) {
+        x_bot_core = root_cfg["XBotCore"];
+            
+        if(x_bot_core["config_path"]) {
+            
+            Logger::info() << "Path to config is " << x_bot_core["config_path"].as<std::string>() << Logger::endl();
+            
+            Logger::info() << "Abs path to config is " << XBot::Utils::computeAbsolutePath(x_bot_core["config_path"].as<std::string>()) << Logger::endl();
+            
+            root = YAML::LoadFile(XBot::Utils::computeAbsolutePath(x_bot_core["config_path"].as<std::string>()));
+        }
+    }
+
+    
+    const YAML::Node &hal_lib = root["HALInterface"];
     
     lib_file = "";
     std::string lib_name="";
@@ -64,9 +91,10 @@ XBot::XBotCore::XBotCore(const char* config_yaml,  const char* param) :
     if(!halInterface) exit(1);
 }
 
-XBot::XBotCore::XBotCore(const char* config_yaml, std::shared_ptr<HALInterface> halinterface) : 
+XBot::XBotCore::XBotCore(const char* config_yaml, std::shared_ptr<HALInterface> halinterface, std::shared_ptr<XBot::TimeProviderFunction<boost::function<double()>>> time_provider) : 
     _path_to_config(config_yaml)
 {        
+    _time_provider = time_provider;
     halInterface = halinterface;
     if(!halInterface) exit(1);
 }
@@ -91,15 +119,18 @@ void XBot::XBotCore::init_internal()
     (*anymap)["XBotHand"] = boost::any(xbot_hand);
     
     //TODO use isRT from RobotControlInterface robotInterface.IsRt()
-    _robot = XBot::RobotInterface::getRobot(_path_to_config, anymap, "XBotRT");
+    _robot = XBot::RobotInterface::getRobot(_path_to_config, "", anymap, "XBotRT");
     
     // create time provider function
     boost::function<double()> time_func = boost::bind(&XBot::XBotCore::get_time, this);
-    // create time provider
-    auto time_provider = std::make_shared<XBot::TimeProviderFunction<boost::function<double()>>>(time_func);
+    
+    if (!_time_provider){
+      // create time provider
+      _time_provider = std::make_shared<XBot::TimeProviderFunction<boost::function<double()>>>(time_func);
+    }
     
     // create plugin handler
-    _pluginHandler = std::make_shared<XBot::PluginHandler>(_robot, time_provider, "XBotRTPlugins");
+    _pluginHandler = std::make_shared<XBot::PluginHandler>(_robot, _time_provider, "XBotRTPlugins");
     
     // define the XBotCore shared_memory for the RT plugins
     XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
@@ -147,10 +178,9 @@ void XBot::XBotCore::loop_internal()
 XBot::XBotCore::~XBotCore() {
     
     _pluginHandler->close();
-    printf("Iteration: %d \n", _iter);
-    //if( lib_file != "")
-        //HALInterfaceFactory::unloadLib(lib_file, halInterface.get());
-    printf("~XBotCore()\n");
+    
+    Logger::info() << "~XBotCore()" << Logger::endl();
+    
     loaderth->stop();
     loaderth->join();
     delete loaderth;
