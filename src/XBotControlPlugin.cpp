@@ -29,6 +29,17 @@ XBotControlPlugin::XBotControlPlugin()
 XBotControlPlugin::~XBotControlPlugin()
 {
 
+  Logger::info() << "~XBotControlPlugin" << Logger::endl();
+}
+
+XBot::Command&  XBotControlPlugin::getCmd(){
+  
+  return current_command;
+}
+
+void XBotControlPlugin::setCmd( XBot::Command& cmd){
+  
+  current_command = cmd;
 }
 
 bool XBotControlPlugin::init(std::string path_to_config_file,
@@ -54,10 +65,10 @@ bool XBotControlPlugin::init(std::string path_to_config_file,
     (*any_map)["XBotIMU"] = boost::any(imu);
     (*any_map)["XBotHand"] = boost::any(hand);
     
-    RobotInterface::Ptr robotinterface = RobotInterface::getRobot(path_to_config_file, any_map);
+    RobotInterface::Ptr robotinterface = RobotInterface::getRobot(path_to_config_file, "", any_map);
     
     // initialize the command port
-    command.init(name + "_cmd");
+    //command.init(name + "_cmd");
     _custom_status = cstatus;
 
     return init_control_plugin(path_to_config_file, shared_memory, robotinterface);

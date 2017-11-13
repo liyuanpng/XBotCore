@@ -17,60 +17,85 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#include <XCM/XBotCommunicationInterfaceFactory.h>
+
+#ifndef __SO_LIB_H__
+#define __SO_LIB_H__
+
+#include <map>
+#include <string>
+#include <iostream>
+
+#include <dlfcn.h>
 #include <XBotInterface/RtLog.hpp>
+
+#define REGISTER_SO_LIB_(class_name, base_class) \
+extern "C" base_class* create_instance() \
+{ \
+  return new  class_name(); \
+}\
+\
+extern "C" void destroy_instance( base_class* instance ) \
+{ \
+  delete instance; \
+}\
 
 using XBot::Logger;
 
-std::map<std::string, void*> CommunicationInterfaceFactory::handles;
+namespace{
 
+class SoLib {
 
-std::shared_ptr<XBot::CommunicationInterface> CommunicationInterfaceFactory::getFactory(const std::string& file_name,
-                                                                                        const std::string& lib_name,
-                                                                                        XBot::RobotInterface::Ptr _robot )
-{
+public:
+  
+  template <class T>
+  static std::shared_ptr<T> getFactory(const std::string& path_to_so, const std::string& lib_name)
+  {
 
     char *error;  
-    std::string path_to_so;  
-    computeAbsolutePath(file_name, "/build/install/lib/", path_to_so);
-    path_to_so += std::string(".so");
     void* lib_handle;
     lib_handle = dlopen(path_to_so.c_str(), RTLD_NOW);
     if (!lib_handle) {
-        Logger::error() << lib_name << " INTERFACE NOT found! \n" << dlerror() << Logger::endl();
+        XBot::Logger::error() << lib_name <<" so library NOT found! \n" << dlerror() << XBot::Logger::endl();
+        fprintf(stderr, "%s\n", dlerror());
+        //exit(1);
     }
     else     
     {
-        Logger::success(Logger::Severity::MID) << lib_name <<" INTERFACE found! " << Logger::endl();
-        handles[file_name] = lib_handle;
+        Logger::success(Logger::Severity::MID) << lib_name << " so library found! " << Logger::endl();
+        handles[lib_name] = lib_handle;
       
-        XBot::CommunicationInterface* (*create)(XBot::RobotInterface::Ptr);
-        create = (XBot::CommunicationInterface* (*)(XBot::RobotInterface::Ptr))dlsym(lib_handle, "create_instance");
+        T* (*create)();
+        create = (T* (*)())dlsym(lib_handle, "create_instance");
         if ((error = dlerror()) != NULL) {
             fprintf(stderr, "%s\n", error);
             exit(1);
-        }
+        }        
         
-        XBot::CommunicationInterface* instance =(XBot::CommunicationInterface*)create(_robot);
+        T* instance =(T*)create();
         if( instance != nullptr){
-          return std::shared_ptr<XBot::CommunicationInterface>(instance);
+          return std::shared_ptr<T>(instance);
         }
      }
     return nullptr;
     
 }
-
-void CommunicationInterfaceFactory::unloadLib(const std::string& file_name)
-{
-
-  dlclose( handles[file_name] );
-  Logger::info() << file_name <<" INTERFACE unloaded! " << Logger::endl();
-}
-
-bool CommunicationInterfaceFactory::computeAbsolutePath (  const std::string& input_path,
-                                                        const std::string& middle_path,
-                                                        std::string& absolute_path)
-{
+  
+  static void unloadLib(const std::string& file_name)
+  {
+    dlclose( handles[file_name] );
+    std::cout << file_name <<" so library unloaded! " << std::endl;
+  }
+  
+private:
+  
+  SoLib() = delete;
+  
+  static std::map<std::string, void*> handles;
+  
+  static bool computeAbsolutePath ( const std::string& input_path,
+                                      const std::string& middle_path,
+                                      std::string& absolute_path )
+  {
     // if not an absolute path
     if(!(input_path.at(0) == '/')) {
         // if you are working with the Robotology Superbuild
@@ -93,3 +118,11 @@ bool CommunicationInterfaceFactory::computeAbsolutePath (  const std::string& in
     absolute_path = input_path;
     return true;
 }
+  
+
+};
+
+std::map<std::string, void*> SoLib::handles;
+}
+
+#endif

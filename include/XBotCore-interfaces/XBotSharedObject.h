@@ -25,202 +25,134 @@
 #include <memory>
 #include <iostream>
 
+#include <XCM/XBotThread.h>
+
 namespace XBot {
+    
+class SharedMemory;
 
 /**
-* @brief SharedObjects is a wrapper around a double pointer, which is used to
-* share objects over a SharedMemory. SharedObjects provide access to the underlying
-* via pointer semantics, meaning that it provides access to the underlying shared object of type T
-* by the operator* and operator->.
+* @brief SharedObjects is a wrapper around an object, which is used to
+* share it over a SharedMemory. SharedObjects provide synchronized access to the underlying object
+* via get()/set() methods.
 *
 */
 template<typename T>
 class SharedObject {
 
 public:
-
-
+    
+    friend class SharedMemory;
 
     SharedObject();
-
-    SharedObject(T* dynamically_allocated_object);
-
-    /**
-     * @brief Resets the SharedObject with a dynamically-allocated one, provided as an argument.
-     * SharedObject class must take the ownership of the provided pointer, meaning that the caller
-     * must NOT call delete on it. The recomended way of calling reset is
-     *
-     * reset( new T(args...) );
-     *
-     * @param dynamically_allocated_object A pointer to an object of type T, obtained via a call to new.
-     * @return void
-     */
-    void reset(T* dynamically_allocated_object);
-
-    /**
-     * @brief Pointer-like operator*, which gives R/W access to the underlying shared object.
-     *
-     * @return A reference to the underlying object.
-     */
-    T& operator*();
-
-    /**
-     * @brief Pointer-like operator*, which gives read access to the underlying shared object.
-     *
-     * @return A const reference to the underlying object.
-     */
-    const T& operator*() const;
-
-    /**
-     * @brief Pointer-link operator->(), used to access underlying object methods.
-     *
-     */
-    T* operator->();
-
-    /**
-     * @brief Pointer-link operator->(), used to access underlying object methods.
-     *
-     */
-    const T* operator->() const;
-
-    /**
-     * @brief Gets a shared pointer to the underlying object.
-     */
-    std::shared_ptr<T> get();
-
-    /**
-     * @brief Gets a shared pointer to the underlying object.
-     */
-    std::shared_ptr<const T> get() const;
-
-    /**
-     * @brief Set the SharedObject in a valid state, meaning that meaningful
-     * information is present in it. The validity of a SharedObject can be
-     * checked by calling isValid()
-     *
-     */
-    bool setValid();
-
-    /**
-     * @brief Check if SharedObject was set in a valid state.
-     */
+    
+    void set(const T& obj);
+    
+    void get(T& obj) const;
+    
+    bool try_set(const T& obj);
+    
+    bool try_get(T& obj) const;
+    
+    explicit operator bool() const;
+    
     bool isValid() const;
+    
+    const std::string& getName() const;
 
-    /**
-     * @brief Check if the SharedObject is null.
-     */
-    bool isNull() const;
+    
 
 protected:
 
 private:
+    
+    SharedObject(T * obj, 
+                 Mutex * mtx, 
+                 std::string name);
 
-    std::shared_ptr<std::shared_ptr<T>> _ptrptr;
-    bool _is_valid;
+    Mutex * _mtx;
+    
+    T * _obj;
+    
+    std::string _name;
 
 };
 
+template< typename T >
+SharedObject<T>::SharedObject(T * obj, Mutex * mtx, std::string name):
+    _mtx(mtx),
+    _obj(obj),
+    _name(name)
+{
+    
+}
 
-template<typename T>
+template< typename T >
 SharedObject<T>::SharedObject():
-    _is_valid(false)
+    _mtx(nullptr),
+    _obj(nullptr),
+    _name("")
 {
-    _ptrptr = std::make_shared<std::shared_ptr<T>>();
+    
 }
 
-template<typename T>
-SharedObject<T>::SharedObject(T* dynamically_allocated_object):
-    _is_valid(false)
+template< typename T >
+void SharedObject<T>::get(T& obj) const
 {
-    _ptrptr = std::make_shared<std::shared_ptr<T>>();
-    *_ptrptr = std::shared_ptr<T>(dynamically_allocated_object);
+    std::lock_guard<Mutex> guard(*_mtx);
+    
+    obj = *_obj;
 }
 
-template<typename T>
-void SharedObject<T>::reset(T* dynamically_allocated_object)
+template< typename T >
+void SharedObject<T>::set(const T& obj)
 {
-    *_ptrptr = std::shared_ptr<T>(dynamically_allocated_object);
+    std::lock_guard<Mutex> guard(*_mtx);
+    
+    *_obj = obj;
 }
 
-template<typename T>
-std::shared_ptr<const T> SharedObject<T>::get() const
+template< typename T >
+bool SharedObject<T>::try_get(T& obj) const
 {
-    return *_ptrptr;
-}
-
-template<typename T>
-std::shared_ptr<T> SharedObject<T>::get()
-{
-    return *_ptrptr;
-}
-
-template<typename T>
-const T& SharedObject<T>::operator*() const
-{
-    if(!isNull()) {
-        return **_ptrptr;
-    }
-    else {
-        std::cerr << "ERROR in XBotSharedObject: the requested shared objected was not initialized. You must call the reset() on the XBotSharedObject." << std::endl;
-    }
-}
-
-template<typename T>
-T& SharedObject<T>::operator*()
-{
-    if(!isNull()) {
-        return **_ptrptr;
-    }
-    else {
-        std::cerr << "ERROR in XBotSharedObject: the requested shared objected was not initialized. You must call the reset() on the XBotSharedObject." << std::endl;
-    }
-}
-
-template<typename T>
-const T* SharedObject<T>::operator->() const
-{
-    if(!isNull()) {
-        return _ptrptr->get();
-    }
-    else {
-        std::cerr << "ERROR in XBotSharedObject: the requested shared objected was not initialized. You must call the reset() on the XBotSharedObject." << std::endl;
-    }
-}
-
-template<typename T>
-T* SharedObject<T>::operator->()
-{
-    if(!isNull()) {
-        return _ptrptr->get();
-    }
-    else {
-        std::cerr << "ERROR in XBotSharedObject: the requested shared objected was not initialized. You must call the reset() on the XBotSharedObject." << std::endl;
-    }
-}
-
-template<typename T>
-bool SharedObject<T>::isNull() const
-{
-    return !*_ptrptr;
-}
-
-template<typename T>
-bool SharedObject<T>::isValid() const
-{
-    return !isNull() && _is_valid;
-}
-
-template<typename T>
-bool SharedObject<T>::setValid()
-{
-    if(*_ptrptr){
-        _is_valid = true;
-    }
-    else{
-        std::cerr << "ERROR in " << __func__ << "! Current shared object is null!" << std::endl;
+    if(!_mtx->try_lock()){
         return false;
     }
+    
+    obj = *_obj;
+    
+    _mtx->unlock();
+    
+    return true;
 }
+
+template< typename T >
+bool SharedObject<T>::try_set(const T& obj)
+{
+    if(!_mtx->try_lock()){
+        return false;
+    }
+    
+    *_obj = obj;
+    
+    _mtx->unlock();
+    
+    return true;
+}
+
+template< typename T >
+const std::string& SharedObject<T>::getName() const
+{
+    return _name;
+}
+
+template< typename T >
+SharedObject<T>::operator bool () const 
+{
+    return _obj && _mtx && (_name != "");
+}
+
+
 
 
 }

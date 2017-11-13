@@ -19,7 +19,7 @@
 
 #include <XBotPlugin/XBotCommunicationPlugin.h>
 
-REGISTER_XBOT_PLUGIN(XBotCommunicationPlugin, XBot::XBotCommunicationPlugin)
+REGISTER_XBOT_PLUGIN_(XBot::XBotCommunicationPlugin)
 
 XBot::XBotCommunicationPlugin::XBotCommunicationPlugin()
 {
@@ -44,10 +44,11 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
     }
 
     // initialize filter
-    _filter_q = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*1.0, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
-    _filter_k = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*1.0, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
-    _filter_d = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*1.0, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
-    _filter_qdot = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*1.0, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    int cutoff_freq = 1.0;
+    _filter_q = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*cutoff_freq, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    _filter_k = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*cutoff_freq, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    _filter_d = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*cutoff_freq, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    _filter_qdot = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*cutoff_freq, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
 
     
     // NOTE filter ON by default
@@ -57,7 +58,7 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
     _robot->getDamping(_dref);
     _robot->getJointVelocity(_qdotref);
  
-    DPRINTF("Filter ON by default\n");
+    Logger::warning() << "Filter ON by default, cutoff frequency is " << cutoff_freq << " Hz" << Logger::endl();
 
     for (auto& p: _robot->getHand())
     {
@@ -98,7 +99,7 @@ void XBot::XBotCommunicationPlugin::on_stop(double time)
 void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
 {
 
-    if(command.read(current_command)){
+    //if(command.read(current_command)){
         if(current_command.str() == "filter ON"){
             _filter_q.setOmega(2*3.1415*1.0);
             _filter_k.setOmega(2*3.1415*1.0);
@@ -111,7 +112,7 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
             _filter_d.setOmega(2*3.1415*200);
             _filter_qdot.setOmega(2*3.1415*200);
         }
-    }
+    //}
     
    
      
@@ -184,7 +185,7 @@ bool XBot::XBotCommunicationPlugin::close(void)
 
 XBot::XBotCommunicationPlugin::~XBotCommunicationPlugin()
 {
-    printf("~XBotCommunicationPlugin()\n");
+    Logger::info() << "~XBotCommunicationPlugin()" << Logger::endl();
 }
 
 

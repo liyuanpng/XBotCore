@@ -8,6 +8,7 @@
 #include <rosgraph_msgs/Clock.h>
 
 #include <XCM/XBotPluginHandler.h>
+#include <XBotInterface/Utils.h>
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
@@ -24,6 +25,8 @@ int main(int argc, char **argv){
 
     ros::init(argc, argv, "DummyMain");
     ros::NodeHandle nh;
+
+    nh.setParam("/use_sim_time", true);
     
     /* Command line parsing */
     
@@ -58,11 +61,26 @@ int main(int argc, char **argv){
             provide_clock = true;
         }
     }
-
+    
+    
+ // config file handling
+ 
+    if ( argc != 2 ) {
+        // check the default path
+        path_to_cfg = XBot::Utils::getXBotConfig();
+        if(path_to_cfg == "") {
+            printf ( "Usage: %s config.yaml\nOr set_xbot_config config.yaml && %s\n", argv[0], argv[0] );
+            return 0;
+        }
+    }
+    else {
+        path_to_cfg = argv[1];
+    }
 
     if(provide_clock){
         nh.setParam("/use_sim_time", true);
     }
+    
     
     ros::Publisher clock_pub = nh.advertise<rosgraph_msgs::Clock>("/clock", 1);
 
@@ -71,8 +89,8 @@ int main(int argc, char **argv){
 
 
     std::string framework = "DUMMY";
-
-    RobotInterface::Ptr robot = RobotInterface::getRobot(path_to_cfg, AnyMapPtr(), framework);
+	std::cout << "Using config file : " << path_to_cfg << std::endl;
+    RobotInterface::Ptr robot = RobotInterface::getRobot(path_to_cfg, "", AnyMapPtr(), framework);
 
 
     auto time_provider = std::make_shared<SimpleTimeProvider>();
@@ -123,10 +141,6 @@ int main(int argc, char **argv){
         time_acc(elapsed_time);
 
         usleep(std::max(.0, 1000 - elapsed_time*1e6));
-
-        
-        
-
 
     }
     

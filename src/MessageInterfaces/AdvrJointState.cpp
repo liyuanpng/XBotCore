@@ -19,6 +19,10 @@
 
 #include <XCM/MessageInterfaces/AdvrJointState.h>
 #include <ros/transport_hints.h>
+#include <XBotInterface/Utils.h>
+
+#include <XBotInterface/RtLog.hpp>
+using XBot::Logger;
 
 SHLIBPP_DEFINE_SHARED_SUBCLASS(advrjointstate_jointstate_message, XBot::AdvrJointState, XBot::GenericJointStateMessage);
 
@@ -32,21 +36,13 @@ XBot::AdvrJointState::AdvrJointState():
 bool XBot::AdvrJointState::init(const std::string& path_to_config_file, GenericJointStateMessage::Type type)
 {
 
-    std::cout << "Initializing AdvrJointState message interface!" << std::endl;
+    Logger::info() << "Initializing AdvrJointState message interface!" << Logger::endl();
 
-    YAML::Node root_cfg = YAML::LoadFile(path_to_config_file);
-
-    // TBD check if they exist
-    const YAML::Node &jointstate_root = root_cfg["AdvrJointStateMessage"];
-    if(!jointstate_root){
-        std::cerr << "ERROR in " << __func__ << "! Provided config file does not contain mandatory node \"JointState\" " << std::endl;
-        return false;
-    }
-
-    _topic_name = jointstate_root["joint_state_topic_name"].as<std::string>();
-
+    std::string robot_name = XBot::ModelInterface::getModel(path_to_config_file)->getUrdf().getName();
+    _topic_name = "/xbotcore/" + robot_name + "/joint_states";
+    
     ros::NodeHandle nh;
-    _sub = nh.subscribe(_topic_name, 1, &AdvrJointState::callback, this, ros::TransportHints().tcpNoDelay());
+    _sub = nh.subscribe(_topic_name, 1, &AdvrJointState::callback, this);
 
 
     // Max number of attempts to connect to /joint_states topic
@@ -64,7 +60,7 @@ bool XBot::AdvrJointState::init(const std::string& path_to_config_file, GenericJ
         }
 
         if (!_msg_received) {
-            std::cerr << "ERROR No message received on topic " << _topic_name << "! Read() won't work!!" << std::endl;
+            Logger::error() << "No message received on topic " << _topic_name << "! Read() won't work!!" << Logger::endl();
             return false;
         }
 
@@ -73,7 +69,7 @@ bool XBot::AdvrJointState::init(const std::string& path_to_config_file, GenericJ
     if( type == GenericJointStateMessage::Type::Tx ){
 
         // Choosing a random joint order for publishing
-        auto robot = XBot::RobotInterface::getRobot(path_to_config_file);
+        auto robot = XBot::RobotInterface::getRobot(path_to_config_file, "xddp_robot");
 
         _msg.effort.clear();
         _msg.link_position.clear();
@@ -122,6 +118,8 @@ bool XBot::AdvrJointState::init(const std::string& path_to_config_file, GenericJ
     // Get a publisher
     _pub = nh.advertise<XCM::JointStateAdvr>(_topic_name, 1);
 
+    Logger::success() << "Successfully initialized AdvrJointState message interface!" << Logger::endl();
+    
     return true;
 }
 
@@ -134,7 +132,7 @@ int XBot::AdvrJointState::getIndex(const std::string& joint_name)
         return it->second;
     }
     else{
-        std::cerr << "WARNING in " << __func__ << "! Joint " << joint_name << " is not defined inside the ROS joint state message!" << std::endl;
+        Logger::warning() << "in " << __func__ << "! Joint " << joint_name << " is not defined inside the ROS joint state message!" << Logger::endl();
         return -1;
     }
 }

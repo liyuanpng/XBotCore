@@ -110,7 +110,7 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
 	sharedData->insertChain(key,val);
     }
     
-    std::cout<<"XBotCore server running at http://"<<aport<<std::endl;        
+    Logger::info(Logger::Severity::MID) << "XBotCore server running at http://" << aport << Logger::endl();
 }
 
 void CommunicationInterfaceWebServer::sendRobotState()

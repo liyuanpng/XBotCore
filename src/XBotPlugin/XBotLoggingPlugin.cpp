@@ -20,7 +20,7 @@
 #include <XBotPlugin/XBotLoggingPlugin.h>
 #include <XCM/XBotUtils.h>
 
-REGISTER_XBOT_PLUGIN(XBotLoggingPlugin, XBot::XBotLoggingPlugin)
+REGISTER_XBOT_PLUGIN_(XBot::XBotLoggingPlugin)
 
 XBot::XBotLoggingPlugin::XBotLoggingPlugin()
 {
@@ -82,6 +82,6 @@ bool XBot::XBotLoggingPlugin::close(void)
 
 XBot::XBotLoggingPlugin::~XBotLoggingPlugin()
 {
-    printf("~XBotLoggingPlugin()\n");
+    Logger::info() << "~XBotLoggingPlugin()" << Logger::endl();
 }
 

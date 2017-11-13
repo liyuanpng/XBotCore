@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include <XCM/XBotThread.h>
+#include <XBotInterface/RtLog.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -13,8 +14,8 @@ void * XBot::nrt_thread ( Thread_hook_Ptr th_hook ) {
     // INIT
     th_hook->th_init ( 0 );
 
-    DPRINTF ( "NRT THREAD INIT: name = %s, period %ld us\n",
-              ( *th_hook ).name, ( *th_hook ).period.period.tv_usec );
+    Logger::info() << "THREAD INIT: name = " << th_hook->name << ", period " << th_hook->period.period.tv_usec << " us" << Logger::endl();
+
 
     int ret = 0;
 #ifdef __XENO__
@@ -27,6 +28,8 @@ void * XBot::nrt_thread ( Thread_hook_Ptr th_hook ) {
                   th_hook->name, ret );
         exit ( 1 );
     }
+    
+    Logger::success(Logger::Severity::HIGH) << "Thread " << th_hook->name << ": start looping" << Logger::endl();
 
     clock_gettime ( CLOCK_MONOTONIC ,&t );
 
@@ -42,7 +45,7 @@ void * XBot::nrt_thread ( Thread_hook_Ptr th_hook ) {
         tsnorm ( &t );
     }
 
-    DPRINTF ( "EXIT NRT THREAD : name = %s\n", ( *th_hook ).name );
+    Logger::info(Logger::Severity::HIGH) << "Cleanly exiting NRT thread: " << ( *th_hook ).name << Logger::endl(); 
 
     return 0;
 

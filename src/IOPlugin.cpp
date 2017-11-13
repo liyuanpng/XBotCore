@@ -20,7 +20,7 @@
 #include <XCM/IOPlugin.h>
 
 namespace XBot {
-
+/*
 bool IOPluginLoader::load(std::string plugin_name)
 {
     _ioplugin_factory.reset(new shlibpp::SharedLibraryClassFactory<IOPlugin>);
@@ -81,6 +81,6 @@ bool IOPluginLoader::computeAbsolutePath (const std::string& input_path,
     // already an absolute path
     absolute_path = input_path;
     return true;
-}
+}*/
 
 }

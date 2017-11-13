@@ -156,11 +156,10 @@ XBot::XBotCoreModel XBot::XBotXDDP::get_robot_model()
 
 bool XBot::XBotXDDP::init()
 {
-   DPRINTF("XBotXDDP INIT\n");
    return true;
 }
 
-void XBot::XBotXDDP::update()
+void XBot::XBotXDDP::updateTX()
 {
     // Motor + hands
     for( auto& f: fd_read) {
@@ -169,6 +168,13 @@ void XBot::XBotXDDP::update()
         XBot::RobotState::pdo_tx actual_pdo_tx = pdo_motor.at(f.first)->RobotStateTX;
         fd_write.at(f.first).write(actual_pdo_tx);
 
+    }
+}
+
+void XBot::XBotXDDP::updateRX()
+{
+    // Motor + hands
+    for( auto& f: fd_read) {
         // NOTE the single joint element can only be controlled by either the RT or the N-RT!
 
         // reading from the NRT subscriber pipes to update the RobotStateRX in the pdo_motor buffer
@@ -472,7 +478,7 @@ double XBot::XBotXDDP::get_grasp_state(int hand_id)
 
 XBot::XBotXDDP::~XBotXDDP()
 {
-    printf("~XBotXDDP()\n");
+//     Logger::info() << "~XBotXDDP()" << Logger::endl();
 }
 
 bool XBot::XBotXDDP::computeAbsolutePath (  const std::string& input_path,

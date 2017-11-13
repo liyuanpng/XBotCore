@@ -3,8 +3,13 @@
 
 #include <stddef.h>
 
+#ifdef __XENO__
 #include <rtdk.h>
 #include <rtdm/rtipc.h>
+#elif defined(__COBALT__)
+#include <stdio.h>
+#include <rtdm/ipc.h>
+#endif
 
 /*
 XDDP stands for "cross-domain datagram protocol", i.e. to exchange

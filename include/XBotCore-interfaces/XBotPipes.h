@@ -24,7 +24,7 @@
 #include <memory>
 #include <iostream>
 
-#ifdef __XENO__
+#if defined( __XENO__ ) || defined( __COBALT__ )
 #include <XBotCore-interfaces/XBotRT_ipc.h>
 #else
 #include <sys/types.h>
@@ -35,8 +35,11 @@
 #include <unistd.h>
 
 #include <XCM/XBotUtils.h>
+#include <XBotInterface/RtLog.hpp>
 
-#ifdef __XENO__
+using XBot::Logger;
+
+#if defined( __XENO__ ) || defined( __COBALT__ )
     static const std::string pipe_prefix ( "/proc/xenomai/registry/rtipc/xddp/" );
 #else
     static const std::string pipe_prefix ( "/tmp/" );
@@ -86,13 +89,13 @@ namespace XBot{
    
             std::string pipe = pipe_prefix + pipe_name;
 
-            #ifdef __XENO__
+            #if defined( __XENO__ ) || defined( __COBALT__ )
                     fd = xddp_bind ( pipe_name.c_str(), pool_size );
             #else
                     mkfifo ( pipe.c_str(), S_IRWXU|S_IRWXG );
                     fd = open ( pipe.c_str(), O_RDWR | O_NONBLOCK );
             #endif
-                    DPRINTF ( " .... open %s\n", pipe.c_str() );
+                    Logger::info() << "Opened pipe " << pipe << Logger::endl();
         }
 
         /**
@@ -106,10 +109,10 @@ namespace XBot{
                 return;
             }
             
-            std::cout << "Closing socket fd " << fd << std::endl;
+            Logger::info() << "Closing socket fd " << fd << Logger::endl();
 
             close ( fd );
-    #ifndef __XENO__
+    #if !defined(__XENO__) && !defined(__COBALT__)
             std::string pipe = pipe_prefix + pipe_name;
             unlink ( pipe.c_str() );
     #endif
@@ -153,7 +156,7 @@ namespace XBot{
             if ( fd <= 0 ) { return 0; }
             /////////////////////////////////////////////////////////
             // NON-BLOCKING, read buff_size byte from pipe or cross domain socket
-    #if __XENO__
+    #if defined( __XENO__ ) || defined( __COBALT__ )
             return recvfrom ( fd, ( void* ) &rx, sizeof ( rx ), MSG_DONTWAIT, NULL, 0 );
     #else
             // NON-BLOCKING
@@ -174,7 +177,7 @@ namespace XBot{
             if ( fd <= 0 ) { return 0; }
             /////////////////////////////////////////////////////////
             // NON-BLOCKING, read buff_size byte from pipe or cross domain socket
-    #if __XENO__
+    #if defined( __XENO__ ) || defined( __COBALT__ )
             return recvfrom ( fd, (void*)buffer, size, MSG_DONTWAIT, NULL, 0 );
     #else
             // NON-BLOCKING

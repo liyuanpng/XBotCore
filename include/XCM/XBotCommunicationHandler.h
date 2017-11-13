@@ -57,8 +57,8 @@ protected:
 private:
     
     std::vector<std::string> _io_plugin_names;
-    std::vector<IOPlugin*> _io_plugin_ptr;
-    std::vector<IOPluginLoader> _io_plugin_loader;
+    std::vector<std::shared_ptr<IOPlugin>> _io_plugin_ptr;
+    //std::vector<IOPluginLoader> _io_plugin_loader;
 
     std::string _path_to_config;
 
