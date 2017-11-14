@@ -42,16 +42,16 @@ void XBotControlPlugin::setCmd( XBot::Command& cmd){
   current_command = cmd;
 }
 
-bool XBotControlPlugin::init(std::string path_to_config_file,
-                             std::string name,
-                             std::shared_ptr<PluginStatus> cstatus,
-                             XBot::SharedMemory::Ptr shared_memory,
-                             std::shared_ptr< XBot::IXBotJoint > joint,
-                             std::shared_ptr< XBot::IXBotModel > model,
-                             std::shared_ptr< XBot::IXBotFT > ft,
-                             std::shared_ptr< XBot::IXBotIMU > imu,
-                             std::shared_ptr< XBot::IXBotHand> hand  )
+bool XBotControlPlugin::init(   XBot::Handle::Ptr handle,
+                                std::string name,
+                                std::shared_ptr< PluginStatus > cstatus,                      
+                                std::shared_ptr< XBot::IXBotJoint > joint,
+                                std::shared_ptr< XBot::IXBotModel > model,
+                                std::shared_ptr< XBot::IXBotFT > ft,
+                                std::shared_ptr< XBot::IXBotIMU > imu,
+                                std::shared_ptr< XBot::IXBotHand > hand  )
 {
+    // initialize name and interfaces
     this->name = name;
     this->set_xbotcore_joint(joint);
     this->set_xbotcore_model(model);
@@ -59,19 +59,10 @@ bool XBotControlPlugin::init(std::string path_to_config_file,
     this->set_xbotcore_imu(imu);
     this->set_xbotcore_hand(hand);
 
-    AnyMapPtr any_map = std::make_shared<AnyMap>();
-    (*any_map)["XBotJoint"] = boost::any(joint);
-    (*any_map)["XBotFT"] = boost::any(ft);
-    (*any_map)["XBotIMU"] = boost::any(imu);
-    (*any_map)["XBotHand"] = boost::any(hand);
-    
-    RobotInterface::Ptr robotinterface = RobotInterface::getRobot(path_to_config_file, "", any_map);
-    
     // initialize the command port
-    //command.init(name + "_cmd");
     _custom_status = cstatus;
-
-    return init_control_plugin(path_to_config_file, shared_memory, robotinterface);
+                     
+    return init_control_plugin(handle);
 
 }
 

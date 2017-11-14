@@ -28,11 +28,9 @@ HomingExample::HomingExample()
 
 }
 
-bool HomingExample::init_control_plugin(std::string path_to_config_file,
-                                        XBot::SharedMemory::Ptr shared_memory,
-                                        RobotInterface::Ptr robot)
+bool HomingExample::init_control_plugin(XBot::Handle::Ptr handle)
 {
-    _robot = robot;
+    _robot = handle->getRobotInterface();
 
     _robot->getRobotState("home", _q_home);
     _robot->sense();

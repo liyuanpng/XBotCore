@@ -26,12 +26,10 @@ XBot::XBotCommunicationPlugin::XBotCommunicationPlugin()
 
 }
 
-bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_config_file,
-                                                        XBot::SharedMemory::Ptr shared_memory,
-                                                        RobotInterface::Ptr robot)
+bool XBot::XBotCommunicationPlugin::init_control_plugin(XBot::Handle::Ptr handle)
 {
     // get the robot
-    _robot = robot;
+    _robot = handle->getRobotInterface();
 
     // create a SubscriberRT for each enabled joint in the robot
     for( int id : _robot->getEnabledJointId() ) {

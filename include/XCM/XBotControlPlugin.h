@@ -26,6 +26,8 @@
 #include <XBotCore-interfaces/XDomainCommunication.h>
 #include <XCM/XBotPluginStatus.h>
 
+#include <XBotCore-interfaces/XBotHandle.h>
+
 #define REGISTER_XBOT_PLUGIN_(plugin_name) \
 extern "C" XBot::XBotControlPlugin* create_instance() \
 { \
@@ -59,19 +61,16 @@ public:
 
     virtual ~XBotControlPlugin();
 
-    virtual bool init(std::string path_to_config_file,
+    virtual bool init(XBot::Handle::Ptr handle,
                       std::string name,
-                      std::shared_ptr<PluginStatus> cstatus,
-                      XBot::SharedMemory::Ptr shared_memory,
+                      std::shared_ptr< PluginStatus > cstatus,                      
                       std::shared_ptr< XBot::IXBotJoint > joint,
                       std::shared_ptr< XBot::IXBotModel > model,
                       std::shared_ptr< XBot::IXBotFT > ft,
                       std::shared_ptr< XBot::IXBotIMU > imu,
-                      std::shared_ptr<XBot::IXBotHand> hand ) final;
+                      std::shared_ptr< XBot::IXBotHand > hand ) final;
 
-    virtual bool init_control_plugin(std::string path_to_config_file,
-                                     XBot::SharedMemory::Ptr shared_memory,
-                                     RobotInterface::Ptr robot) = 0;
+    virtual bool init_control_plugin(XBot::Handle::Ptr handle) = 0;
 
     virtual void on_start(double time) {};
 

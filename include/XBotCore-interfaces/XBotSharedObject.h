@@ -50,6 +50,8 @@ public:
     
     void get(T& obj) const;
     
+    T get() const;
+    
     bool try_set(const T& obj);
     
     bool try_get(T& obj) const;
@@ -102,6 +104,14 @@ void SharedObject<T>::get(T& obj) const
     std::lock_guard<Mutex> guard(*_mtx);
     
     obj = *_obj;
+}
+
+template< typename T >
+T SharedObject<T>::get() const
+{
+    std::lock_guard<Mutex> guard(*_mtx);
+    
+    return *_obj;
 }
 
 template< typename T >

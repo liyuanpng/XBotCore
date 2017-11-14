@@ -27,12 +27,10 @@ XBot::XBotLoggingPlugin::XBotLoggingPlugin()
 
 }
 
-bool XBot::XBotLoggingPlugin::init_control_plugin( std::string path_to_config_file,
-                                                   XBot::SharedMemory::Ptr shared_memory,
-                                                   RobotInterface::Ptr robot)
+bool XBot::XBotLoggingPlugin::init_control_plugin( XBot::Handle::Ptr handle )
 {
     // get the robot
-    _robot = robot;
+    _robot = handle->getRobotInterface();
     
     // initialize logger
     _logger = XBot::MatLogger::getLogger("/tmp/XBotCore_log");

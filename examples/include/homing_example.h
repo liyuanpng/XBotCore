@@ -32,9 +32,7 @@ namespace XBot {
 
         virtual ~HomingExample(){ Logger::info() << "~HomingExample()" << Logger::endl(); }
         
-        virtual bool init_control_plugin(std::string path_to_config_file,
-                                         XBot::SharedMemory::Ptr shared_memory,
-                                         RobotInterface::Ptr robot);
+        virtual bool init_control_plugin(XBot::Handle::Ptr handle);
 
         virtual bool close();
 

@@ -180,7 +180,7 @@ bool PluginHandler::load_plugins()
     return success;
 }
 
-void PluginHandler::initPlugin(std::shared_ptr<XBot::XBotControlPlugin> plugin_ptr,
+bool PluginHandler::initPlugin(  std::shared_ptr<XBot::XBotControlPlugin> plugin_ptr,
                                  const std::string& name)
 {
   
@@ -193,10 +193,9 @@ void PluginHandler::initPlugin(std::shared_ptr<XBot::XBotControlPlugin> plugin_p
          _plugin_state[i] == "RESTARTING";
         try{
             /* Try to init the current plugin */
-            plugin_init_success = ( plugin_ptr)->init( _path_to_cfg,
+            plugin_init_success = ( plugin_ptr)->init(  (XBot::Handle::Ptr) this,
                                                         name,
                                                         _plugin_custom_status[i],
-                                                        _shared_memory,
                                                         _joint,
                                                         _model,
                                                         _ft,
@@ -206,7 +205,6 @@ void PluginHandler::initPlugin(std::shared_ptr<XBot::XBotControlPlugin> plugin_p
             /* Handle return value if init() was performed cleanly */
             if(!plugin_init_success){
                 Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. Plugin init() returned false!" << Logger::endl();           
-
             }
             else{
                 Logger::success(Logger::Severity::HIGH) << "Plugin " << (plugin_ptr)->name << " initialized successfully!" << Logger::endl();
@@ -224,30 +222,10 @@ void PluginHandler::initPlugin(std::shared_ptr<XBot::XBotControlPlugin> plugin_p
             Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. \n An exception was thrown: " << Logger::endl();
             plugin_init_success = false;
         }
-       
-//        // allocate concrete pub/sub classes
-//         if( _is_RT_plugin_handler ) {
-//             _plugin_switch[i] = std::make_shared<XBot::SubscriberRT<XBot::Command>>();
-//             _plugin_status[i] = std::make_shared<XBot::PublisherRT<XBot::Command>>();
-//         }
-//         else {
-//             _plugin_switch[i] = std::make_shared<XBot::NRT_ROS_Subscriber>();
-//             _plugin_status[i] = std::make_shared<XBot::NRT_ROS_Publisher>();
-//             // NOTE handling cmd for NRTPlugin in CH style
-//             _plugin_cmd[i] = std::make_shared<XBot::NRT_ROS_Subscriber>();
-//             _plugin_cmd[i]->init(_rtplugin_names[i]+"_cmd");
-//             // pipes
-//             std::string command_name = _rtplugin_names[i] + "_cmd";
-//             _command_pub_vector.push_back(XBot::PublisherNRT<XBot::Command>(command_name));
-//         }
-// 
-//                   
-//         // initialize pub/sub
-//         _plugin_init_success[i] = plugin_init_success;
-//         _plugin_switch[i]->init(_rtplugin_names[i]+"_switch");
-//         _plugin_status[i]->init(_rtplugin_names[i]+"_status");
         
         _plugin_state[i] == "STOPPED";
+        
+        return plugin_init_success;
   
 }
 
@@ -293,39 +271,8 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
 
         bool plugin_init_success = false;
         _plugin_custom_status[i] = std::make_shared<PluginStatus>();
-
-        try{
-            /* Try to init the current plugin */
-            plugin_init_success = (_rtplugin_vector[i])->init( _path_to_cfg,
-                                                                _rtplugin_names[i],
-                                                                _plugin_custom_status[i],
-                                                                shared_memory,
-                                                                joint,
-                                                                model,
-                                                                ft,
-                                                                imu,
-                                                                hand );
-
-            if(!plugin_init_success){
-                Logger::error() << "plugin " << (_rtplugin_vector[i])->name << "::init() failed. Plugin init() returned false!" << Logger::endl();           
-
-            }
-            else{
-                Logger::success(Logger::Severity::HIGH) << "Plugin " << (_rtplugin_vector[i])->name << " initialized successfully!" << Logger::endl();
-            }
-        }
-
-        /* Handle exceptions inheriting from std::exception */
-        catch(std::exception& e){
-            Logger::error() << "plugin " << (_rtplugin_vector[i])->name << "::init() failed. \n An exception was thrown: " << e.what() << Logger::endl();            
-            plugin_init_success = false;
-        }
-
-        /* Handle all other exceptions */
-        catch(...){
-            Logger::error() << "plugin " << (_rtplugin_vector[i])->name << "::init() failed. \n An exception was thrown: " << Logger::endl();
-            plugin_init_success = false;
-        }
+        
+        plugin_init_success = initPlugin(_rtplugin_vector[i], _rtplugin_names[i]);
         
         // allocate concrete pub/sub classes
         if( _is_RT_plugin_handler ) {
@@ -623,6 +570,22 @@ bool PluginHandler::plugin_can_start(int plugin_idx)
     // relaxed policy for NRT Plugins
     return true;
 }
+
+const std::string& XBot::PluginHandler::getPathToConfigFile() const
+{
+    return _path_to_cfg;
+}
+
+RobotInterface::Ptr XBot::PluginHandler::getRobotInterface() const
+{
+    return _robot;
+}
+
+SharedMemory::Ptr XBot::PluginHandler::getSharedMemory() const
+{
+    return _shared_memory;
+}
+
 
 
 

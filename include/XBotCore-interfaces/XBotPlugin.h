@@ -35,6 +35,7 @@
 #include <XBotCore-interfaces/IXBotHand.h>
 #include <XBotCore-interfaces/XBotSharedMemory.h>
 #include <XBotCore-interfaces/XBotESC.h>
+#include <XBotCore-interfaces/XBotHandle.h>
 #include <XCM/XBotPluginStatus.h>
 
 #include <map>
@@ -60,10 +61,9 @@ public:
     
     virtual ~XBotPlugin();
 
-    virtual bool init(std::string path_to_config_file,
+    virtual bool init(XBot::Handle::Ptr handle,
                       std::string name,
                       std::shared_ptr<PluginStatus> cstatus,
-                      XBot::SharedMemory::Ptr shared_memory,
                       std::shared_ptr<XBot::IXBotJoint> joint,
                       std::shared_ptr<XBot::IXBotModel> model, 
                       std::shared_ptr<XBot::IXBotFT> ft,
