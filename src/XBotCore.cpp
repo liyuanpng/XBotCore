@@ -49,17 +49,21 @@ XBot::XBotCore::XBotCore(const char* config_yaml,  const char* param) :
     
     YAML::Node x_bot_core, root;
     
+    std::string abs_low_level_config = "";
+    
     // check gains in XBotCore node specifing config path YAML
     if(root_cfg["XBotCore"]) {
         x_bot_core = root_cfg["XBotCore"];
             
         if(x_bot_core["config_path"]) {
             
-            Logger::info() << "Path to config is " << x_bot_core["config_path"].as<std::string>() << Logger::endl();
+            abs_low_level_config = XBot::Utils::computeAbsolutePath(x_bot_core["config_path"].as<std::string>());
             
-            Logger::info() << "Abs path to config is " << XBot::Utils::computeAbsolutePath(x_bot_core["config_path"].as<std::string>()) << Logger::endl();
+            Logger::info() << "Path to low level config is " << x_bot_core["config_path"].as<std::string>() << Logger::endl();
             
-            root = YAML::LoadFile(XBot::Utils::computeAbsolutePath(x_bot_core["config_path"].as<std::string>()));
+            Logger::info() << "Abs path to low level config is " << abs_low_level_config << Logger::endl();
+            
+            root = YAML::LoadFile(abs_low_level_config);
         }
     }
 
@@ -70,7 +74,7 @@ XBot::XBotCore::XBotCore(const char* config_yaml,  const char* param) :
     std::string lib_name="";
     if( hal_lib == nullptr){
       
-      std::cout<<"HALInterface parameter missing in config file "<<std::endl;
+      Logger::error() <<"HALInterface parameter missing in config file " << Logger::endl();
       exit(1);
       
     }else{
@@ -79,19 +83,23 @@ XBot::XBotCore::XBotCore(const char* config_yaml,  const char* param) :
       lib_name = hal_lib["lib_name"].as<std::string>();
     }
     
-    if (param != nullptr){
+    if (param != nullptr) {
       
-       if(strcmp(param,"dummy") == 0){
-         lib_file = "libXBotDummy";
-         lib_name = "DUMMY";
-      }
+        if(strcmp(param,"dummy") == 0) {
+            lib_file = "libXBotDummy";
+            lib_name = "DUMMY";
+            // NOTE dummy needs high level config
+            abs_low_level_config = std::string(config_yaml);
+        }
     }
     
-    halInterface = HALInterfaceFactory::getFactory(lib_file, lib_name,config_yaml);
+    halInterface = HALInterfaceFactory::getFactory(lib_file, lib_name, abs_low_level_config.c_str());
     if(!halInterface) exit(1);
 }
 
-XBot::XBotCore::XBotCore(const char* config_yaml, std::shared_ptr<HALInterface> halinterface, std::shared_ptr<XBot::TimeProviderFunction<boost::function<double()>>> time_provider) : 
+XBot::XBotCore::XBotCore(const char* config_yaml, 
+                         std::shared_ptr<HALInterface> halinterface, 
+                         std::shared_ptr<XBot::TimeProviderFunction<boost::function<double()>>> time_provider) : 
     _path_to_config(config_yaml)
 {        
     _time_provider = time_provider;
