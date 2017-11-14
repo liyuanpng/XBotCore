@@ -52,19 +52,20 @@ void XBot::CommunicationHandler::th_init(void*)
 {
     
     const char* env_user = std::getenv("USER");
-    std::cout << "USER is: " << env_user << '\n';
+    Logger::info() << "USER is: " << env_user << Logger::endl();
     std::string folder = std::string("/tmp/")+env_user;
     DIR* dir = opendir(folder.c_str());
     if (dir)
     {
-	/* Directory exists. */
-	closedir(dir);
-    }else{
+        /* Directory exists. */
+        closedir(dir);
+    }
+    else{
       const int dir_err = mkdir(folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
       if (-1 == dir_err)
       {
-	  std::cout<<"Error creating user directory!"<<std::endl;
-	  exit(1);
+        Logger::error() << "Unable to create user directory!" << Logger::endl();
+        exit(1);
       }
     }
       

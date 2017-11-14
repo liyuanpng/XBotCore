@@ -552,6 +552,16 @@ bool PluginHandler::plugin_can_start(int plugin_idx)
             for(int i = 0; i < _plugin_state.size(); i++){
                 can_start = can_start && ( _plugin_state[i] == "STOPPED" || i == _logging_plugin_idx );
             }
+            
+            if(!can_start){
+                Logger::error() << "Cannot run RT plugin 'XBotCommunicationPlugin' if other RT plugins are active. Running plugins are: \n";
+                for(int i = 0; i < _plugin_state.size(); i++){
+                    if(!(_plugin_state[i] == "STOPPED") && (_rtplugin_names[i] != "XBotLoggingPlugin")){
+                        Logger::log() << "    " << _rtplugin_names[i] << "\n";
+                    }
+                }
+                Logger::log() << Logger::endl();
+            }
 
             return can_start;
 
@@ -560,8 +570,14 @@ bool PluginHandler::plugin_can_start(int plugin_idx)
 
             /* We are asked to run a normal plugin. Allow it
             * only if the communication plugin is not running */
+            
+            bool can_start = _plugin_state[_communication_plugin_idx] == "STOPPED";
+            
+            if(!can_start){
+                Logger::error() << "Cannot run a RT plugin if XBotCommunicationPlugin is switched on!" << Logger::endl();
+            }
 
-            return _plugin_state[_communication_plugin_idx] == "STOPPED";
+            return can_start;
         }
 
         return false;
