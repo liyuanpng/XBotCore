@@ -22,6 +22,7 @@
 
 #include <XCM/XBotControlPlugin.h>
 #include <XBotCore-interfaces/XBotRosUtils.h>
+#include <sensor_msgs/JointState.h>
 
 namespace XBot {
 
@@ -48,7 +49,7 @@ namespace XBot {
 
     private:
         
-        RosUtils::PublisherWrapper::Ptr _pub_rt;
+        RosUtils::PublisherWrapper::Ptr _pub_rt, _pub_rt_1;
 
         RobotInterface::Ptr _robot;
         Eigen::VectorXd _q0, _q_home, _q, _k, _d, _k0, _d0, _qref;
@@ -60,6 +61,8 @@ namespace XBot {
         double _l_hand_pos;
         double _l_hand_ref;
         bool _close_hand;
+
+	sensor_msgs::JointState _js_msg;
 
     };
 

@@ -51,7 +51,12 @@ bool HomingExample::init_control_plugin(XBot::Handle::Ptr handle)
     _l_hand_pos = _l_hand_ref = 0.0;
     _close_hand = true;
     
-    _pub_rt = handle->getRosHandle()->advertiseTopic<geometry_msgs::Point>("test_topic", 1);
+    _pub_rt = handle->getRosHandle()->advertiseTopic<geometry_msgs::Point>("test_topic", 10);
+    _pub_rt_1 = handle->getRosHandle()->advertiseTopic<sensor_msgs::JointState>("test_topic_js", 10);
+
+    _js_msg.name = {"IO", "SONO", "LEGGENDA"};
+    _js_msg.position.resize(50);
+    _js_msg.effort.resize(50);
     
     
     
@@ -105,6 +110,14 @@ void HomingExample::control_loop(double time, double period)
     msg.z = 1;
     
     _pub_rt->pushToQueue(msg);
+
+    for(int i = 0; i < 50; i++){
+
+	_js_msg.position[i] = 2*i;
+	_js_msg.effort[i] = 2*i - 1;
+    }
+
+    _pub_rt_1->pushToQueue(_js_msg);
 
         if(current_command.str() == "MY_COMMAND_1"){
             /* Handle command */
