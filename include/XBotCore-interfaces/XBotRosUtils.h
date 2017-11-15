@@ -149,13 +149,12 @@ namespace XBot {
             
             typedef std::shared_ptr<RosHandle> Ptr;
             
-//             RosUtils():
-//                 _mtx(new Mutex)
-//             {}
             
             template <typename MessageType>
             PublisherWrapper::Ptr advertiseTopic(std::string topic_name, int queue_size = 1)
             {
+                std::lock_guard<Mutex> guard(_mtx);
+                
                 ros::Publisher pub = _nh.advertise<MessageType>(topic_name, queue_size);
                 auto pub_wrapper =  std::make_shared<PublisherWrapper>(pub, queue_size);
                 _ros_pub.push_back(pub_wrapper);
@@ -164,6 +163,8 @@ namespace XBot {
             
             void publishAll()
             {
+                std::lock_guard<Mutex> guard(_mtx);
+                
                 for(PublisherWrapper::Ptr p : _ros_pub){
                     p->popAndPublish();
                 }
@@ -176,7 +177,7 @@ namespace XBot {
             
             std::vector<PublisherWrapper::Ptr> _ros_pub;
             
-//             std::unique_ptr<Mutex> _mtx;
+            Mutex _mtx;
             
         };
 
