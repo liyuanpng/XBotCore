@@ -50,7 +50,7 @@ class XBot::XBotCoreThread : public XBot::Thread_hook
 {
 public:
     
-    XBotCoreThread(const char * config_yaml,  const char* param);
+    XBotCoreThread(const char * config_yaml, XBot::SharedMemory::Ptr shared_memory,  const char* param);
     virtual ~XBotCoreThread();    
     
     virtual void th_init ( void * );

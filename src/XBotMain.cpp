@@ -144,9 +144,11 @@ int main(int argc, char *argv[]) try {
 
     main_common(shutdown);
 
+    auto shared_memory = std::make_shared<XBot::SharedMemory>();
 
-    XBot::XBotCoreThread xbc( path_to_cfg.c_str(), use_dummy_hal ? "dummy" : nullptr );
-    XBot::CommunicationHandler ch( path_to_ch_cfg.c_str() );
+    XBot::CommunicationHandler ch( path_to_ch_cfg.c_str(), shared_memory );
+    XBot::XBotCoreThread xbc( path_to_cfg.c_str(), shared_memory, use_dummy_hal ? "dummy" : nullptr );
+    
     
     xbc.create(true, 2);
     
