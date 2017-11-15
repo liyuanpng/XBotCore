@@ -1,3 +1,4 @@
+#include <vector>
 #include <ros/ros.h>
 #include <XBotInterface/RobotInterface.h>
 #include <XCM/JointStateAdvr.h>
