@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <ctime>
 #include <exception>
+#include <vector>
 #include <ros/ros.h>
 #include <rosgraph_msgs/Clock.h>
 
