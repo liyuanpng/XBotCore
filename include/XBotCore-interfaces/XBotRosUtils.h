@@ -22,12 +22,15 @@
 
 #include <vector>
 #include <memory>
+#include <queue>
 
 #include <XBotInterface/Thread.h>
 #include <XBotInterface/RtLog.hpp>
 
 #include <ros/ros.h>
 #include <ros/topic_manager.h>
+
+
 
 
 namespace XBot {
@@ -117,6 +120,7 @@ namespace XBot {
             
         private:
             
+            
             ros::SerializedMessage get_tail()
             {
                 return _msg_queue.at(_tail);
@@ -139,13 +143,40 @@ namespace XBot {
             typedef std::shared_ptr<Subscriber> Ptr;
         };
 
-        class RosUtils {
+        class RosHandle {
         
         public:
             
+            typedef std::shared_ptr<RosHandle> Ptr;
+            
+//             RosUtils():
+//                 _mtx(new Mutex)
+//             {}
+            
+            template <typename MessageType>
+            PublisherWrapper::Ptr advertiseTopic(std::string topic_name, int queue_size = 1)
+            {
+                ros::Publisher pub = _nh.advertise<MessageType>(topic_name, queue_size);
+                auto pub_wrapper =  std::make_shared<PublisherWrapper>(pub, queue_size);
+                _ros_pub.push_back(pub_wrapper);
+                return pub_wrapper;
+            }
+            
+            void publishAll()
+            {
+                for(PublisherWrapper::Ptr p : _ros_pub){
+                    p->popAndPublish();
+                }
+            }
             
             
         private:
+            
+            ros::NodeHandle _nh;
+            
+            std::vector<PublisherWrapper::Ptr> _ros_pub;
+            
+//             std::unique_ptr<Mutex> _mtx;
             
         };
 
