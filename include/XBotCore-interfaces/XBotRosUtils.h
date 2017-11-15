@@ -55,7 +55,9 @@ namespace XBot {
             PublisherWrapper():
                 QUEUE_SIZE(0),
                 _tail(-1)
-            {}
+            {
+                _mutex.reset(new Mutex);
+            }
             
             template <typename MessageType>
             void pushToQueue(const MessageType& msg)
@@ -102,6 +104,14 @@ namespace XBot {
                     _tail--;
                     
                 }
+                
+            }
+            
+            void clearQueue()
+            {
+                std::lock_guard<Mutex> guard(*_mutex);
+                
+                _tail = -1;
                 
             }
             
