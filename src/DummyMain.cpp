@@ -93,17 +93,15 @@ int main(int argc, char **argv){
 	std::cout << "Using config file : " << path_to_cfg << std::endl;
     RobotInterface::Ptr robot = RobotInterface::getRobot(path_to_cfg, "", AnyMapPtr(), framework);
 
-
-    auto time_provider = std::make_shared<SimpleTimeProvider>();
-    PluginHandler plugin_handler(robot, time_provider, "XBotRTPlugins");
-
     XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
 
-    plugin_handler.load_plugins();
-    plugin_handler.init_plugins(shared_memory);
+    auto time_provider = std::make_shared<SimpleTimeProvider>();
+    PluginHandler plugin_handler(robot, time_provider, shared_memory, "XBotRTPlugins");
+
     
-    // starts CommunicationHandler
-//     system(std::string("CommunicationHandler " + std::string(argv[1])).c_str());
+
+    plugin_handler.load_plugins();
+    plugin_handler.init_plugins();
 
     double time = 0;
     

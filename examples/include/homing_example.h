@@ -21,6 +21,7 @@
 #define __XCM_EXAMPLES_HOMING_EXAMPLE_H__
 
 #include <XCM/XBotControlPlugin.h>
+#include <XBotCore-interfaces/XBotRosUtils.h>
 
 namespace XBot {
 
@@ -46,6 +47,8 @@ namespace XBot {
         virtual void control_loop(double time, double period);
 
     private:
+        
+        RosUtils::PublisherWrapper::Ptr _pub_rt;
 
         RobotInterface::Ptr _robot;
         Eigen::VectorXd _q0, _q_home, _q, _k, _d, _k0, _d0, _qref;
