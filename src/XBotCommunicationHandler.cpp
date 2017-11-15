@@ -25,10 +25,12 @@ using XBot::Logger;
 #include <dirent.h>
 
 
-XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config) :
+XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config, 
+                         XBot::SharedMemory::Ptr shmem) :
     _path_to_config(path_to_config),
     _master_communication_ifc(nullptr),
-    loadWebServer(true)
+    loadWebServer(true),
+    _shmem(shmem)
 {
     // set thread name
     name = "XBOT_COMMHANDLER"; //TBD understand why pthread_setname_np return code error 3
@@ -46,6 +48,16 @@ XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config) :
     // set scheduler priority and stacksize
     priority = sched_get_priority_max(schedpolicy);
     stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
+    
+    int argc = 1;
+    char * argvv = "CommHandler";
+    char ** argv = &argvv;
+    ros::init(argc, argv, "CommHandler", ros::init_options::NoSigintHandler);
+    _roshandle = new RosUtils::RosHandle;
+    _roshandle_shobj = _shmem->getSharedObject<RosUtils::RosHandle*>("ros_handle");
+    _roshandle_shobj.set(_roshandle);
+    Logger::info() << "Set RosHandle! " << _roshandle << Logger::endl();
+    
 }
 
 void XBot::CommunicationHandler::th_init(void*)
@@ -273,7 +285,10 @@ void XBot::CommunicationHandler::th_init(void*)
     Eigen::VectorXd q0;
     _robot->getMotorPosition(q0);
     _robot->setPositionReference(q0);
-
+    
+    
+    
+    
 
 }
 
@@ -388,15 +403,14 @@ void XBot::CommunicationHandler::th_loop(void*)
     _robot->move();
     
     _xddp_handler->updateTX();
-
+    
+    
+    _roshandle->publishAll();
 }
 
 XBot::CommunicationHandler::~CommunicationHandler()
 {
-//     if (loadWebServer) 
-//       CommunicationInterfaceFactory::unloadLib("libwebserver");
-//      CommunicationInterfaceFactory::unloadLib("libros");
-//      CommunicationInterfaceFactory::unloadLib("libyarp");
+    delete _roshandle;
     if(_logger != nullptr) _logger->flush();
 }
 
