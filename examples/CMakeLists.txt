@@ -55,7 +55,6 @@ add_library(HomingExample SHARED src/homing_example.cpp)
 add_library(IdExample SHARED src/id_example.cpp)
 add_executable(IpcExampleRT src/example_ipc_rt.cpp)
 add_executable(IpcExampleNRT src/example_ipc_nonrt.cpp)
-add_executable(RosUtilsExample src/example_rosutils.cpp)
 
 if ( Xenomai_FOUND )
     set_xeno_flags(HomingExample)
@@ -70,7 +69,6 @@ target_link_libraries(IdExample XCM)
 target_link_libraries(HomingExample XCM)
 target_link_libraries(IpcExampleNRT XCM ${RT_LIBRARY})
 target_link_libraries(IpcExampleRT XCM ${RT_LIBRARY})
-target_link_libraries(RosUtilsExample XCM ${catkin_LIBRARIES})
 
 
 #############

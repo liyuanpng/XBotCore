@@ -23,6 +23,8 @@
 #include <XCM/XBotControlPlugin.h>
 #include <XBotCore-interfaces/XBotRosUtils.h>
 #include <sensor_msgs/JointState.h>
+#include <std_srvs/SetBool.h>
+#include <std_msgs/Float64.h>
 
 namespace XBot {
 
@@ -50,6 +52,8 @@ namespace XBot {
     private:
         
         RosUtils::PublisherWrapper::Ptr _pub_rt, _pub_rt_1;
+        RosUtils::SubscriberWrapper::Ptr _sub_rt;
+        RosUtils::ServiceServerWrapper::Ptr _srv_rt;
 
         RobotInterface::Ptr _robot;
         Eigen::VectorXd _q0, _q_home, _q, _k, _d, _k0, _d0, _qref;
@@ -62,7 +66,19 @@ namespace XBot {
         double _l_hand_ref;
         bool _close_hand;
 
-	sensor_msgs::JointState _js_msg;
+        sensor_msgs::JointState _js_msg;
+        
+        bool srv_callback(std_srvs::SetBoolRequest& req, std_srvs::SetBoolResponse& res)
+        {
+            std::cout << __func__ << std::endl;
+            return true;
+        }
+        
+        void callback(const std_msgs::Float64ConstPtr& msg)
+        {
+            _homing_time = msg->data;
+            std::cout << _homing_time << std::endl;
+        }
 
     };
 
