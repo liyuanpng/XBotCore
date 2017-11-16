@@ -55,16 +55,20 @@ void XBot::NRTDeployer::th_init(void*)
     
     // create time provider function
     boost::function<double()> time_func = boost::bind(&XBot::NRTDeployer::get_time, this);
+    
     // create time provider
     auto time_provider = std::make_shared<XBot::TimeProviderFunction<boost::function<double()>>>(time_func);
-    _plugin_handler = std::make_shared<PluginHandler>(_robot, time_provider, "NRTPlugins");
-
+    
     // shared memory
     XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
     
+    _plugin_handler = std::make_shared<PluginHandler>(_robot, time_provider, shared_memory, "NRTPlugins");
+
+    
+    
     // loading and init_plugins
     _plugin_handler->load_plugins();
-    _plugin_handler->init_plugins(shared_memory);
+    _plugin_handler->init_plugins();
     _loader = std::make_shared<Loader>(_plugin_handler);
     _loader->init_internal();
 

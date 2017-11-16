@@ -65,7 +65,9 @@ void Loader::loop_internal()
    if(t.load())
       _pluginHandler->replacePlugin(Loader::name);
     t.store(false);
+
     ros::spinOnce();
+    fflush(stdout);
   
 }
 

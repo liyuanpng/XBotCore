@@ -38,14 +38,16 @@ extern char **environ;
 
 namespace XBot {
 
-PluginHandler::PluginHandler(RobotInterface::Ptr robot,  
-                             TimeProvider::Ptr time_provider, 
-                             const std::string& plugins_set_name) :
+PluginHandler::PluginHandler( RobotInterface::Ptr robot, 
+                       TimeProvider::Ptr time_provider,
+                       XBot::SharedMemory::Ptr shared_memory,
+                       const std::string& plugins_set_name ) :
     _robot(robot),
     _time_provider(time_provider),
     _plugins_set_name(plugins_set_name),
     _esc_utils(robot),
-    _close_was_called(false)
+    _close_was_called(false),
+    _shared_memory(shared_memory)
 {
     // plugin set mode 
     update_plugins_set_name(_plugins_set_name);
@@ -58,6 +60,8 @@ PluginHandler::PluginHandler(RobotInterface::Ptr robot,
     Logger::info() << "With plugin set name : " << _plugins_set_name << Logger::endl();
     
     curr_plg.store(-1);
+    
+    _roshandle_shobj = shared_memory->getSharedObject<RosUtils::RosHandle::Ptr>("ros_handle");
 }
 
 void XBot::PluginHandler::update_plugins_set_name(const std::string& plugins_set_name)
@@ -229,15 +233,21 @@ bool PluginHandler::initPlugin(  std::shared_ptr<XBot::XBotControlPlugin> plugin
   
 }
 
-bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
-                                 std::shared_ptr< IXBotJoint> joint,
+bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
                                  std::shared_ptr< IXBotFT > ft,
                                  std::shared_ptr< IXBotIMU > imu,
                                  std::shared_ptr< IXBotHand > hand,
                                  std::shared_ptr< IXBotModel > model )
 {
 
-    _shared_memory = shared_memory;
+    Logger::info("Waiting to receive valid RosHandle...");
+    while(!_roshandle){
+        _roshandle = _roshandle_shobj.get();
+        usleep(1000);
+    }
+    Logger::info() << "Received RosHandle! " << _roshandle << Logger::endl();
+    
+    
     _joint = joint;
     _ft = ft;
     _imu = imu;
@@ -602,6 +612,10 @@ SharedMemory::Ptr XBot::PluginHandler::getSharedMemory() const
     return _shared_memory;
 }
 
+XBot::RosUtils::RosHandle::Ptr XBot::PluginHandler::getRosHandle() const
+{
+    return _roshandle;
+}
 
 
 

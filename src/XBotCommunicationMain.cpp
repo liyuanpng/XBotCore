@@ -88,9 +88,9 @@ int main ( int argc, char *argv[] ) try {
         path_to_cfg = argv[1];
     }
 
-    
+    auto shmem = std::make_shared<XBot::SharedMemory>();
 
-    threads["ch"] = new XBot::CommunicationHandler ( path_to_cfg );
+    threads["ch"] = new XBot::CommunicationHandler ( path_to_cfg, shmem);
     threads["ch"]->create ( false, 3 );
     
 

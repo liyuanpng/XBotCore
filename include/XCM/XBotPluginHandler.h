@@ -35,7 +35,7 @@
 
 namespace XBot {
 
-    class PluginHandler : public XBot::Handle
+    class PluginHandler : public Handle
     {
 
     public:
@@ -44,14 +44,14 @@ namespace XBot {
 
         PluginHandler( RobotInterface::Ptr robot, 
                        TimeProvider::Ptr time_provider,
+                       XBot::SharedMemory::Ptr shared_memory,
                        const std::string& plugins_set_name );
         
         void update_plugins_set_name(const std::string& plugins_set_name);
 
         bool load_plugins();
 
-        bool init_plugins(XBot::SharedMemory::Ptr shared_memory,
-                          std::shared_ptr< IXBotJoint> joint    = nullptr,
+        bool init_plugins(std::shared_ptr< IXBotJoint> joint    = nullptr,
                           std::shared_ptr< IXBotFT > ft         = nullptr,
                           std::shared_ptr< IXBotIMU > imu       = nullptr,
                           std::shared_ptr< IXBotHand > hand     = nullptr ,
@@ -75,6 +75,7 @@ namespace XBot {
         virtual const std::string& getPathToConfigFile() const;
         virtual RobotInterface::Ptr getRobotInterface() const;
         virtual SharedMemory::Ptr getSharedMemory() const;
+        virtual RosUtils::RosHandle::Ptr getRosHandle() const;
         
         ~PluginHandler();
 
@@ -154,6 +155,9 @@ namespace XBot {
         std::shared_ptr< XBot::IXBotModel > _model;
         
         std::atomic<int> curr_plg;
+        
+        RosUtils::RosHandle::Ptr _roshandle;
+        SharedObject<RosUtils::RosHandle::Ptr> _roshandle_shobj;
 
     };
 }

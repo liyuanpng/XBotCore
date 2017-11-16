@@ -23,6 +23,8 @@
 #include <XBotCore-interfaces/XBotSharedMemory.h>
 #include <XBotInterface/RobotInterface.h>
 
+#include <XBotCore-interfaces/XBotRosUtils.h>
+
 namespace XBot {
 
     class Handle {
@@ -33,7 +35,9 @@ namespace XBot {
         
         virtual const std::string&  getPathToConfigFile() const = 0;
         virtual SharedMemory::Ptr   getSharedMemory()     const = 0;
-        virtual RobotInterface::Ptr getRobotInterface()   const = 0;        
+        virtual RobotInterface::Ptr getRobotInterface()   const = 0;
+        virtual RosUtils::RosHandle::Ptr getRosHandle()   const = 0;
+        
         
     };
 

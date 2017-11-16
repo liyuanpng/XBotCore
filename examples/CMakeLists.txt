@@ -26,6 +26,8 @@ project(XCM_examples)
 ## Configuration ##
 ###################
 
+find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs sensor_msgs)
+
 #enable C++ 11 : try with two different flags
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)

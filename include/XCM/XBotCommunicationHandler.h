@@ -27,6 +27,8 @@
 #include <XCM/IOPlugin.h>
 
 #include <XBotCore-interfaces/XDomainCommunication.h>
+#include <XBotCore-interfaces/XBotSharedMemory.h>
+#include <XBotCore-interfaces/XBotRosUtils.h>
 
 
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
@@ -44,8 +46,11 @@ namespace XBot
 class CommunicationHandler : public Thread_hook
 {
 public:
+    
+    CommunicationHandler() = default;
 
-    CommunicationHandler(std::string path_to_config);
+    CommunicationHandler(std::string path_to_config, 
+                         SharedMemory::Ptr shmem);
 
     virtual void th_init(void*);
     virtual void th_loop(void*);
@@ -93,6 +98,12 @@ private:
 #endif
 
     XBot::MatLogger::Ptr _logger;
+    
+    SharedMemory::Ptr _shmem;
+    
+    RosUtils::RosHandle::Ptr _roshandle = nullptr;
+    SharedObject<RosUtils::RosHandle::Ptr> _roshandle_shobj;
+    
 };
 }
 

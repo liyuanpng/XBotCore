@@ -18,6 +18,8 @@
 */
 
 #include <homing_example.h>
+#include <XBotCore-interfaces/XBotRosUtils.h>
+#include <geometry_msgs/Point.h>
 
 REGISTER_XBOT_PLUGIN_(XBot::HomingExample)
 
@@ -48,6 +50,16 @@ bool HomingExample::init_control_plugin(XBot::Handle::Ptr handle)
 
     _l_hand_pos = _l_hand_ref = 0.0;
     _close_hand = true;
+    
+    _pub_rt = handle->getRosHandle()->advertise<geometry_msgs::Point>("test_topic", 10);
+    _pub_rt_1 = handle->getRosHandle()->advertise<sensor_msgs::JointState>("test_topic_js", 10);
+    _sub_rt = handle->getRosHandle()->subscribe<std_msgs::Float64>("test_homing_time", 1, &HomingExample::callback, this);
+    _srv_rt = handle->getRosHandle()->advertiseService("test_service", &HomingExample::srv_callback, this);
+
+    _js_msg.name = {"IO", "SONO", "LEGGENDA"};
+    _js_msg.position.resize(50);
+    _js_msg.effort.resize(50);
+    
     
     
 
@@ -92,7 +104,6 @@ void HomingExample::on_stop(double time)
 
 void HomingExample::control_loop(double time, double period)
 {
-
 
         if(current_command.str() == "MY_COMMAND_1"){
             /* Handle command */
