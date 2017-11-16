@@ -29,6 +29,7 @@
 
 #include <ros/ros.h>
 #include <ros/topic_manager.h>
+#include <ros/transport_hints.h>
 
 
 
@@ -36,23 +37,17 @@
 namespace XBot {
     
     namespace RosUtils {
+        
+        class RosHandle;
 
         
         class PublisherWrapper {
             
         public:
             
-            typedef std::shared_ptr<PublisherWrapper> Ptr;
+            friend class RosHandle;
             
-            PublisherWrapper(ros::Publisher pub, int queue_size = 1):
-                _pub(pub),
-                QUEUE_SIZE(queue_size),
-                _tail(-1)
-            {
-                _msg_queue.reserve(queue_size);
-                _mutex.reset(new Mutex);
-                
-            }
+            typedef std::shared_ptr<PublisherWrapper> Ptr;
             
            
             PublisherWrapper():
@@ -120,6 +115,15 @@ namespace XBot {
             
         private:
             
+            PublisherWrapper(ros::Publisher pub, int queue_size = 1):
+                _pub(pub),
+                QUEUE_SIZE(queue_size),
+                _tail(-1)
+            {
+                _msg_queue.reserve(queue_size);
+                _mutex.reset(new Mutex);
+                
+            }
             
             ros::SerializedMessage get_tail()
             {
@@ -136,11 +140,40 @@ namespace XBot {
         };
         
         
-        class Subscriber {
+        class SubscriberWrapper {
             
         public:
             
-            typedef std::shared_ptr<Subscriber> Ptr;
+            friend class RosHandle;
+            
+            typedef std::shared_ptr<SubscriberWrapper> Ptr;
+            
+        private:
+            
+            SubscriberWrapper(ros::Subscriber subscriber):
+                _sub(subscriber)
+            {}
+            
+            ros::Subscriber _sub;
+        };
+        
+        
+        class ServiceServerWrapper {
+            
+        public:
+            
+            friend class RosHandle;
+            
+            typedef std::shared_ptr<ServiceServerWrapper> Ptr;
+            
+        private:
+            
+            ServiceServerWrapper(ros::ServiceServer service_server):
+                _srv(service_server)
+            {}
+            
+            
+            ros::ServiceServer _srv;
         };
 
         class RosHandle {
@@ -151,15 +184,72 @@ namespace XBot {
             
             
             template <typename MessageType>
-            PublisherWrapper::Ptr advertiseTopic(std::string topic_name, int queue_size = 1)
+            PublisherWrapper::Ptr advertise(std::string topic_name, int queue_size = 1)
             {
                 std::lock_guard<Mutex> guard(_mtx);
                 
                 ros::Publisher pub = _nh.advertise<MessageType>(topic_name, queue_size);
-                auto pub_wrapper =  std::make_shared<PublisherWrapper>(pub, queue_size);
+                auto pub_wrapper =  std::shared_ptr<PublisherWrapper>( new PublisherWrapper(pub, queue_size) );
                 _ros_pub.push_back(pub_wrapper);
                 return pub_wrapper;
             }
+            
+            template <typename MessageType, typename ObjectType>
+            SubscriberWrapper::Ptr subscribe(const std::string& topic_name, 
+                                             int queue_size, 
+                                                    void(ObjectType::*fp)(const boost::shared_ptr<MessageType const>&), 
+                                             ObjectType* obj, 
+                                             const ros::TransportHints& transport_hints = ros::TransportHints()
+                                             )
+            {
+                ros::Subscriber sub = _nh.subscribe<MessageType, ObjectType>(topic_name, 
+                                                                             queue_size, 
+                                                                             fp, 
+                                                                             obj, 
+                                                                             transport_hints);
+                
+                return  std::shared_ptr<SubscriberWrapper>( new SubscriberWrapper(sub) );
+            }
+            
+            
+            template <typename MessageType>
+            SubscriberWrapper::Ptr subscribe(const std::string& topic_name, 
+                                             int queue_size, 
+                                             const boost::function<void (const boost::shared_ptr<MessageType const>&)>& callback,
+                                             const ros::VoidConstPtr& tracked_object = ros::VoidConstPtr(), 
+                                             const ros::TransportHints& transport_hints = ros::TransportHints()
+                                             )
+            {
+                ros::Subscriber sub = _nh.subscribe<MessageType>(topic_name, 
+                                                                 queue_size, 
+                                                                 callback, 
+                                                                 tracked_object, 
+                                                                 transport_hints);
+                
+                return  std::shared_ptr<SubscriberWrapper>( new SubscriberWrapper(sub) );
+            }
+            
+            template<class T, class MReq, class MRes>
+            ServiceServerWrapper::Ptr advertiseService(const std::string& service, 
+                                                       bool(T::*srv_func)(MReq &, MRes &), 
+                                                       T *obj)
+            {
+                auto srv = _nh.advertiseService<T, MReq, MRes>(service, srv_func, obj);
+                
+                return std::shared_ptr<ServiceServerWrapper>(new ServiceServerWrapper(srv));
+            }
+            
+            
+            template<class MReq, class MRes>
+            ServiceServerWrapper::Ptr advertiseService(const std::string& service, 
+                                                       const boost::function<bool(MReq&, MRes&)>& callback, 
+                                                       const ros::VoidConstPtr& tracked_object = ros::VoidConstPtr())
+            {
+                auto srv = _nh.advertiseService<MReq, MRes>(service, callback, tracked_object);
+                
+                return std::shared_ptr<ServiceServerWrapper>(new ServiceServerWrapper(srv));
+            }
+            
             
             void publishAll()
             {
