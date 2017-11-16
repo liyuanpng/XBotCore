@@ -36,7 +36,7 @@ namespace XBot {
         virtual const std::string&  getPathToConfigFile() const = 0;
         virtual SharedMemory::Ptr   getSharedMemory()     const = 0;
         virtual RobotInterface::Ptr getRobotInterface()   const = 0;
-        virtual RosUtils::RosHandle* getRosHandle()   const = 0;
+        virtual RosUtils::RosHandle::Ptr getRosHandle()   const = 0;
         
         
     };

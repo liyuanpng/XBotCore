@@ -75,7 +75,7 @@ namespace XBot {
         virtual const std::string& getPathToConfigFile() const;
         virtual RobotInterface::Ptr getRobotInterface() const;
         virtual SharedMemory::Ptr getSharedMemory() const;
-        virtual RosUtils::RosHandle* getRosHandle() const;
+        virtual RosUtils::RosHandle::Ptr getRosHandle() const;
         
         ~PluginHandler();
 
@@ -156,8 +156,8 @@ namespace XBot {
         
         std::atomic<int> curr_plg;
         
-        RosUtils::RosHandle* _roshandle;
-        SharedObject<RosUtils::RosHandle*> _roshandle_shobj;
+        RosUtils::RosHandle::Ptr _roshandle;
+        SharedObject<RosUtils::RosHandle::Ptr> _roshandle_shobj;
 
     };
 }

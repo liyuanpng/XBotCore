@@ -46,6 +46,8 @@ namespace XBot
 class CommunicationHandler : public Thread_hook
 {
 public:
+    
+    CommunicationHandler() = default;
 
     CommunicationHandler(std::string path_to_config, 
                          SharedMemory::Ptr shmem);
@@ -99,8 +101,8 @@ private:
     
     SharedMemory::Ptr _shmem;
     
-    RosUtils::RosHandle* _roshandle = nullptr;
-    SharedObject<RosUtils::RosHandle*> _roshandle_shobj;
+    RosUtils::RosHandle::Ptr _roshandle = nullptr;
+    SharedObject<RosUtils::RosHandle::Ptr> _roshandle_shobj;
     
 };
 }

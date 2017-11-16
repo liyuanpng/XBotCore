@@ -61,7 +61,7 @@ PluginHandler::PluginHandler( RobotInterface::Ptr robot,
     
     curr_plg.store(-1);
     
-    _roshandle_shobj = shared_memory->getSharedObject<RosUtils::RosHandle*>("ros_handle");
+    _roshandle_shobj = shared_memory->getSharedObject<RosUtils::RosHandle::Ptr>("ros_handle");
 }
 
 void XBot::PluginHandler::update_plugins_set_name(const std::string& plugins_set_name)
@@ -241,7 +241,6 @@ bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
 {
 
     Logger::info("Waiting to receive valid RosHandle...");
-    _roshandle = nullptr;
     while(!_roshandle){
         _roshandle = _roshandle_shobj.get();
         usleep(1000);
@@ -613,7 +612,7 @@ SharedMemory::Ptr XBot::PluginHandler::getSharedMemory() const
     return _shared_memory;
 }
 
-XBot::RosUtils::RosHandle* XBot::PluginHandler::getRosHandle() const
+XBot::RosUtils::RosHandle::Ptr XBot::PluginHandler::getRosHandle() const
 {
     return _roshandle;
 }

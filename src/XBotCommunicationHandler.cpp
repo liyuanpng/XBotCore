@@ -53,8 +53,8 @@ XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config,
     char * argvv = "CommHandler";
     char ** argv = &argvv;
     ros::init(argc, argv, "CommHandler", ros::init_options::NoSigintHandler);
-    _roshandle = new RosUtils::RosHandle;
-    _roshandle_shobj = _shmem->getSharedObject<RosUtils::RosHandle*>("ros_handle");
+    _roshandle = std::make_shared<RosUtils::RosHandle>();
+    _roshandle_shobj = _shmem->getSharedObject<RosUtils::RosHandle::Ptr>("ros_handle");
     _roshandle_shobj.set(_roshandle);
     Logger::info() << "Set RosHandle! " << _roshandle << Logger::endl();
     
@@ -410,7 +410,6 @@ void XBot::CommunicationHandler::th_loop(void*)
 
 XBot::CommunicationHandler::~CommunicationHandler()
 {
-    delete _roshandle;
     if(_logger != nullptr) _logger->flush();
 }
 
