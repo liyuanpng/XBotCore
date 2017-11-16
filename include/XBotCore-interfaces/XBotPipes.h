@@ -39,13 +39,14 @@
 
 using XBot::Logger;
 
+namespace XBot{
+  
 #if defined( __XENO__ ) || defined( __COBALT__ )
     static const std::string pipe_prefix ( "/proc/xenomai/registry/rtipc/xddp/" );
 #else
     static const std::string pipe_prefix ( "/tmp/" );
 #endif
 
-namespace XBot{
 
     /**
      * @brief XDDP (Cross Domain Datagram Protocol) pipes: useful to communicate beetween N-RT and RT threads.
@@ -82,10 +83,10 @@ namespace XBot{
          */
         void init ( const std::string pipe_name ) {
 
-	   #ifndef __XENO__
-	    const char* env_user = std::getenv("USER");
-	    std::string pipe_prefix = std::string("/tmp/")+env_user+std::string("/");
-	   #endif    
+            #if !defined( __XENO__ ) && !defined( __COBALT__ )
+            const char* env_user = std::getenv("USER");
+            std::string pipe_prefix = std::string("/tmp/")+env_user+std::string("/");     
+            #endif    
    
             std::string pipe = pipe_prefix + pipe_name;
 

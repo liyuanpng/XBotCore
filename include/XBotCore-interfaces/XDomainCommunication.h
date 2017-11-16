@@ -247,7 +247,7 @@ template <typename DataType>
 void PublisherNRT<DataType>::init(const std::string& socket_name)
 {
 
-    #ifndef __XENO__
+    #if !defined( __XENO__ ) && !defined( __COBALT__ )
       const char* env_user = std::getenv("USER");
       std::string pipe_prefix = std::string("/tmp/")+env_user+std::string("/");
     #endif    
@@ -317,7 +317,7 @@ template <typename DataType>
 void SubscriberNRT<DataType>::init(const std::string& socket_name)
 {
 
-   #ifndef __XENO__
+   #if !defined( __XENO__ ) && !defined( __COBALT__ )
       const char* env_user = std::getenv("USER");
       std::string pipe_prefix = std::string("/tmp/")+env_user+std::string("/");
     #endif    
