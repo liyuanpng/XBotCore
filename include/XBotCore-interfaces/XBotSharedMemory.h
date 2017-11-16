@@ -75,7 +75,6 @@ protected:
 private:
 
     std::map<std::string, boost::any> _obj_map;
-    std::map<std::string, std::unique_ptr<Mutex>> _mtx_map;
 
 };
 
@@ -86,24 +85,18 @@ inline SharedObject<T> SharedMemory::getSharedObject(const std::string& object_n
 
     if( _obj_map.count(object_name) == 0 ){
         
-        // If required object does not exist in the map, we create and return the shared object
-        _mtx_map[object_name] = std::unique_ptr<Mutex>(new Mutex);
-        
-        _obj_map[object_name] = boost::any(T());
+        _obj_map[object_name] = boost::any(SharedObject<T>(object_name));
         
     }
     
         
-    T* objptr = boost::any_cast<T>(&(_obj_map.at(object_name)));
-    Mutex* mtxptr = _mtx_map.at(object_name).get();
+    SharedObject<T> * shobjptr = boost::any_cast< SharedObject<T> >(&(_obj_map.at(object_name)));
     
-    if(!objptr){
+    if(!shobjptr){
         throw std::runtime_error("Could not create shared object! Provided type does not match!");
     }
     
-    SharedObject<T> shobj(objptr, mtxptr, object_name);
-    
-    return shobj;
+    return *shobjptr;
 
 
 }
@@ -118,8 +111,8 @@ inline bool SharedMemory::hasObject(const std::string& object_name) const
 template <typename T>
 inline bool SharedMemory::objectIsType(const std::string& object_name) const
 {
-    T* objptr = boost::any_cast<T>(&(_obj_map.at(object_name)));
-    return objptr;
+    SharedObject<T> * shobjptr = boost::any_cast< SharedObject<T> >(&(_obj_map.at(object_name)));
+    return shobjptr;
 }
 
 

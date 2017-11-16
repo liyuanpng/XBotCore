@@ -44,7 +44,7 @@ public:
     
     friend class SharedMemory;
 
-    SharedObject();
+    SharedObject(std::string name = "");
     
     void set(const T& obj);
     
@@ -59,41 +59,30 @@ public:
     explicit operator bool() const;
     
     bool isValid() const;
-    
+
     const std::string& getName() const;
 
-    
+
 
 protected:
 
 private:
-    
-    SharedObject(T * obj, 
-                 Mutex * mtx, 
-                 std::string name);
 
-    Mutex * _mtx;
-    
-    T * _obj;
-    
+    Mutex::Ptr _mtx;
+
+    std::shared_ptr<T>  _obj;
+
     std::string _name;
 
 };
 
-template< typename T >
-SharedObject<T>::SharedObject(T * obj, Mutex * mtx, std::string name):
-    _mtx(mtx),
-    _obj(obj),
-    _name(name)
-{
-    
-}
+
 
 template< typename T >
-SharedObject<T>::SharedObject():
-    _mtx(nullptr),
-    _obj(nullptr),
-    _name("")
+SharedObject<T>::SharedObject(std::string name):
+    _mtx(std::make_shared<Mutex>()),
+    _obj(std::make_shared<T>()),
+    _name(name)
 {
     
 }
