@@ -49,20 +49,12 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(XBot::Handle::Ptr handle
     Logger::warning() << "Filter ON by default, cutoff frequency is " << cutoff_freq << " Hz" << Logger::endl();
 
      // intiliaze shared memory
-    _pos_ref_map = shared_memory->get<XBot::JointIdMap>("pos_ref_map_so");
-    _vel_ref_map = shared_memory->get<XBot::JointIdMap>("vel_ref_map_so");
-    _tor_ref_map = shared_memory->get<XBot::JointIdMap>("tor_ref_map_so");
-    _k_ref_map = shared_memory->get<XBot::JointIdMap>("k_ref_map_so");
-    _d_ref_map = shared_memory->get<XBot::JointIdMap>("d_ref_map_so");
-
-    _pos_ref_map.reset(new XBot::JointIdMap);
-    _vel_ref_map.reset(new XBot::JointIdMap);
-    _tor_ref_map.reset(new XBot::JointIdMap);
-    _k_ref_map.reset(new XBot::JointIdMap);
-    _d_ref_map.reset(new XBot::JointIdMap);
+    _pos_ref_map = handle->getSharedMemory()->getSharedObject<XBot::JointIdMap>("pos_ref_map_so");
+    _vel_ref_map = handle->getSharedMemory()->getSharedObject<XBot::JointIdMap>("vel_ref_map_so");
+    _tor_ref_map = handle->getSharedMemory()->getSharedObject<XBot::JointIdMap>("tor_ref_map_so");
+    _k_ref_map = handle->getSharedMemory()->getSharedObject<XBot::JointIdMap>("k_ref_map_so");
+    _d_ref_map = handle->getSharedMemory()->getSharedObject<XBot::JointIdMap>("d_ref_map_so");
     
-    
-
     return true;
 }
 
@@ -107,11 +99,11 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
     
     // read from shared memory the ref maps and set them
 
-    _robot->setPositionReference(*_pos_ref_map);
-    _robot->setVelocityReference(*_vel_ref_map);
-    _robot->setEffortReference(*_tor_ref_map);
-    _robot->setStiffness(*_k_ref_map);
-    _robot->setDamping(*_d_ref_map);
+    _robot->setPositionReference(_pos_ref_map.get());
+    _robot->setVelocityReference(_vel_ref_map.get());
+    _robot->setEffortReference(_tor_ref_map.get());
+    _robot->setStiffness(_k_ref_map.get());
+    _robot->setDamping(_d_ref_map.get());
 
     double alpha = (time - _start_time) / 5.0;
 

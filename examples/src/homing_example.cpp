@@ -49,8 +49,7 @@ bool HomingExample::init_control_plugin(XBot::Handle::Ptr handle)
     _l_hand_pos = _l_hand_ref = 0.0;
     _close_hand = true;
     
-    _pos_ref_map = shared_memory->get<XBot::JointIdMap>("pos_ref_map_so");
-    _pos_ref_map.reset(new XBot::JointIdMap);
+    _pos_ref_map = handle->getSharedMemory()->getSharedObject<XBot::JointIdMap>("pos_ref_map_so");
 
     return true;
 
@@ -102,7 +101,7 @@ void HomingExample::control_loop(double time, double period)
     // after we arrive in the homing position read head reference from the NRT
     XBot::JointIdMap head_ref;
     for(int i = 0; i < _robot->chain("head").getJointIds().size(); i++) {
-        head_ref[_robot->chain("head").getJointIds().at(i)] = (*_pos_ref_map).at(_robot->chain("head").getJointIds().at(i));
+        head_ref[_robot->chain("head").getJointIds().at(i)] = (_pos_ref_map.get()).at(_robot->chain("head").getJointIds().at(i));
     }
 
     _robot->chain("head").setPositionReference(head_ref); 

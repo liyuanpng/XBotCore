@@ -27,12 +27,10 @@ XBot::XBotNRTRef::XBotNRTRef()
 
 }
 
-bool XBot::XBotNRTRef::init_control_plugin( std::string path_to_config_file,
-                                            XBot::SharedMemory::Ptr shared_memory,
-                                            RobotInterface::Ptr robot)
+bool XBot::XBotNRTRef::init_control_plugin( XBot::Handle::Ptr handle)
 {
     // get the robot
-    _robot = robot;
+    _robot = handle->getRobotInterface();
 
     // create a SubscriberRT for each enabled joint in the robot
     for( int id : _robot->getEnabledJointId() ) {
@@ -51,11 +49,11 @@ bool XBot::XBotNRTRef::init_control_plugin( std::string path_to_config_file,
         _hand_map[hand->getHandId()] =  hand;
     }
     
-    _ref_map_so["pos_ref_map_so"] = shared_memory->advertise<XBot::JointIdMap>("pos_ref_map_so");
-    _ref_map_so["vel_ref_map_so"] = shared_memory->advertise<XBot::JointIdMap>("vel_ref_map_so");
-    _ref_map_so["tor_ref_map_so"] = shared_memory->advertise<XBot::JointIdMap>("tor_ref_map_so");
-    _ref_map_so["k_ref_map_so"] = shared_memory->advertise<XBot::JointIdMap>("k_ref_map_so");
-    _ref_map_so["d_ref_map_so"] = shared_memory->advertise<XBot::JointIdMap>("d_ref_map_so");
+    _ref_map_so["pos_ref_map_so"] = handle->getSharedMemory()->getSharedObject<XBot::JointIdMap>("pos_ref_map_so");
+    _ref_map_so["vel_ref_map_so"] = handle->getSharedMemory()->getSharedObject<XBot::JointIdMap>("vel_ref_map_so");
+    _ref_map_so["tor_ref_map_so"] = handle->getSharedMemory()->getSharedObject<XBot::JointIdMap>("tor_ref_map_so");
+    _ref_map_so["k_ref_map_so"] = handle->getSharedMemory()->getSharedObject<XBot::JointIdMap>("k_ref_map_so");
+    _ref_map_so["d_ref_map_so"] = handle->getSharedMemory()->getSharedObject<XBot::JointIdMap>("d_ref_map_so");
 
     return true;
 }
@@ -98,11 +96,12 @@ void XBot::XBotNRTRef::control_loop(double time, double period)
     
     // update ref in the shared memory
     
-    *(_ref_map_so.at("pos_ref_map_so")) = _pos_ref_map;
-    *(_ref_map_so.at("vel_ref_map_so")) = _vel_ref_map;
-    *(_ref_map_so.at("tor_ref_map_so")) = _tor_ref_map;
-    *(_ref_map_so.at("k_ref_map_so")) = _k_ref_map;
-    *(_ref_map_so.at("d_ref_map_so")) = _d_ref_map;
+    (_ref_map_so.at("pos_ref_map_so")).set(_pos_ref_map);
+    (_ref_map_so.at("vel_ref_map_so")).set(_vel_ref_map);
+    (_ref_map_so.at("tor_ref_map_so")).set(_tor_ref_map);
+    (_ref_map_so.at("k_ref_map_so")).set(_k_ref_map);
+    (_ref_map_so.at("d_ref_map_so")).set(_d_ref_map);
+    
     
 //     for(auto p : *(_ref_map_so.at("pos_ref_map_so"))) {
 //         std::cout <<"NRT --" <<  p.first << " -- " << p.second << std::endl;
