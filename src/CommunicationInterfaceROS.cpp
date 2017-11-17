@@ -110,6 +110,9 @@ CommunicationInterfaceROS::CommunicationInterfaceROS():
     }
 
     _nh = std::make_shared<ros::NodeHandle>();
+    
+    // by default I publish the tf
+    _publish_tf = true;
 }
 
 CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot, XBot::XBotXDDP::Ptr xddp_handler):
@@ -249,6 +252,11 @@ void CommunicationInterfaceROS::load_ros_message_interfaces() {
         _jointid_to_jointstate_msg_idx[id] = _jointstate_message->getIndex(joint_name);
         _jointid_to_command_msg_idx[id] = _control_message->getIndex(joint_name);;
     }
+    
+    /* check if I have to send /tf */
+    if(ros_interface_root["publish_tf"]) {
+        _publish_tf = ros_interface_root["publish_tf"].as<bool>();
+    }
 
 }
 void CommunicationInterfaceROS::sendRobotState()
@@ -259,8 +267,10 @@ void CommunicationInterfaceROS::sendRobotState()
     _robot->getJointPosition(_joint_name_map);
     std::map<std::string, double> _joint_name_std_map(_joint_name_map.begin(), _joint_name_map.end());
 
-    _robot_state_pub->publishTransforms(_joint_name_std_map, ros::Time::now(), "");
-    _robot_state_pub->publishFixedTransforms("");
+    if(_publish_tf) {
+        _robot_state_pub->publishTransforms(_joint_name_std_map, ros::Time::now(), "");
+        _robot_state_pub->publishFixedTransforms("");
+    }
 
     /* Joint states */
 
