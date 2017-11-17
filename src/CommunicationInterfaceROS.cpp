@@ -528,9 +528,9 @@ if( !_receive_commands_ok ) return;
 
         _robot->setDamping(_joint_id_map);
     }
-//     else {
-//         resetReference();
-//     }
+    else {
+        resetReference();
+    }
 //     
     
     /* HAND */
