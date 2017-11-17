@@ -18,10 +18,12 @@
 */
 
 #include <XCM/MessageInterfaces/AdvrCommandMessage.h>
+#include <XBotInterface/RtLog.hpp>
 #include <ros/transport_hints.h> 
 
 SHLIBPP_DEFINE_SHARED_SUBCLASS(advrcommandmessage_control_message, XBot::CommandAdvr, XBot::GenericControlMessage);
 
+using XBot::Logger;
 
 void XBot::CommandAdvr::callback(XCM::CommandAdvrConstPtr msg)
 {
@@ -30,7 +32,7 @@ void XBot::CommandAdvr::callback(XCM::CommandAdvrConstPtr msg)
         int idx = getIndex(msg->name[i]);
 
         if(idx < 0){
-            std::cerr << "ERROR while parsing CommandAdvr message: joint " << msg->name[i] << " undefined" << std::endl;
+            Logger::warning() << "ERROR while parsing CommandAdvr message: joint " << msg->name[i] << " undefined" << Logger::endl();
             continue;
         }
 
@@ -75,16 +77,11 @@ bool XBot::CommandAdvr::service_callback(XCM::advr_controller_joint_namesRequest
 bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::GenericControlMessage::Type type)
 {
 
-    std::cout << "Initializing CommandAdvr message interface" << std::endl;
-    
-    
-
-    YAML::Node root_cfg = YAML::LoadFile(path_to_config_file);
-
-    // TBD check if they exist
-    const YAML::Node &ctrl_msg_root = root_cfg["AdvrCommandMessage"];
-    std::string joint_service_name = ctrl_msg_root["joint_service_name"].as<std::string>();
-    std::string command_topic_name = ctrl_msg_root["command_topic_name"].as<std::string>();
+    Logger::info() << "Initializing CommandAdvr message interface" << Logger::endl();
+   
+   std::string robot_name = XBot::ModelInterface::getModel(path_to_config_file)->getUrdf().getName();
+   std::string joint_service_name = "/" + robot_name + "/position_controller/get_joint_names";
+   std::string command_topic_name = "/xbotcore/" + robot_name + "/command";
 
     ros::NodeHandle nh;
 
@@ -94,7 +91,7 @@ bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::Gener
         
         _sub = nh.subscribe(command_topic_name, 1, &XBot::CommandAdvr::callback, this, ros::TransportHints().tcpNoDelay());
 
-        auto robot = XBot::RobotInterface::getRobot(path_to_config_file);
+        auto robot = XBot::RobotInterface::getRobot(path_to_config_file, "xddp_robot");
         robot->sense();
 
         XBot::JointNameMap _joint_pos, _joint_stiffness, _joint_damping;
@@ -116,15 +113,14 @@ bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::Gener
         
         _msg.seq_id = 0;
 
-        _joint_names_srv = nh.advertiseService(joint_service_name, &XBot::CommandAdvr::service_callback, this);
+          _joint_names_srv = nh.advertiseService(joint_service_name, &XBot::CommandAdvr::service_callback, this);
     }
 
 
     if( type == XBot::GenericControlMessage::Type::Tx ) {
         
         _pub = nh.advertise<XCM::CommandAdvr>(command_topic_name, 1);
-
-
+        
         ros::ServiceClient client = nh.serviceClient<XCM::advr_controller_joint_names>(joint_service_name);
         XCM::advr_controller_joint_namesRequest req;
 
@@ -156,7 +152,7 @@ bool XBot::CommandAdvr::init(const std::string& path_to_config_file, XBot::Gener
 
     }
     
-    
+    Logger::success() << "Successfully initialized CommandAdvr message interface!" << Logger::endl();
     
     return true;
 
@@ -170,7 +166,7 @@ int XBot::CommandAdvr::getIndex(const std::string& joint_name)
         return it->second;
     }
     else{
-        std::cerr << "WARNING in " << __func__ << "! Joint " << joint_name << " is not defined inside the ROS controller!" << std::endl;
+        Logger::warning() << " in " << __func__ << "! Joint " << joint_name << " is not defined inside the ROS controller!" << Logger::endl();
         return -1;
     }
 

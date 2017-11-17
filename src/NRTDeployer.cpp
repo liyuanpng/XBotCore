@@ -26,6 +26,19 @@
 XBot::NRTDeployer::NRTDeployer(std::string path_to_config) :
     _path_to_config(path_to_config)
 {
+    // set thread name
+    name = "NRTDeployer";
+    // set thread period - not periodic
+    task_period_t t;
+    memset(&t, 0, sizeof(t));
+    t.period = {0,5000};
+    period.task_time = t.task_time;
+    period.period = t.period;
+    // set scheduler policy
+    schedpolicy = SCHED_OTHER;
+    // set scheduler priority and stacksize
+    priority = sched_get_priority_max(schedpolicy);
+    stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
 }
 
 double XBot::NRTDeployer::get_time()
@@ -52,24 +65,8 @@ void XBot::NRTDeployer::th_init(void*)
     // loading and init_plugins
     _plugin_handler->load_plugins();
     _plugin_handler->init_plugins(shared_memory);
-
-    // set thread name
-    name = "NRTDeployer";
-    // set thread period - not periodic
-    task_period_t t;
-    memset(&t, 0, sizeof(t));
-    t.period = {0,5000};
-    period.task_time = t.task_time;
-    period.period = t.period;
-    // set scheduler policy
-    #ifdef __XENO__
-        schedpolicy = SCHED_FIFO;
-    #else
-        schedpolicy = SCHED_OTHER;
-    #endif
-    // set scheduler priority and stacksize
-    priority = sched_get_priority_max(schedpolicy);
-    stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
+    _loader = std::make_shared<Loader>(_plugin_handler);
+    _loader->init_internal();
 
 
 }
@@ -77,6 +74,7 @@ void XBot::NRTDeployer::th_init(void*)
 void XBot::NRTDeployer::th_loop(void*)
 {
     _plugin_handler->run();
+    _loader->loop_internal();
 }
 
 XBot::NRTDeployer::~NRTDeployer()

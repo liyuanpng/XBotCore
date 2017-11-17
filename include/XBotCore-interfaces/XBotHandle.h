@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2016 IIT-ADVR
- * Author: Luca Muratore
- * email:  luca.muratore@iit.it
+ * Copyright (C) 2017 IIT-ADVR
+ * Author: Arturo Laurenzi, Luca Muratore
+ * email:  arturo.laurenzi@iit.it, luca.muratore@iit.it
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -17,23 +17,29 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#ifndef __XBOTCORE_ALL_H__
-#define __XBOTCORE_ALL_H__
+#ifndef __XBOT_HANDLE_H__
+#define __XBOT_HANDLE_H__
 
-#include <XBotCore-interfaces/IXBotModel.h>
-#include <XBotCore-interfaces/IXBotJoint.h>
-#include <XBotCore-interfaces/IXBotFT.h>
-#include <XBotCore-interfaces/IXBotIMU.h>
-#include <XBotCore-interfaces/IXBotHand.h>
-#include <XBotCore-interfaces/XBotPlugin.h>
 #include <XBotCore-interfaces/XBotSharedMemory.h>
-#include <XBotCore-interfaces/XBotSharedObject.h>
-#include <XBotCore-interfaces/XDomainCommunication.h>
-#include <XBotCore-interfaces/XBotPipes.h>
-#include <XBotCore-interfaces/XBotESC.h>
+#include <XBotInterface/RobotInterface.h>
 
-#if defined( __XENO__ ) || defined( __COBALT__ )
-#include <XBotCore-interfaces/XBotRT_ipc.h>
-#endif
+namespace XBot {
 
-#endif
+    class Handle {
+        
+    public:
+        
+        typedef Handle* Ptr;
+        
+        virtual const std::string&  getPathToConfigFile() const = 0;
+        virtual SharedMemory::Ptr   getSharedMemory()     const = 0;
+        virtual RobotInterface::Ptr getRobotInterface()   const = 0;        
+        
+    };
+
+
+
+}
+
+#endif //__XBOT_HANDLE_H__
+

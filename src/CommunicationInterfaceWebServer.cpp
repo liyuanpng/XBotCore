@@ -110,7 +110,7 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
 	sharedData->insertChain(key,val);
     }
     
-    std::cout<<"XBotCore server running at http://"<<aport<<std::endl;        
+    Logger::info(Logger::Severity::MID) << "XBotCore server running at http://" << aport << Logger::endl();
 }
 
 void CommunicationInterfaceWebServer::sendRobotState()
@@ -177,21 +177,32 @@ void CommunicationInterfaceWebServer::receiveReference()
       _robot->setPositionReference(eigVec);
       
       //NOTE send velocityref for each joint
-      _robot->setVelocityReference(eigVec);
+    
     }
     
       //set single joint value      
-      JointIdMap tmp;
-      _robot->getPositionReference(tmp);
+      JointIdMap pmap, vmap;
+      _robot->getPositionReference(pmap);
+      _robot->getVelocityReference(vmap);
       std::map<int,double> map = sharedData->getJointMap();
       for( auto& m : map){
         int id = m.first;
         double val = m.second;
-        tmp.at(id)= val;      
+	std::string jname =_robot->getJointByID(id)->getJointName();
+	if( _robot->getUrdf().getJoint(jname)->type == urdf::Joint::CONTINUOUS) {
+	  vmap.at(id)= val;
+	  pmap.at(id)= 0.0;
+	}
+	else {
+	  pmap.at(id)= val;
+	  vmap.at(id)= 0.0;
+	}
+	
       } 
-      if(!map.empty())
-        _robot->setPositionReference(tmp);  
-    
+      if(!map.empty()){
+        _robot->setPositionReference(pmap); 
+        _robot->setVelocityReference(vmap);
+	}
 }
 
 bool CommunicationInterfaceWebServer::advertiseSwitch(const std::string& port_name)

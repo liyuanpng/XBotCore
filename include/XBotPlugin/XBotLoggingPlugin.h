@@ -38,9 +38,7 @@ class XBot::XBotLoggingPlugin : public XBot::XBotControlPlugin
 public:
     XBotLoggingPlugin();
 
-    virtual bool init_control_plugin(std::string path_to_config_file,
-                                     XBot::SharedMemory::Ptr shared_memory,
-                                     RobotInterface::Ptr robot);
+    virtual bool init_control_plugin(XBot::Handle::Ptr handle);
 
     virtual void on_start(double time);
 

@@ -25,8 +25,31 @@
 
 #include <XBotCore-interfaces/XDomainCommunication.h>
 #include <XCM/XBotPluginStatus.h>
-#define REGISTER_XBOT_PLUGIN(plugin_name, scoped_class_name) SHLIBPP_DEFINE_SHARED_SUBCLASS(plugin_name ## _factory, scoped_class_name, XBot::XBotControlPlugin);
 
+#include <XBotCore-interfaces/XBotHandle.h>
+
+#define REGISTER_XBOT_PLUGIN_(plugin_name) \
+extern "C" XBot::XBotControlPlugin* create_instance() \
+{ \
+  return new  plugin_name(); \
+}\
+\
+extern "C" void destroy_instance( XBot::XBotControlPlugin* instance ) \
+{ \
+  delete instance; \
+}\
+
+//for reverse compatibility
+#define REGISTER_XBOT_PLUGIN(others,plugin_name) \
+extern "C" XBot::XBotControlPlugin* create_instance() \
+{ \
+  return new  plugin_name(); \
+}\
+\
+extern "C" void destroy_instance( XBot::XBotControlPlugin* instance ) \
+{ \
+  delete instance; \
+}\
 
 namespace XBot {
 
@@ -38,19 +61,16 @@ public:
 
     virtual ~XBotControlPlugin();
 
-    virtual bool init(std::string path_to_config_file,
+    virtual bool init(XBot::Handle::Ptr handle,
                       std::string name,
-                      std::shared_ptr<PluginStatus> cstatus,
-                      XBot::SharedMemory::Ptr shared_memory,
+                      std::shared_ptr< PluginStatus > cstatus,                      
                       std::shared_ptr< XBot::IXBotJoint > joint,
                       std::shared_ptr< XBot::IXBotModel > model,
                       std::shared_ptr< XBot::IXBotFT > ft,
                       std::shared_ptr< XBot::IXBotIMU > imu,
-                      std::shared_ptr<XBot::IXBotHand> hand ) final;
+                      std::shared_ptr< XBot::IXBotHand > hand ) final;
 
-    virtual bool init_control_plugin(std::string path_to_config_file,
-                                     XBot::SharedMemory::Ptr shared_memory,
-                                     RobotInterface::Ptr robot) = 0;
+    virtual bool init_control_plugin(XBot::Handle::Ptr handle) = 0;
 
     virtual void on_start(double time) {};
 
@@ -58,12 +78,16 @@ public:
 
     virtual void run(double time, double period) final;
     
+    XBot::Command& getCmd();
+    
+    void setCmd( XBot::Command& cmd);
+    
 
 protected:
 
     virtual void control_loop(double time, double period) = 0;
 
-    XBot::SubscriberRT<XBot::Command> command;
+    //XBot::SubscriberRT<XBot::Command> command;
     XBot::Command current_command;
     
     std::shared_ptr<PluginStatus> _custom_status;

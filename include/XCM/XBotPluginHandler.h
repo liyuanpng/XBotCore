@@ -31,9 +31,12 @@
 #include <SharedLibraryClass.h>
 #include <XCM/XBotPluginStatus.h>
 
+#include <XBotCore-interfaces/XBotHandle.h>
+
 namespace XBot {
 
-    class PluginHandler {
+    class PluginHandler : public XBot::Handle
+    {
 
     public:
 
@@ -57,7 +60,22 @@ namespace XBot {
         void run();
 
         void close();
+        
+        std::shared_ptr<XBot::XBotControlPlugin> loadPlugin(const std::string& plugin_name);
+        
+        bool initPlugin(  std::shared_ptr<XBot::XBotControlPlugin> plugin_ptr,
+                          const std::string& name);
+        
+        void unloadPlugin(const std::string& port_name);
+        
+        void replacePlugin(const std::string& name);
 
+        std::vector<std::string>& getPluginsName();
+        
+        virtual const std::string& getPathToConfigFile() const;
+        virtual RobotInterface::Ptr getRobotInterface() const;
+        virtual SharedMemory::Ptr getSharedMemory() const;
+        
         ~PluginHandler();
 
     protected:
@@ -84,9 +102,9 @@ namespace XBot {
         bool _close_was_called;
 
         // Dynamic loading related variables
-        std::vector<std::shared_ptr<shlibpp::SharedLibraryClassFactory<XBot::XBotControlPlugin>>> _rtplugin_factory;
+        //std::vector<std::shared_ptr<shlibpp::SharedLibraryClassFactory<XBot::XBotControlPlugin>>> _rtplugin_factory;
         std::vector<std::string> _rtplugin_names;
-        std::vector<std::shared_ptr<shlibpp::SharedLibraryClass<XBot::XBotControlPlugin>>> _rtplugin_vector;
+        std::vector<std::shared_ptr<XBot::XBotControlPlugin>> _rtplugin_vector;
         std::vector<bool> _plugin_init_success;
         std::vector<std::shared_ptr<XBot::Subscriber<XBot::Command>>> _plugin_switch;
         std::vector<std::shared_ptr<XBot::Publisher<XBot::Command>>>  _plugin_status;  
@@ -112,6 +130,10 @@ namespace XBot {
         XBot::ESCUtils _esc_utils;
         
         std::shared_ptr<XBot::IXBotJoint> _xbot_joint;
+        
+        std::map< std::string, std::shared_ptr<XBot::XBotControlPlugin> > pluginMap;
+        std::map < std::string , int > pluginPos;
+        
 
         int _communication_plugin_idx;
         int _logging_plugin_idx;
@@ -124,6 +146,15 @@ namespace XBot {
         
         std::string _plugins_set_name;
         bool _is_RT_plugin_handler;
+        
+        XBot::SharedMemory::Ptr _shared_memory;
+        std::shared_ptr< XBot::IXBotJoint> _joint;
+        std::shared_ptr< XBot::IXBotFT > _ft;
+        std::shared_ptr< XBot::IXBotIMU > _imu;
+        std::shared_ptr< XBot::IXBotHand > _hand;
+        std::shared_ptr< XBot::IXBotModel > _model;
+        
+        std::atomic<int> curr_plg;
 
     };
 }

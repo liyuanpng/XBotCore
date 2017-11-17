@@ -20,7 +20,7 @@
 #include <_MODULE_PREFIX__plugin.h>
 
 /* Specify that the class XBotPlugin::_MODULE_PREFIX_ is a XBot RT plugin with name "_MODULE_PREFIX_" */
-REGISTER_XBOT_PLUGIN(_MODULE_PREFIX_, XBotPlugin::_MODULE_PREFIX_)
+REGISTER_XBOT_PLUGIN_(XBotPlugin::_MODULE_PREFIX_)
 
 namespace XBotPlugin {
 
@@ -82,7 +82,7 @@ void _MODULE_PREFIX_::control_loop(double time, double period)
      *         rosservice call /_MODULE_PREFIX__cmd "cmd: 'MY_COMMAND_1'"
      * If any command was received, the code inside the if statement is then executed. */
 
-    if(command.read(current_command)){
+    if(!current_command.str().empty()){
 
         if(current_command.str() == "MY_COMMAND_1"){
             /* Handle command */

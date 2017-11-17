@@ -78,7 +78,7 @@ private:
                                        const std::string& middle_path,
                                        std::string& absolute_path );
 
-    bool _send_robot_state_ok, _receive_commands_ok;
+    bool _send_robot_state_ok, _receive_commands_ok, _publish_tf;
 
     std::string _path_to_cfg;
 

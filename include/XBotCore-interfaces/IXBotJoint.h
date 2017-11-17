@@ -33,6 +33,8 @@
 #include <memory>
 #include <string>
 
+#include <XBotInterface/RtLog.hpp>
+
 namespace XBot
 {
     class IXBotJoint;
@@ -98,7 +100,8 @@ public:
     
     
     virtual ~IXBotJoint() {
-        printf("~IXBotJoint()\n");
+        if(Logger::GetVerbosityLevel() == Logger::Severity::LOW)
+            std::cout << __func__ << std::endl;
     };
 };
 

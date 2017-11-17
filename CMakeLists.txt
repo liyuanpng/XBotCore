@@ -202,8 +202,11 @@ add_library(XCM SHARED ${XBotInterface_INCLUDES}
                         src/IOPlugin.cpp
                         src/XBotPluginStatus.cpp    
                         src/XBotCommunicationInterfaceFactory.cpp
+                        src/PluginFactory.cpp
+                        src/IOPluginFactory.cpp
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES}
-                        ${RT_NRT_SRC}                        
+                        ${RT_NRT_SRC}  
+                        src/Loader.cpp
                         )
                         
 add_library(XCM_no_xeno SHARED ${XBotInterface_INCLUDES}
@@ -219,8 +222,11 @@ add_library(XCM_no_xeno SHARED ${XBotInterface_INCLUDES}
                         src/IOPlugin.cpp
                         src/XBotPluginStatus.cpp 
                         src/XBotCommunicationInterfaceFactory.cpp
+                        src/PluginFactory.cpp
+                        src/IOPluginFactory.cpp
                         ${COMMUNICATION_INTERFACE_SOURCE_FILES}       
                         src/XBotNRT_thread.cpp
+                        src/Loader.cpp
                         )                        
 
 if(${catkin_FOUND})
@@ -274,7 +280,7 @@ install(TARGETS CommunicationHandler
         RUNTIME DESTINATION bin)
 
 add_executable(NRTDeployer src/NRTDeployer.cpp src/NRTDeployerMain.cpp)
-target_link_libraries(NRTDeployer XCM_no_xeno)
+target_link_libraries(NRTDeployer XCM_no_xeno ${Boost_LIBRARIES})
 # target_link_libraries(NRTDeployer webserver )
 
 install(TARGETS NRTDeployer

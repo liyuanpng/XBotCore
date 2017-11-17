@@ -20,19 +20,17 @@
 #include <XBotPlugin/XBotLoggingPlugin.h>
 #include <XCM/XBotUtils.h>
 
-REGISTER_XBOT_PLUGIN(XBotLoggingPlugin, XBot::XBotLoggingPlugin)
+REGISTER_XBOT_PLUGIN_(XBot::XBotLoggingPlugin)
 
 XBot::XBotLoggingPlugin::XBotLoggingPlugin()
 {
 
 }
 
-bool XBot::XBotLoggingPlugin::init_control_plugin( std::string path_to_config_file,
-                                                   XBot::SharedMemory::Ptr shared_memory,
-                                                   RobotInterface::Ptr robot)
+bool XBot::XBotLoggingPlugin::init_control_plugin( XBot::Handle::Ptr handle )
 {
     // get the robot
-    _robot = robot;
+    _robot = handle->getRobotInterface();
     
     // initialize logger
     _logger = XBot::MatLogger::getLogger("/tmp/XBotCore_log");
@@ -82,6 +80,6 @@ bool XBot::XBotLoggingPlugin::close(void)
 
 XBot::XBotLoggingPlugin::~XBotLoggingPlugin()
 {
-    printf("~XBotLoggingPlugin()\n");
+    Logger::info() << "~XBotLoggingPlugin()" << Logger::endl();
 }
 

@@ -19,25 +19,24 @@
 
 #include <XBotPlugin/XBotCommunicationPlugin.h>
 
-REGISTER_XBOT_PLUGIN(XBotCommunicationPlugin, XBot::XBotCommunicationPlugin)
+REGISTER_XBOT_PLUGIN_(XBot::XBotCommunicationPlugin)
 
 XBot::XBotCommunicationPlugin::XBotCommunicationPlugin()
 {
 
 }
 
-bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_config_file,
-                                                        XBot::SharedMemory::Ptr shared_memory,
-                                                        RobotInterface::Ptr robot)
+bool XBot::XBotCommunicationPlugin::init_control_plugin(XBot::Handle::Ptr handle)
 {
     // get the robot
-    _robot = robot;
+    _robot = handle->getRobotInterface();
 
     // initialize filter
-    _filter_q = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*1.0, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
-    _filter_k = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*1.0, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
-    _filter_d = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*1.0, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
-    _filter_qdot = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*1.0, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    int cutoff_freq = 1.0;
+    _filter_q = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*cutoff_freq, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    _filter_k = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*cutoff_freq, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    _filter_d = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*cutoff_freq, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
+    _filter_qdot = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*cutoff_freq, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
 
     
     // NOTE filter ON by default
@@ -46,13 +45,8 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
     _robot->getStiffness(_kref);
     _robot->getDamping(_dref);
     _robot->getJointVelocity(_qdotref);
-
-    _filter_q.reset(_qref);
-    _filter_k.reset(_kref);
-    _filter_d.reset(_dref);
-    _filter_qdot.reset(_qdotref);
-    
-    DPRINTF("Filter ON by default\n");
+ 
+    Logger::warning() << "Filter ON by default, cutoff frequency is " << cutoff_freq << " Hz" << Logger::endl();
 
      // intiliaze shared memory
     _pos_ref_map = shared_memory->get<XBot::JointIdMap>("pos_ref_map_so");
@@ -75,7 +69,7 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(std::string path_to_conf
 void XBot::XBotCommunicationPlugin::on_start(double time)
 {
     _start_time = time;
-    _robot->getJointPosition(_q0);
+    _robot->getMotorPosition(_q0);
     _robot->getStiffness(_k0);
     _robot->getDamping(_d0);
     _robot->getJointVelocity(_qdot0);
@@ -83,7 +77,7 @@ void XBot::XBotCommunicationPlugin::on_start(double time)
     _filter_q.reset(_q0);
     _filter_k.reset(_k0);
     _filter_d.reset(_d0);
-    _filter_qdot.reset(_qdot0);
+    _filter_qdot.reset(_qdot0 * 0.0);
 
 }
 
@@ -96,7 +90,7 @@ void XBot::XBotCommunicationPlugin::on_stop(double time)
 void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
 {
 
-    if(command.read(current_command)){
+    //if(command.read(current_command)){
         if(current_command.str() == "filter ON"){
             _filter_q.setOmega(2*3.1415*1.0);
             _filter_k.setOmega(2*3.1415*1.0);
@@ -109,7 +103,7 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
             _filter_d.setOmega(2*3.1415*200);
             _filter_qdot.setOmega(2*3.1415*200);
         }
-    }
+    //}
     
     // read from shared memory the ref maps and set them
 
@@ -165,7 +159,7 @@ bool XBot::XBotCommunicationPlugin::close(void)
 
 XBot::XBotCommunicationPlugin::~XBotCommunicationPlugin()
 {
-    printf("~XBotCommunicationPlugin()\n");
+    Logger::info() << "~XBotCommunicationPlugin()" << Logger::endl();
 }
 
 

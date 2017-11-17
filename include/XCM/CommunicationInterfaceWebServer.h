@@ -45,6 +45,11 @@ class CommunicationInterfaceWebServer : public CommunicationInterface {
   public:
 
       CommunicationInterfaceWebServer();
+      virtual ~CommunicationInterfaceWebServer(){
+          if( Logger::GetVerbosityLevel() == Logger::Severity::LOW ){
+              std::cout<<"~CommunicationInterfaceWebServer"<<std::endl;
+          }
+        };
       CommunicationInterfaceWebServer(XBotInterface::Ptr robot);
 
       virtual void sendRobotState();

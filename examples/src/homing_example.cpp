@@ -19,7 +19,7 @@
 
 #include <homing_example.h>
 
-SHLIBPP_DEFINE_SHARED_SUBCLASS(HomingExample_factory, XBot::HomingExample, XBot::XBotControlPlugin);
+REGISTER_XBOT_PLUGIN_(XBot::HomingExample)
 
 namespace XBot {
 
@@ -28,15 +28,11 @@ HomingExample::HomingExample()
 
 }
 
-bool HomingExample::init_control_plugin(std::string path_to_config_file,
-                                        XBot::SharedMemory::Ptr shared_memory,
-                                        RobotInterface::Ptr robot)
+bool HomingExample::init_control_plugin(XBot::Handle::Ptr handle)
 {
-    _robot = robot;
+    _robot = handle->getRobotInterface();
 
     _robot->getRobotState("home", _q_home);
-    std::cout << "_q_home from SRDF : " << std::endl << _q_home << std::endl;
-    
     _robot->sense();
     _robot->getJointPosition(_q0);
     _robot->getStiffness(_k0);
@@ -46,11 +42,9 @@ bool HomingExample::init_control_plugin(std::string path_to_config_file,
     _q = _q0;
     _qref = _q0;
 
-
     _time = 0;
-    _homing_time = 5;
+    _homing_time = 4;
 
-    _robot->print();
 
     _l_hand_pos = _l_hand_ref = 0.0;
     _close_hand = true;
@@ -68,7 +62,25 @@ void HomingExample::on_start(double time)
     _first_loop_time = time;
     _robot->sense();
     _robot->getJointPosition(_q0);
+    
    
+    
+// NOTE if you want to grasp use this piece of code    
+//     _robot->setPositionReference(_q0);
+//     
+//       
+//     //r hand open
+//     int r_hand_id =_robot->getHand()["r_handj"]->getHandId();
+//     XBot::Hand::Ptr r_hand =_robot->getHand(r_hand_id);
+//     r_hand->grasp(0.5);
+//     
+//     //l hand closing
+//     int l_hand_id =_robot->getHand()["l_handj"]->getHandId();
+//     XBot::Hand::Ptr l_hand =_robot->getHand(l_hand_id);
+//     l_hand->grasp(0.0);
+//    
+//     _robot->move();
+    
     
 }
 
@@ -95,11 +107,11 @@ void HomingExample::control_loop(double time, double period)
 
     _robot->chain("head").setPositionReference(head_ref); 
     _robot->move();
-
 }
 
 bool HomingExample::close()
 {
+    Logger::info() << "HomingExample::close()" << Logger::endl();
     return true;
 }
 

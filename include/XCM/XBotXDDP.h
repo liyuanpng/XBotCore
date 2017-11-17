@@ -64,7 +64,8 @@ public:
     
     bool init();
     
-    void update();
+    void updateRX();
+    void updateTX();
     
     // NOTE IXBotJoint getters
     virtual bool get_link_pos(int joint_id, double& link_pos) final;

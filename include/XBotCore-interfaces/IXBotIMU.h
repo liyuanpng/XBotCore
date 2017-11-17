@@ -22,6 +22,7 @@
 #define __I_X_BOT_IMU_H__
 
 #include <vector>
+#include <XBotInterface/RtLog.hpp>
 
 namespace XBot
 {
@@ -46,7 +47,8 @@ public:
     virtual bool get_imu_rtt(int imu_id, double& rtt) = 0;
 
     virtual ~IXBotIMU() {
-        printf("~IXBotIMU()\n");
+//         if(Logger::GetVerbosityLevel() == Logger::Severity::LOW)
+//             std::cout << __func__ << std::endl;
     };
 };
 

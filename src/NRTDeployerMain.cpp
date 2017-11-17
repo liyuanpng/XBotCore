@@ -25,6 +25,14 @@
 
 #include <XCM/NRTDeployer.h>
 
+#include <XBotInterface/Utils.h>
+
+#include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
+
+namespace po = boost::program_options;
+namespace fs = boost::filesystem;
+
 static sigset_t   signal_mask;  
 volatile sig_atomic_t g_loop_ok = 1;
 
@@ -52,6 +60,15 @@ void *signal_thread (void *arg)
     }
 }
 
+bool getDefaultConfig(std::string& config) 
+{
+    config = XBot::Utils::getXBotConfig();
+    if(config == "") {
+        return false;
+    }
+    return true;
+}
+
 ////////////////////////////////////////////////////
 // Main
 ////////////////////////////////////////////////////
@@ -71,14 +88,54 @@ int main ( int argc, char *argv[] ) try {
 
     
     int num_iters = 0;
+    std::map<std::string, XBot::Thread_hook*> threads;   
+    
 
-    std::map<std::string, XBot::Thread_hook*> threads;
-    if ( argc != 2 ) {
-        printf ( "Usage: %s config.yaml\n", argv[0] );
-        return 0;
+    // config file handling
+    std::string path_to_cfg;
+    
+    {
+        po::options_description desc("NRTDeployer. Available options");
+        desc.add_options()
+            ("config,C", po::value<std::string>(),"Path to custom config file. If not set, a default config file must be configured via set_xbot_config.")
+            ("verbose,V", "Verbose mode.")
+            ("help", "Shows this help message.")
+        ;
+
+        
+        po::positional_options_description p;
+        p.add("config", -1);
+
+        po::variables_map vm;
+        po::store(po::command_line_parser(argc, argv).
+                options(desc).positional(p).run(), vm);
+        po::notify(vm);
+        
+        if(vm.count("help")){
+            std::cout << desc << std::endl;
+            return 0;
+        }
+        
+        if(vm.count("verbose")){
+            Logger::SetVerbosityLevel(Logger::Severity::LOW);
+        }
+        else{
+            Logger::SetVerbosityLevel(Logger::Severity::MID);
+        }
+                
+        if(vm.count("config")) {
+            path_to_cfg = fs::absolute(vm["config"].as<std::string>()).string();
+        }
+        else{
+            if(!getDefaultConfig(path_to_cfg)){
+                std::cout << desc << std::endl;
+                return -1;
+            }
+        }
+        
     }
 
-    threads["NRTDeployer"] = new XBot::NRTDeployer ( argv[1] );
+    threads["NRTDeployer"] = new XBot::NRTDeployer ( path_to_cfg );
     threads["NRTDeployer"]->create ( false, 0 );
     
 

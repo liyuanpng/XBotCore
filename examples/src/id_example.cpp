@@ -1,6 +1,6 @@
 #include <id_example.h>
 
-REGISTER_XBOT_PLUGIN(IdExample, XBot::IdExample)
+REGISTER_XBOT_PLUGIN_(XBot::IdExample)
 
 
 XBot::IdExample::IdExample()
@@ -8,14 +8,14 @@ XBot::IdExample::IdExample()
 
 }
 
-bool XBot::IdExample::init_control_plugin(std::string path_to_config_file, XBot::SharedMemory::Ptr shared_memory, XBot::RobotInterface::Ptr robot)
+bool XBot::IdExample::init_control_plugin(XBot::Handle::Ptr handle)
 {
-    _robot = robot;
+    _robot = handle->getRobotInterface();
     _robot->getStiffness(_k0);
     _robot->getDamping(_d0);
     _robot->model().getJointPosition(_q0);
 
-    _model = ModelInterface::getModel(path_to_config_file);
+    _model = ModelInterface::getModel(handle->getPathToConfigFile());
 
 
     Eigen::VectorXd qmin, qmax;
@@ -49,7 +49,7 @@ void XBot::IdExample::control_loop(double time, double period)
     static double OMEGA = 2.0 * 3.1415 / PERIOD;
 
     /* If "damp" command is received, start decreasing OMEGA so as to come to a stop */
-    if(command.read(current_command)){
+    //if(command.read(current_command)){
 
         if(current_command.str() == "damp"){
             damp_motion = true;
@@ -69,7 +69,7 @@ void XBot::IdExample::control_loop(double time, double period)
             torque_ctrl = true;
             std::cout << "torque_ctrl!" << std::endl;
         }
-    }
+    //}
 
     if( damp_motion ) OMEGA *= 0.999;
 
