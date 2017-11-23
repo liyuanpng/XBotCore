@@ -251,13 +251,17 @@ bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
                                  std::shared_ptr< IXBotModel > model )
 {
 
-    Logger::info("Waiting to receive valid RosHandle...");
-    while(!_roshandle){
-        _roshandle = _roshandle_shobj.get();
-        usleep(1000);
+    if(_is_RT_plugin_handler){
+        Logger::info("Waiting to receive valid RosHandle...");
+        while(!_roshandle){
+            _roshandle = _roshandle_shobj.get();
+            usleep(1000);
+        }
+        Logger::info() << "Received RosHandle! " << _roshandle << Logger::endl();
     }
-    Logger::info() << "Received RosHandle! " << _roshandle << Logger::endl();
-    
+    else{
+       _roshandle.reset( new XBot::RosUtils::RosHandle );  
+    }
     
     _joint = joint;
     _ft = ft;
