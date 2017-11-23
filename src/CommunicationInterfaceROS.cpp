@@ -259,6 +259,10 @@ void CommunicationInterfaceROS::sendRobotState()
     _robot->getJointPosition(_joint_name_map);
     std::map<std::string, double> _joint_name_std_map(_joint_name_map.begin(), _joint_name_map.end());
 
+    if(_robot_state_pub){
+        _robot_state_pub->publishTransforms(_joint_name_std_map, ros::Time::now(), "");
+        _robot_state_pub->publishFixedTransforms("");
+    }
     _robot_state_pub->publishTransforms(_joint_name_std_map, ros::Time::now(), "");
     _robot_state_pub->publishFixedTransforms("");
 
