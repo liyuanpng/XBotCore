@@ -47,7 +47,9 @@ namespace XBot
 class XBot::IXBotJoint
 {
 
-public:   
+public:  
+    
+    typedef std::shared_ptr<IXBotJoint> Ptr;
 
     // TBD can be auto-generated based on the RX PDO
     // NOTE RX getters

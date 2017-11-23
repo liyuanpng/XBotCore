@@ -35,8 +35,11 @@ public:
     CommunicationInterface() {}
     virtual ~CommunicationInterface() {};
     CommunicationInterface(XBotInterface::Ptr robot, 
-                           XBot::XBotXDDP::Ptr xddp_handler = nullptr ):
+                           XBot::XBotXDDP::Ptr xddp_handler = nullptr, 
+                           XBot::IXBotJoint::Ptr xbot_joint = nullptr
+                          ):
         _robot(robot),
+        _xbot_joint(xbot_joint),
         _xddp_handler(xddp_handler),
         _master_communication_interface_port("MasterCommunicationInterface_switch") {}
 
@@ -63,6 +66,7 @@ protected:
     std::string _master_communication_interface_port;
     
     XBot::XBotXDDP::Ptr _xddp_handler;
+    XBot::IXBotJoint::Ptr _xbot_joint;
 
 private:
 

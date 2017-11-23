@@ -115,8 +115,11 @@ CommunicationInterfaceROS::CommunicationInterfaceROS():
     _publish_tf = true;
 }
 
-CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot, XBot::XBotXDDP::Ptr xddp_handler):
-    CommunicationInterface(robot, xddp_handler),
+CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot, 
+                                                     XBot::XBotXDDP::Ptr xddp_handler, 
+                                                     XBot::IXBotJoint::Ptr xbot_joint
+                                                    ):
+    CommunicationInterface(robot, xddp_handler, xbot_joint),
     _path_to_cfg(robot->getPathToConfig())
 {
     int argc = 1;
