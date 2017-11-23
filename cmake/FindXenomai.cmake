@@ -9,18 +9,44 @@ PATHS ${Xenomai_SEARCH_PATH} )
 
 # did we find xeno_config.h?
 if( Xenomai_DIR ) 
-    MESSAGE(STATUS "xenomai found: \"${Xenomai_DIR}\"")
 
-    execute_process(COMMAND xeno-config --skin=posix --cflags OUTPUT_VARIABLE XENO_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-    execute_process(COMMAND xeno-config --skin=posix --ldflags OUTPUT_VARIABLE XENO_LDFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-    
+    execute_process(COMMAND ${Xenomai_DIR}/bin/xeno-config --version OUTPUT_VARIABLE Xenomai_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE )
+
+    message(STATUS "Xenomai ${Xenomai_VERSION} found: \"${Xenomai_DIR}\"")
+
     macro(set_xeno_flags target)
-	#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${XENO_CFLAGS}")
-	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${XENO_CFLAGS}")
-	#set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${XENO_LDFLAGS}")
-	#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${XENO_LDFLAGS} -lnative -lrtdm")
-	set_target_properties(${target} PROPERTIES COMPILE_FLAGS ${XENO_CFLAGS})
-	set_target_properties(${target} PROPERTIES LINK_FLAGS "${XENO_LDFLAGS} -lnative -lrtdm")
+    
+        # get compiler flags
+        execute_process(COMMAND ${Xenomai_DIR}/bin/xeno-config --skin=posix --cflags 
+                        OUTPUT_VARIABLE XENO_CFLAGS 
+                        OUTPUT_STRIP_TRAILING_WHITESPACE)
+                        
+        # get linker flags          
+        get_target_property(TARGET_TYPE ${target} TYPE)
+        
+        if(${TARGET_TYPE} STREQUAL "SHARED_LIBRARY")
+            execute_process(COMMAND ${Xenomai_DIR}/bin/xeno-config --skin=posix --ldflags --auto-init-solib
+                            OUTPUT_VARIABLE XENO_LDFLAGS 
+                            OUTPUT_STRIP_TRAILING_WHITESPACE)
+        elseif(${TARGET_TYPE} STREQUAL "EXECUTABLE")
+            execute_process(COMMAND ${Xenomai_DIR}/bin/xeno-config --skin=posix --ldflags 
+                            OUTPUT_VARIABLE XENO_LDFLAGS 
+                            OUTPUT_STRIP_TRAILING_WHITESPACE)
+        endif()
+        
+        if(${Xenomai_VERSION} VERSION_LESS 3.0.0)
+            set(XENO_LDFLAGS "${XENO_LDFLAGS} -lnative -lrtdm")
+        endif()
+        
+        
+        message("Target type: ${TARGET_TYPE}")
+        message("Xeno CFLAGS: ${XENO_CFLAGS}")
+        message("Xeno LDFLAGS: ${XENO_LDFLAGS}")
+        
+        # set flags
+        set_target_properties(${target} PROPERTIES COMPILE_FLAGS "${XENO_CFLAGS}")
+        set_target_properties(${target} PROPERTIES LINK_FLAGS "${XENO_LDFLAGS}")
+        
     endmacro(set_xeno_flags)
 
     set(Xenomai_FOUND True)
