@@ -370,12 +370,15 @@ void XBot::PluginHandler::fill_robot_state()
     for(int id: _robot->getEnabledJointId()){
      
         double fault_value = 0;
+        double temperature = 0;
         
         if(!_xbot_joint) continue;
         
         _xbot_joint->get_fault(id, fault_value);
+        _xbot_joint->get_temperature(id, temperature);
          
         _robot_state_map.at(id).RobotStateRX.fault = fault_value;
+        _robot_state_map.at(id).RobotStateRX.temperature = temperature;
         
     }
     
