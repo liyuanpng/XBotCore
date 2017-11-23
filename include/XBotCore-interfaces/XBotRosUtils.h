@@ -60,12 +60,14 @@ namespace XBot {
             template <typename MessageType>
             void pushToQueue(const MessageType& msg)
             {
-                std::lock_guard<Mutex> guard(*_mutex);
+                if(!_mutex->try_lock()){
+                    return;
+                }
                 
                 _tail++;
                 
                 if(_msg_queue.size() <= _tail){
-                    Logger::info(Logger::Severity::HIGH, "Expanding queue to %d", _msg_queue.size()+1);
+                    Logger::info("Expanding queue to %d", _msg_queue.size()+1);
                     _msg_queue.emplace_back();
                 }
                 
@@ -74,7 +76,7 @@ namespace XBot {
                 int len = ros::serialization::serializationLength(msg) + 4;
                 
                 if(len > current_ser_msg.num_bytes){
-                    Logger::info(Logger::Severity::HIGH, "Malloc because %d > %d", len, current_ser_msg.num_bytes);
+                    Logger::info("Malloc because %d > %d\n", len, current_ser_msg.num_bytes);
                     current_ser_msg.buf.reset(new uint8_t[len]);
                     current_ser_msg.num_bytes = len;
                     current_ser_msg.message_start = current_ser_msg.buf.get();
@@ -85,6 +87,8 @@ namespace XBot {
                 ros::serialization::serialize(s, (uint32_t)current_ser_msg.num_bytes - 4);
                 current_ser_msg.message_start = s.getData();
                 ros::serialization::serialize(s, msg);
+                
+                _mutex->unlock();
                 
             }
             
