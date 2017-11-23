@@ -18,8 +18,6 @@
 */
 
 #include <homing_example.h>
-#include <XBotCore-interfaces/XBotRosUtils.h>
-#include <geometry_msgs/Point.h>
 
 REGISTER_XBOT_PLUGIN_(XBot::HomingExample)
 
@@ -60,7 +58,7 @@ bool HomingExample::init_control_plugin(XBot::Handle::Ptr handle)
     _js_msg.position.resize(50);
     _js_msg.effort.resize(50);
     
-    
+    _nrt_ref_sh = handle->getSharedMemory()->getSharedObject<XBot::JointIdMap>("pos_ref_map_so");
     
 
 //     _robot->initLog("/tmp/homing_example_log", 100000);
@@ -104,60 +102,20 @@ void HomingExample::on_stop(double time)
 
 void HomingExample::control_loop(double time, double period)
 {
-
-        if(current_command.str() == "MY_COMMAND_1"){
-            /* Handle command */
-            std::cout<<"MY_COMMAND_1qq"<<std::endl;
-        }
-
-        if(current_command.str() == "MY_COMMAND_2"){
-            /* Handle command */
-             std::cout<<"MY_COMMAND_2"<<std::endl;
-        }
-
-  
-//     _robot->sense();
-//     _robot->log(time);
-
-   // Go to homing
-    if( (time - _first_loop_time) <= _homing_time ){
+    // go to homing
+    if( (time - _first_loop_time) <= _homing_time ) {
         _q = _q0 + 0.5*(1-std::cos(3.1415*(time - _first_loop_time)/_homing_time))*(_q_home-_q0);
         _robot->setPositionReference(_q);
         _robot->move();
         return;
-
     }
 
-//     _robot->move();
+    // after we arrive in the homing position read head reference from the NRT
+    
+    _nrt_ref_sh.get(_pos_ref_map);
 
-//     if(_close_hand) {
-//         _robot->sense();
-//
-//         _l_hand_pos =_robot->chain("left_hand").getJointPosition(0);
-//         printf("reading %f\n", _l_hand_pos);
-//
-//         _l_hand_ref = 13;
-//         _robot->chain("left_hand").setPositionReference(0, _l_hand_ref);
-//         printf("ref %f\n", _l_hand_ref);
-//
-//         _robot->move();
-//         _close_hand = false;
-//     }
-
-    // sense to get wrench
-//     _robot->sense();
-//     _l_arm_ft->getWrench(_l_arm_wrench);
-
-//     _robot->sense();
-//     _robot->setReferenceFrom(_robot->model(), XBot::Sync::Position);
-//     _robot->move();
-
-//     _robot->sense();
-//     _robot->print();
-
-//      _robot->printTracking();
-
-//     _time += 0.001;
+    _robot->chain("head").setPositionReference(_pos_ref_map); 
+    _robot->move();
 }
 
 bool HomingExample::close()

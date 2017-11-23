@@ -8,3 +8,5 @@ float64[] damping
 
 string aux_name
 float64[] aux
+
+int32 seq_id

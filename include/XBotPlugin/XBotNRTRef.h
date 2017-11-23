@@ -17,8 +17,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#ifndef __X_BOT_COMMUNICATION_PLUGIN_H__
-#define __X_BOT_COMMUNICATION_PLUGIN_H__
+#ifndef __X_BOT_NRT_REF_H__
+#define __X_BOT_NRT_REF_H__
 
 #include <XCM/XBotControlPlugin.h>
 
@@ -34,19 +34,20 @@
 
 namespace XBot
 {
-    class XBotCommunicationPlugin;
+    class XBotNRTRef;
 }
 
 /**
- * @brief XBotCore RT plugin that communicates wit the non-RT enviroment using XDDP pipes
+ * @brief XBotCore RT plugin that enables the NRT world to send reference to the RT layer using the shared memory
  *
  */
-class XBot::XBotCommunicationPlugin : public XBot::XBotControlPlugin
+class XBot::XBotNRTRef : public XBot::XBotControlPlugin
 {
 public:
-    XBotCommunicationPlugin();
+    
+    XBotNRTRef();
 
-    virtual bool init_control_plugin(XBot::Handle::Ptr handle);
+    virtual bool init_control_plugin( XBot::Handle::Ptr handle);
 
     virtual void on_start(double time);
 
@@ -54,27 +55,25 @@ public:
 
     virtual bool close();
 
-    virtual ~XBotCommunicationPlugin();
+    virtual ~XBotNRTRef();
 
 protected:
 
     virtual void control_loop(double time, double period);
 
 private:
-
-    XBot::SharedObject<XBot::JointIdMap> _pos_ref_map, _vel_ref_map, _tor_ref_map, _k_ref_map, _d_ref_map;
-    Eigen::VectorXd _q0, _qref, _k0, _kref, _d0, _dref, _qdot0, _qdotref;
-
-    double _start_time;
-
+    
     XBot::RobotInterface::Ptr _robot;
-
-    XBot::Utils::SecondOrderFilter<Eigen::VectorXd> _filter_q, _filter_k, _filter_d, _filter_qdot;
-
-    bool _filter_enabled;
-
-    Thread_hook::Ptr _ch;
+    
+    XBot::JointIdMap _pos_ref_map, _vel_ref_map, _tor_ref_map, _k_ref_map, _d_ref_map;
+    
+    std::map<int, XBot::SubscriberRT<XBot::RobotState::pdo_tx>> _sub_map;
+    XBot::RobotState::pdo_tx _pdo_tx;
+    
+    std::map <int, XBot::Hand::Ptr> _hand_map;
+    
+    std::map<std::string, XBot::SharedObject<XBot::JointIdMap>> _ref_map_so;
 
 };
 
-#endif //__X_BOT_COMMUNICATION_PLUGIN_H__
+#endif //__X_BOT_NRT_REF_H__

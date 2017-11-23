@@ -137,7 +137,7 @@ void HttpHandler::handlePost(std::shared_ptr<RequestObject>& binary_request){
         if(getter->GetDoubleArray("link_position", vec)){       
           sharedData->external_command->add(vec);
           //HACK simulation of holding value for longer time
-          sharedData->external_command->add(vec);
+//           sharedData->external_command->add(vec);
         }
         
       }else if(uri.compare("/singlejoint")==0){

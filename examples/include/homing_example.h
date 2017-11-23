@@ -21,10 +21,10 @@
 #define __XCM_EXAMPLES_HOMING_EXAMPLE_H__
 
 #include <XCM/XBotControlPlugin.h>
-#include <XBotCore-interfaces/XBotRosUtils.h>
 #include <sensor_msgs/JointState.h>
 #include <std_srvs/SetBool.h>
 #include <std_msgs/Float64.h>
+#include <geometry_msgs/Point.h>
 
 namespace XBot {
 
@@ -54,6 +54,8 @@ namespace XBot {
         RosUtils::PublisherWrapper::Ptr _pub_rt, _pub_rt_1;
         RosUtils::SubscriberWrapper::Ptr _sub_rt;
         RosUtils::ServiceServerWrapper::Ptr _srv_rt;
+	XBot::JointIdMap _pos_ref_map;
+	XBot::SharedObject<XBot::JointIdMap>  _nrt_ref_sh;
 
         RobotInterface::Ptr _robot;
         Eigen::VectorXd _q0, _q_home, _q, _k, _d, _k0, _d0, _qref;

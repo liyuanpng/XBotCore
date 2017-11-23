@@ -110,6 +110,9 @@ CommunicationInterfaceROS::CommunicationInterfaceROS():
     }
 
     _nh = std::make_shared<ros::NodeHandle>();
+    
+    // by default I publish the tf
+    _publish_tf = true;
 }
 
 CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot, XBot::XBotXDDP::Ptr xddp_handler):
@@ -249,6 +252,11 @@ void CommunicationInterfaceROS::load_ros_message_interfaces() {
         _jointid_to_jointstate_msg_idx[id] = _jointstate_message->getIndex(joint_name);
         _jointid_to_command_msg_idx[id] = _control_message->getIndex(joint_name);;
     }
+    
+    /* check if I have to send /tf */
+    if(ros_interface_root["publish_tf"]) {
+        _publish_tf = ros_interface_root["publish_tf"].as<bool>();
+    }
 
 }
 void CommunicationInterfaceROS::sendRobotState()
@@ -259,12 +267,11 @@ void CommunicationInterfaceROS::sendRobotState()
     _robot->getJointPosition(_joint_name_map);
     std::map<std::string, double> _joint_name_std_map(_joint_name_map.begin(), _joint_name_map.end());
 
-    if(_robot_state_pub){
+    if(_robot_state_pub && _publish_tf){
         _robot_state_pub->publishTransforms(_joint_name_std_map, ros::Time::now(), "");
         _robot_state_pub->publishFixedTransforms("");
     }
-    _robot_state_pub->publishTransforms(_joint_name_std_map, ros::Time::now(), "");
-    _robot_state_pub->publishFixedTransforms("");
+
 
     /* Joint states */
 
@@ -480,45 +487,52 @@ void CommunicationInterfaceROS::resetReference()
 
 void CommunicationInterfaceROS::receiveReference()
 {
-    if( !_receive_commands_ok ) return;
+if( !_receive_commands_ok ) return;
 
     ros::spinOnce();
-
-
-    for( const auto& pair : _jointid_to_command_msg_idx ){
-        _joint_id_map[pair.first] = _control_message->position(pair.second);
-    }
-
-    _robot->setPositionReference(_joint_id_map);
-
-
-    for( const auto& pair : _jointid_to_command_msg_idx ){
-        _joint_id_map[pair.first] = _control_message->velocity(pair.second);
-    }
-
-    _robot->setVelocityReference(_joint_id_map);
-
-
-    for( const auto& pair : _jointid_to_command_msg_idx ){
-        _joint_id_map[pair.first] = _control_message->effort(pair.second);
-    }
-
-    _robot->setEffortReference(_joint_id_map);
-
-
-    for( const auto& pair : _jointid_to_command_msg_idx ){
-        _joint_id_map[pair.first] = _control_message->stiffness(pair.second);
-    }
-
-    _robot->setStiffness(_joint_id_map);
-
-
-    for( const auto& pair : _jointid_to_command_msg_idx ){
-        _joint_id_map[pair.first] = _control_message->damping(pair.second);
-    }
-
-    _robot->setDamping(_joint_id_map);
     
+    if (current_seq_id < _control_message->seq_id()) {
+        
+        current_seq_id = _control_message->seq_id();
+
+        for( const auto& pair : _jointid_to_command_msg_idx ){
+            _joint_id_map[pair.first] = _control_message->position(pair.second);
+        }
+
+        _robot->setPositionReference(_joint_id_map);
+
+
+        for( const auto& pair : _jointid_to_command_msg_idx ){
+            _joint_id_map[pair.first] = _control_message->velocity(pair.second);
+        }
+
+        _robot->setVelocityReference(_joint_id_map);
+
+
+        for( const auto& pair : _jointid_to_command_msg_idx ){
+            _joint_id_map[pair.first] = _control_message->effort(pair.second);
+        }
+
+        _robot->setEffortReference(_joint_id_map);
+
+
+        for( const auto& pair : _jointid_to_command_msg_idx ){
+            _joint_id_map[pair.first] = _control_message->stiffness(pair.second);
+        }
+
+        _robot->setStiffness(_joint_id_map);
+
+
+        for( const auto& pair : _jointid_to_command_msg_idx ){
+            _joint_id_map[pair.first] = _control_message->damping(pair.second);
+        }
+
+        _robot->setDamping(_joint_id_map);
+    }
+    else {
+        resetReference();
+    }
+//     
     
     /* HAND */
 
@@ -533,7 +547,6 @@ void CommunicationInterfaceROS::receiveReference()
 
 
 }
-
 bool CommunicationInterfaceROS::advertiseSwitch(const std::string& port_name)
 {
     if( _services.count(port_name) > 0 ){

@@ -42,6 +42,8 @@ namespace XBot {
         virtual double& stiffness(int index);
         virtual double& damping(int index);
         virtual double& aux(int index);
+        virtual int& seq_id();
+
 
         virtual std::string& aux_name();
         virtual void publish();

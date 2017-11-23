@@ -396,12 +396,7 @@ void XBot::CommunicationHandler::th_loop(void*)
 
     /* Receive commands from the master communication handler,
      * i.e. the only one enabled to send commands to the robot */
-    if(_master_communication_ifc->getPluginStatus(_plugin_names[xbot_communication_idx]) == "STOPPED"){
-        _master_communication_ifc->resetReference();
-    }
-    else{
-        _master_communication_ifc->receiveReference(); // this updates robot
-    }
+    _master_communication_ifc->receiveReference(); // this updates robot
     
     /* Run external plugins */
     for( std::shared_ptr<XBot::IOPlugin> io_plugin_ptr : _io_plugin_ptr ){

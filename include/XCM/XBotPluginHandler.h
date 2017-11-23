@@ -138,6 +138,7 @@ namespace XBot {
 
         int _communication_plugin_idx;
         int _logging_plugin_idx;
+        int _nrtref_plugin_idx;
 
         RobotInterface::Ptr _robot;
         std::string _path_to_cfg;

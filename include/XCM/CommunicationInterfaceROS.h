@@ -78,7 +78,7 @@ private:
                                        const std::string& middle_path,
                                        std::string& absolute_path );
 
-    bool _send_robot_state_ok, _receive_commands_ok;
+    bool _send_robot_state_ok, _receive_commands_ok, _publish_tf;
 
     std::string _path_to_cfg;
 
@@ -123,7 +123,8 @@ private:
     std::map<int, ros::Publisher> _hand_pub_map;
     std::map<int, ros::Subscriber> _hand_sub_map;
     std::map<int, double> _hand_value_map;
-
+    
+    int current_seq_id = 0;
 
 
 };
