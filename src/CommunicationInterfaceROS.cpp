@@ -166,7 +166,7 @@ void CommunicationInterfaceROS::load_robot_state_publisher()
     kdl_parser::treeFromUrdfModel(_robot->getUrdf(), kdl_tree);
     resume_stdout(fd);
 
-    _robot_state_pub = std::make_shared<robot_state_publisher::RobotStatePublisher>(kdl_tree);
+//     _robot_state_pub = std::make_shared<robot_state_publisher::RobotStatePublisher>(kdl_tree);
 
     _urdf_param_name = "/xbotcore/" + _robot->getUrdf().getName() + "/robot_description";
     _tf_prefix = "/xbotcore/" + _robot->getUrdf().getName();
