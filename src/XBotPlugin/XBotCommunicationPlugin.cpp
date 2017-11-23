@@ -64,7 +64,8 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(XBot::Handle::Ptr handle
         _hand_map[hand->getHandId()] =  hand;
     }
     
-    
+    // NOTE initialize the *0 variables
+    on_start(0.0);    
 
     return true;
 }

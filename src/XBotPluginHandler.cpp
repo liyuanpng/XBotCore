@@ -38,8 +38,8 @@ extern char **environ;
 
 namespace XBot {
 
-PluginHandler::PluginHandler(RobotInterface::Ptr robot,  
-                             TimeProvider::Ptr time_provider, 
+PluginHandler::PluginHandler(RobotInterface::Ptr robot,
+                             TimeProvider::Ptr time_provider,
                              const std::string& plugins_set_name) :
     _robot(robot),
     _time_provider(time_provider),
@@ -47,16 +47,16 @@ PluginHandler::PluginHandler(RobotInterface::Ptr robot,
     _esc_utils(robot),
     _close_was_called(false)
 {
-    // plugin set mode 
+    // plugin set mode
     update_plugins_set_name(_plugins_set_name);
-    
+
     // Path
     _path_to_cfg = _robot->getPathToConfig();
     Logger::info() << "Plugin Handler is using config file: " << _path_to_cfg << Logger::endl();
 
     _pluginhandler_log = XBot::MatLogger::getLogger("/tmp/PluginHandler_log");
     Logger::info() << "With plugin set name : " << _plugins_set_name << Logger::endl();
-    
+
     curr_plg.store(-1);
 }
 
@@ -75,22 +75,22 @@ void XBot::PluginHandler::update_plugins_set_name(const std::string& plugins_set
 
 std::vector<std::string>& PluginHandler::getPluginsName()
 {
-  
+
   return _rtplugin_names;
-  
+
 }
 
-std::shared_ptr<XBot::XBotControlPlugin> PluginHandler::loadPlugin(const std::string& plugin_name) {  
-  
- 
+std::shared_ptr<XBot::XBotControlPlugin> PluginHandler::loadPlugin(const std::string& plugin_name) {
+
+
      std::shared_ptr<XBot::XBotControlPlugin> plugin_ptr = PluginFactory::getFactory("lib"+plugin_name, plugin_name);
      if(!plugin_ptr) {
       Logger::error() << "Unable to load plugin " << plugin_name << "!" << Logger::endl();
           }
        else{
         Logger::info(Logger::Severity::HIGH) << "Restarting plugin " << plugin_name << "!" << Logger::endl();
-    }    
-   
+    }
+
     return plugin_ptr;
 }
 
@@ -102,7 +102,7 @@ bool PluginHandler::load_plugins()
         Logger::error() << "in " << __func__ << "! Can NOT open config file " << _path_to_cfg << "!" << Logger::endl();
         return false;
     }
-    
+
     _root_cfg = YAML::LoadFile(_path_to_cfg);
 
 
@@ -125,7 +125,7 @@ bool PluginHandler::load_plugins()
 
             // NOTE only for RT plugins
             if( _is_RT_plugin_handler ) {
-                
+
                 // loading by default the XBotCommunicationPlugin
                 std::string communication_plugin_name = "XBotCommunicationPlugin";
                 auto it = std::find(_rtplugin_names.begin(), _rtplugin_names.end(), communication_plugin_name);
@@ -148,7 +148,7 @@ bool PluginHandler::load_plugins()
                     _logging_plugin_idx = std::distance(_rtplugin_names.begin(), it);
                 }
             }
-            
+
         }
 
     }
@@ -156,9 +156,9 @@ bool PluginHandler::load_plugins()
     bool success = true;
 
     int pos = 0;
-    
+
     for( const std::string& plugin_name : _rtplugin_names ){
-        
+
          std::shared_ptr<XBot::XBotControlPlugin> plugin_ptr = PluginFactory::getFactory("lib"+plugin_name, plugin_name);
          if(!plugin_ptr) {
            success = false;
@@ -166,9 +166,9 @@ bool PluginHandler::load_plugins()
           }
 
           _rtplugin_vector.push_back(plugin_ptr);
-          
+
         _pluginhandler_log->createScalarVariable(plugin_name + "_exec_time");
-        
+
         std::string plugin_name1 = plugin_name;
         //pluginMap[plugin_name1] = plugin_ptr;
         pluginPos [plugin_name1] = pos;
@@ -176,20 +176,20 @@ bool PluginHandler::load_plugins()
     }
     _time.resize(_rtplugin_vector.size());
     _last_time.resize(_rtplugin_vector.size());
-    _period.resize(_rtplugin_vector.size());      
+    _period.resize(_rtplugin_vector.size());
     return success;
 }
 
 bool PluginHandler::initPlugin(  std::shared_ptr<XBot::XBotControlPlugin> plugin_ptr,
                                  const std::string& name)
 {
-  
+
         Logger::info(Logger::Severity::HIGH) << "Initializing plugin " << plugin_ptr->name << Logger::endl();
-    
+
         bool plugin_init_success = false;
         int i=0;
         i = pluginPos[name];
-       
+
          _plugin_state[i] == "RESTARTING";
         try{
             /* Try to init the current plugin */
@@ -204,7 +204,7 @@ bool PluginHandler::initPlugin(  std::shared_ptr<XBot::XBotControlPlugin> plugin
 
             /* Handle return value if init() was performed cleanly */
             if(!plugin_init_success){
-                Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. Plugin init() returned false!" << Logger::endl();           
+                Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. Plugin init() returned false!" << Logger::endl();
             }
             else{
                 Logger::success(Logger::Severity::HIGH) << "Plugin " << (plugin_ptr)->name << " initialized successfully!" << Logger::endl();
@@ -213,7 +213,7 @@ bool PluginHandler::initPlugin(  std::shared_ptr<XBot::XBotControlPlugin> plugin
 
         /* Handle exceptions inheriting from std::exception */
         catch(std::exception& e){
-            Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. \n An exception was thrown: " << e.what() << Logger::endl();            
+            Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. \n An exception was thrown: " << e.what() << Logger::endl();
             plugin_init_success = false;
         }
 
@@ -222,11 +222,11 @@ bool PluginHandler::initPlugin(  std::shared_ptr<XBot::XBotControlPlugin> plugin
             Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. \n An exception was thrown: " << Logger::endl();
             plugin_init_success = false;
         }
-        
+
         _plugin_state[i] == "STOPPED";
-        
+
         return plugin_init_success;
-  
+
 }
 
 bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
@@ -243,10 +243,10 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
     _imu = imu;
     _hand = hand;
     _model = model;
-  
+
     // Save xbot_joint
     _xbot_joint = joint;
-    
+
     _plugin_init_success.resize(_rtplugin_vector.size(), false);
     _plugin_switch.resize(_rtplugin_vector.size());
     _plugin_status.resize(_rtplugin_vector.size());
@@ -254,11 +254,11 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
     _plugin_custom_status.resize(_rtplugin_vector.size());
     _plugin_state.resize(_rtplugin_vector.size(), "STOPPED");
     _first_loop.resize(_rtplugin_vector.size(), true);
-    
+
     // NOTE xddp initialization only if we are handling RT Plugins
     if( _is_RT_plugin_handler ) {
         init_xddp();
-        
+
         // NOTE starting by default the logging plugin
         _plugin_state[_logging_plugin_idx] = "RUNNING";
     }
@@ -266,14 +266,14 @@ bool PluginHandler::init_plugins(XBot::SharedMemory::Ptr shared_memory,
     bool ret = true;
 
     for(int i = 0; i < _rtplugin_vector.size(); i++) {
-        
+
         Logger::info(Logger::Severity::HIGH) << "Initializing plugin " << _rtplugin_names[i] << Logger::endl();
 
         bool plugin_init_success = false;
         _plugin_custom_status[i] = std::make_shared<PluginStatus>();
-        
+
         plugin_init_success = initPlugin(_rtplugin_vector[i], _rtplugin_names[i]);
-        
+
         // allocate concrete pub/sub classes
         if( _is_RT_plugin_handler ) {
             _plugin_switch[i] = std::make_shared<XBot::SubscriberRT<XBot::Command>>();
@@ -321,7 +321,7 @@ bool XBot::PluginHandler::init_xddp()
         XBot::PublisherRT<XBot::RobotIMU::pdo_rx> pub(std::string("Imu_id_") + std::to_string(id));
         _imu_pub_map[id] = pub;
     }
-    
+
     // HAND
     for( const auto& h : _robot->getHand() ) {
         int id = h.second->getHandId();
@@ -358,26 +358,29 @@ void XBot::PluginHandler::fill_robot_state()
     _esc_utils.setRobotStateFromRobotInterface(_robot_state_map);
     _esc_utils.setRobotFTFromRobotInterface(_ft_state_map);
     _esc_utils.setRobotIMUFromRobotInterface(_imu_state_map);
-    
+
     for(int id: _robot->getEnabledJointId()){
-     
+
         double fault_value = 0;
         double temperature = 0;
-        
+        double aux = 0;
+
         if(!_xbot_joint) continue;
-        
+
         _xbot_joint->get_fault(id, fault_value);
         _xbot_joint->get_temperature(id, temperature);
-         
+        _xbot_joint->get_aux(id, aux);
+
         _robot_state_map.at(id).RobotStateRX.fault = fault_value;
-        _robot_state_map.at(id).RobotStateRX.temperature = temperature;
-        
+        _robot_state_map.at(id).RobotStateRX.temperature = aux;
+        _robot_state_map.at(id).RobotStateRX.aux = aux;
+
     }
-    
+
 }
 
 void PluginHandler::replacePlugin(const std::string& name){
-  
+
     int pos = pluginPos[name];
     curr_plg.store(pos);
     if( _plugin_state[pos].compare("STOPPED") != 0) {curr_plg.store(-1); return;}
@@ -405,7 +408,7 @@ void PluginHandler::run()
     XBot::Command cmd;
 
     for( int i = 0; i < _rtplugin_vector.size(); i++){
-        
+
         _time[i] = _time_provider->get_time();
 
         if(_first_loop[i]){
@@ -418,14 +421,14 @@ void PluginHandler::run()
 
         /* If init was unsuccessful, do not run */
         if(!_plugin_init_success[i]) continue;
-        
-         
+
+
 
         /* STATE STOPPED */
 
         if( curr_plg.load() != i){
             if( _plugin_state[i] == "STOPPED" ){
-            
+
                 _plugin_status[i]->write(XBot::Command("STOPPED"+_plugin_custom_status[i]->getStatus()));
 
                 if( _plugin_switch[i]->read(cmd) ){
@@ -458,7 +461,7 @@ void PluginHandler::run()
                         _plugin_state[i] = "STOPPED";
                     }
                 }
-                
+
                 _plugin_cmd[i]->read((plugin)->getCmd());
 
                 double tic = _time_provider->get_time();
@@ -467,7 +470,7 @@ void PluginHandler::run()
 
                 XBot::Command cm;
                 (plugin)->setCmd(cm);
-                
+
                 _pluginhandler_log->add(_rtplugin_names[i] + "_exec_time", toc-tic);
 
             }
@@ -482,7 +485,7 @@ void PluginHandler::unloadPlugin(const std::string& port_name)
 {
    int pos = pluginPos[port_name];
    _rtplugin_vector[pos].reset();
-   PluginFactory::unloadLib("lib"+port_name);    
+   PluginFactory::unloadLib("lib"+port_name);
 }
 
 void PluginHandler::close()
@@ -537,7 +540,7 @@ bool PluginHandler::plugin_can_start(int plugin_idx)
 {
     // NOTE Policy for RT Plugins
     if( _is_RT_plugin_handler ) {
-        
+
         /* Logging plugin can always start */
 
         if( plugin_idx == _logging_plugin_idx ){
@@ -569,7 +572,7 @@ bool PluginHandler::plugin_can_start(int plugin_idx)
 
         return false;
     }
-    
+
     // relaxed policy for NRT Plugins
     return true;
 }
