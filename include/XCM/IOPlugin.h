@@ -59,30 +59,12 @@ public:
     virtual void close() = 0;
 
 };
-/*
-class IOPluginLoader {
-
-public:
-
-    bool load(std::string plugin_name);
-    IOPlugin* getPtr();
-
-private:
-
-    static bool computeAbsolutePath (const std::string& input_path,
-                                     const std::string& middle_path,
-                                     std::string& absolute_path);
-
-    std::shared_ptr<shlibpp::SharedLibraryClassFactory<IOPlugin>> _ioplugin_factory;
-    std::shared_ptr<shlibpp::SharedLibraryClass<IOPlugin>> _ioplugin_class;
-
-    bool _load_success;
-
-};*/
-
-
 
 }
+
+
+
+
 
 
 

@@ -19,14 +19,17 @@
 
 #include <XCM/XBotCommunicationHandler.h>
 #include <XCM/IOPluginFactory.h>
+
 #include <XBotInterface/RtLog.hpp>
 
-using XBot::Logger;
 #include <dirent.h>
+
+using XBot::Logger;
+
 
 
 XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config, 
-                         XBot::SharedMemory::Ptr shmem) :
+                                                 XBot::SharedMemory::Ptr shmem) :
     _path_to_config(path_to_config),
     _master_communication_ifc(nullptr),
     loadWebServer(true),
@@ -35,24 +38,28 @@ XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config,
     // set thread name
     name = "XBOT_COMMHANDLER"; //TBD understand why pthread_setname_np return code error 3
     
-    // set thread period - not periodic
+    // Set thread period
     task_period_t t;
     memset(&t, 0, sizeof(t));
     t.period = {0,5000};
     period.task_time = t.task_time;
     period.period = t.period;
     
-    // set scheduler policy
+    // Set scheduler policy
     schedpolicy = SCHED_OTHER;
     
-    // set scheduler priority and stacksize
+    // Set scheduler priority and stacksize
     priority = sched_get_priority_max(schedpolicy);
     stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
     
+    // Init ROS
     int argc = 1;
-    char * argvv = "CommHandler";
-    char ** argv = &argvv;
+    const char * argvv = "CommHandler";
+    char ** argv = (char **)(&argvv);
+    
     ros::init(argc, argv, "CommHandler", ros::init_options::NoSigintHandler);
+    
+    // Construct RosHandle and push it to shared memory
     _roshandle = std::make_shared<RosUtils::RosHandle>();
     _roshandle_shobj = _shmem->getSharedObject<RosUtils::RosHandle::Ptr>("ros_handle");
     _roshandle_shobj.set(_roshandle);
@@ -62,7 +69,7 @@ XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config,
 
 void XBot::CommunicationHandler::th_init(void*)
 {
-    
+    //
     const char* env_user = std::getenv("USER");
     Logger::info() << "USER is: " << env_user << Logger::endl();
     std::string folder = std::string("/tmp/")+env_user;
@@ -92,13 +99,13 @@ void XBot::CommunicationHandler::th_init(void*)
     YAML::Node root_cfg = YAML::LoadFile(_path_to_config);
 
     if(!root_cfg["XBotRTPlugins"]){
-        Logger::error() << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node XBotRTPlugins!" << Logger::endl();
+        Logger::error() << "in " << __func__ << "! Config file does NOT contain mandatory node XBotRTPlugins!" << Logger::endl();
         return;
     }
     else{
 
         if(!root_cfg["XBotRTPlugins"]["plugins"]){
-            Logger::error() << "ERROR in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node plugins!" << Logger::endl();
+            Logger::error() << "in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node plugins!" << Logger::endl();
             return;
         }
         else{
@@ -114,7 +121,7 @@ void XBot::CommunicationHandler::th_init(void*)
         }
 
         if(!root_cfg["XBotRTPlugins"]["io_plugins"]){
-            Logger::error() << "WARNING in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node io_plugins!" << Logger::endl();
+            Logger::warning() << "in " << __func__ << "! XBotRTPlugins node does NOT contain mandatory node io_plugins!" << Logger::endl();
         }
         else{
 
@@ -126,11 +133,11 @@ void XBot::CommunicationHandler::th_init(void*)
     }
 
     if(!root_cfg["MasterCommunicationInterface"]) {
-        Logger::error() << "ERROR in " << __func__ << "! Config file does NOT contain mandatory node MasterCommunicationInterface!" << Logger::endl();
+        Logger::error() << "in " << __func__ << "! Config file does NOT contain mandatory node MasterCommunicationInterface!" << Logger::endl();
     }
     else {
         if(!root_cfg["MasterCommunicationInterface"]["framework_name"]){
-            Logger::error() << "ERROR in " << __func__ << "! MasterCommunicationInterface node does NOT contain mandatory node framework_name!" << Logger::endl();
+            Logger::error() << "in " << __func__ << "! MasterCommunicationInterface node does NOT contain mandatory node framework_name!" << Logger::endl();
             return;
         }
         else{
@@ -140,7 +147,7 @@ void XBot::CommunicationHandler::th_init(void*)
         _enable_ref_read = true;
         
         if(!root_cfg["MasterCommunicationInterface"]["enable_ref_read"]){
-            Logger::warning(Logger::Severity::LOW) << "WARNING in " << __func__ << "! MasterCommunicationInterface node does NOT contain optional node enable_ref_read: I will assume it to TRUE" << Logger::endl();
+            Logger::warning(Logger::Severity::LOW) << "in " << __func__ << "! MasterCommunicationInterface node does NOT contain optional node enable_ref_read: I will assume it to TRUE" << Logger::endl();
         }
         else{
             _enable_ref_read = root_cfg["MasterCommunicationInterface"]["enable_ref_read"].as<bool>();
@@ -250,7 +257,7 @@ void XBot::CommunicationHandler::th_init(void*)
 
     // check on master communication interface
     if( _master_communication_ifc == nullptr ) {
-        Logger::error() << "ERROR in " << __func__ << "! Master Communication Interface specified in the config file but "
+        Logger::error() << "in " << __func__ << "! Master Communication Interface specified in the config file but "
                                              << "not matching with the current NRT frameworks installed in the system" << Logger::endl();
         return;
     }
@@ -259,7 +266,9 @@ void XBot::CommunicationHandler::th_init(void*)
     for(const std::string& name : _io_plugin_names) {
         std::shared_ptr<XBot::IOPlugin> plugin_ptr = IOPluginFactory::getFactory("lib"+name, name);
         _io_plugin_ptr.push_back(plugin_ptr);
+        Logger::info(Logger::Severity::MID, "Initializing IO plugin %s...", name.c_str());
         plugin_ptr->init(_path_to_config);
+        Logger::success(Logger::Severity::MID, "Initialized IO plugin %s!", name.c_str());
     }
 
     /* Advertise switch/cmd ports for all plugins on all frameworks */
@@ -350,7 +359,7 @@ void XBot::CommunicationHandler::th_loop(void*)
                 cmd = "start";
                 _switch_pub_vector[xbot_communication_idx].write(cmd);
 #else
-                Logger::error() << "ERROR: YARP Master Communication Interface not compiled" << Logger::endl();
+                Logger::error() << "YARP Master Communication Interface not compiled" << Logger::endl();
 #endif
             }
         }
@@ -403,7 +412,6 @@ void XBot::CommunicationHandler::th_loop(void*)
     _robot->move();
     
     _xddp_handler->updateTX();
-    
     
     _roshandle->publishAll();
 }

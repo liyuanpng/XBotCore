@@ -188,14 +188,14 @@ bool PluginHandler::initPlugin(  std::shared_ptr<XBot::XBotControlPlugin> plugin
                                  const std::string& name)
 {
   
-        Logger::info(Logger::Severity::HIGH) << "Initializing plugin " << plugin_ptr->name << Logger::endl();
+        Logger::info(Logger::Severity::HIGH) << "Initializing plugin " << name << Logger::endl();
     
         bool plugin_init_success = false;
         int i=0;
         i = pluginPos[name];
        
          _plugin_state[i] == "RESTARTING";
-        try{
+//         try{
             /* Try to init the current plugin */
             plugin_init_success = ( plugin_ptr)->init(  (XBot::Handle::Ptr) this,
                                                         name,
@@ -213,19 +213,19 @@ bool PluginHandler::initPlugin(  std::shared_ptr<XBot::XBotControlPlugin> plugin
             else{
                 Logger::success(Logger::Severity::HIGH) << "Plugin " << (plugin_ptr)->name << " initialized successfully!" << Logger::endl();
             }
-        }
+//         }
 
         /* Handle exceptions inheriting from std::exception */
-        catch(std::exception& e){
-            Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. \n An exception was thrown: " << e.what() << Logger::endl();            
-            plugin_init_success = false;
-        }
-
-        /* Handle all other exceptions */
-        catch(...){
-            Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. \n An exception was thrown: " << Logger::endl();
-            plugin_init_success = false;
-        }
+//         catch(std::exception& e){
+//             Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. \n An exception was thrown: " << e.what() << Logger::endl();            
+//             plugin_init_success = false;
+//         }
+// 
+//         /* Handle all other exceptions */
+//         catch(...){
+//             Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. \n An exception was thrown: " << Logger::endl();
+//             plugin_init_success = false;
+//         }
         
         _plugin_state[i] == "STOPPED";
         
@@ -276,8 +276,6 @@ bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
     bool ret = true;
 
     for(int i = 0; i < _rtplugin_vector.size(); i++) {
-        
-        Logger::info(Logger::Severity::HIGH) << "Initializing plugin " << _rtplugin_names[i] << Logger::endl();
 
         bool plugin_init_success = false;
         _plugin_custom_status[i] = std::make_shared<PluginStatus>();
