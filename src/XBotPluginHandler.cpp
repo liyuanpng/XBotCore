@@ -62,6 +62,8 @@ PluginHandler::PluginHandler( RobotInterface::Ptr robot,
     curr_plg.store(-1);
     
     _roshandle_shobj = shared_memory->getSharedObject<RosUtils::RosHandle::Ptr>("ros_handle");
+    
+    init_nrt_reference();
 }
 
 void XBot::PluginHandler::update_plugins_set_name(const std::string& plugins_set_name)
@@ -421,6 +423,9 @@ void PluginHandler::run()
 
     // fill robot state
     fill_robot_state();
+    
+    // update nrt reference 
+    fill_nrt_reference();
 
     // NOTE in the RT case broadcast robot state over pipes
     if( _is_RT_plugin_handler ) {
@@ -641,6 +646,49 @@ XBot::RosUtils::RosHandle::Ptr XBot::PluginHandler::getRosHandle() const
     return _roshandle;
 }
 
+bool XBot::PluginHandler::getNrtPositionReference(JointIdMap& pos_id_map) const
+{
+    pos_id_map = _nrt_pos;
+    return true;
+}
+
+bool XBot::PluginHandler::getNrtVelocityReference(JointIdMap& vel_id_map) const
+{
+    vel_id_map = _nrt_vel;
+    return true;
+}
+
+bool XBot::PluginHandler::getNrtEffortReference(JointIdMap& eff_id_map) const
+{
+    eff_id_map = _nrt_eff;
+    return true;
+}
+
+bool XBot::PluginHandler::getNrtImpedanceReference(JointIdMap& k_id_map, 
+                                                   JointIdMap& d_id_map) const
+{
+    k_id_map = _nrt_imp_k;
+    d_id_map = _nrt_imp_d;
+    return true;
+}
+
+void XBot::PluginHandler::fill_nrt_reference()
+{
+    (_ref_map_so.at("pos_ref_map_so")).set(_nrt_pos);
+    (_ref_map_so.at("vel_ref_map_so")).set(_nrt_vel);
+    (_ref_map_so.at("tor_ref_map_so")).set(_nrt_eff);
+    (_ref_map_so.at("k_ref_map_so")).set(_nrt_imp_k);
+    (_ref_map_so.at("d_ref_map_so")).set(_nrt_imp_d);
+}
+
+void XBot::PluginHandler::init_nrt_reference()
+{
+    _ref_map_so["pos_ref_map_so"] = getSharedMemory()->getSharedObject<XBot::JointIdMap>("pos_ref_map_so");
+    _ref_map_so["vel_ref_map_so"] = getSharedMemory()->getSharedObject<XBot::JointIdMap>("vel_ref_map_so");
+    _ref_map_so["tor_ref_map_so"] = getSharedMemory()->getSharedObject<XBot::JointIdMap>("tor_ref_map_so");
+    _ref_map_so["k_ref_map_so"] = getSharedMemory()->getSharedObject<XBot::JointIdMap>("k_ref_map_so");
+    _ref_map_so["d_ref_map_so"] = getSharedMemory()->getSharedObject<XBot::JointIdMap>("d_ref_map_so");
+}
 
 
 }

@@ -37,6 +37,10 @@ namespace XBot {
         virtual SharedMemory::Ptr   getSharedMemory()     const = 0;
         virtual RobotInterface::Ptr getRobotInterface()   const = 0;
         virtual RosUtils::RosHandle::Ptr getRosHandle()   const = 0;
+        virtual bool getNrtPositionReference(XBot::JointIdMap& pos_id_map) const = 0;
+        virtual bool getNrtVelocityReference(XBot::JointIdMap& vel_id_map) const = 0;
+        virtual bool getNrtEffortReference(XBot::JointIdMap& eff_id_map) const = 0;
+        virtual bool getNrtImpedanceReference(XBot::JointIdMap& k_id_map, XBot::JointIdMap& d_id_map) const = 0;
         
         
     };

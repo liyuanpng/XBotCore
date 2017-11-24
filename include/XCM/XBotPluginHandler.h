@@ -76,6 +76,10 @@ namespace XBot {
         virtual RobotInterface::Ptr getRobotInterface() const;
         virtual SharedMemory::Ptr getSharedMemory() const;
         virtual RosUtils::RosHandle::Ptr getRosHandle() const;
+        virtual bool getNrtPositionReference(XBot::JointIdMap& pos_id_map) const;
+        virtual bool getNrtVelocityReference(XBot::JointIdMap& vel_id_map) const;
+        virtual bool getNrtEffortReference(XBot::JointIdMap& eff_id_map) const;
+        virtual bool getNrtImpedanceReference(XBot::JointIdMap& k_id_map, XBot::JointIdMap& d_id_map) const;
         
         ~PluginHandler();
 
@@ -84,6 +88,7 @@ namespace XBot {
     private:
 
         bool init_xddp();
+        
         void run_xddp();
 
         void fill_robot_state();
@@ -91,6 +96,10 @@ namespace XBot {
         void run_communication_handler();
 
         bool plugin_can_start(int plugin_idx);
+        
+        void fill_nrt_reference();
+        
+        void init_nrt_reference();
 
         static bool computeAbsolutePath ( const std::string& input_path,
                                           const std::string& midlle_path,
@@ -159,6 +168,9 @@ namespace XBot {
         
         RosUtils::RosHandle::Ptr _roshandle;
         SharedObject<RosUtils::RosHandle::Ptr> _roshandle_shobj;
+        
+        JointIdMap _nrt_pos, _nrt_vel, _nrt_eff, _nrt_imp_k, _nrt_imp_d;
+        std::map<std::string, XBot::SharedObject<XBot::JointIdMap>> _ref_map_so;
 
     };
 }
