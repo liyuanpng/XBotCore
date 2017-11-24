@@ -23,6 +23,7 @@
 #include <vector>
 #include <memory>
 #include <queue>
+#include <assert.h>
 
 #include <XBotInterface/Thread.h>
 #include <XBotInterface/RtLog.hpp>
@@ -37,6 +38,80 @@
 namespace XBot {
     
     namespace RosUtils {
+        
+        template <typename T, int N>   
+        class LimitedDeque {
+            
+        public:
+            
+            void push_back(const T& elem);
+            bool pop_back();
+            
+            T& back();
+            const T& back() const;
+            
+            int size() const;
+            
+            bool is_full() const;
+            
+        private:
+            
+            int _oldest = -1;
+            int _newest =  0;
+            
+            T _buffer[N];
+        
+        };
+        
+        const T& LimitedDeque::back() const
+        {
+
+        }
+
+        bool LimitedDeque::pop_back()
+        {
+
+        }
+
+        void LimitedDeque::push_back(const T& elem)
+        {
+            if(is_full()){
+                
+                int dbg_old_size = size();
+                
+                _buffer[_oldest] = elem;
+                
+                _newest = _oldest;
+                
+                _oldest = ( _oldest - 1 ) % N;
+                
+                if(_oldest < 0){
+                    _oldest += N;
+                }
+                
+                assert(size()==dbg_old_size && "size()==dbg_old_size");
+                
+            }
+            else{
+                
+               _buffer[_newest] = elem; 
+               
+               _newest = ( _newest + 1 ) % N;
+               
+            }
+        }
+
+        int LimitedDeque::size() const
+        {
+            return (_oldest - _newest) % N + 1;
+        }
+        
+        bool LimitedDeque::is_full() const
+        {
+            return size() == N;
+        }
+
+
         
         class RosHandle;
 
