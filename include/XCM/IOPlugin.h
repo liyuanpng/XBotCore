@@ -22,6 +22,7 @@
 
 #include <string>
 #include <XBotInterface/XBotInterface.h>
+#include <XBotCore-interfaces/XBotSharedMemory.h>
 
 #define REGISTER_XBOT_IO_PLUGIN(others,plugin_name) \
 extern "C" XBot::IOPlugin* create_instance() \
@@ -52,7 +53,9 @@ class IOPlugin {
 
 public:
 
-    virtual bool init(std::string path_to_config_file) = 0;
+    virtual bool init(std::string path_to_config_file, 
+                      SharedMemory::Ptr shmem
+                      ) = 0;
 
     virtual void run() = 0;
 

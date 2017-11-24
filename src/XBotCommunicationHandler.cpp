@@ -266,9 +266,9 @@ void XBot::CommunicationHandler::th_init(void*)
     for(const std::string& name : _io_plugin_names) {
         std::shared_ptr<XBot::IOPlugin> plugin_ptr = IOPluginFactory::getFactory("lib"+name, name);
         _io_plugin_ptr.push_back(plugin_ptr);
-        Logger::info(Logger::Severity::MID, "Initializing IO plugin %s...", name.c_str());
-        plugin_ptr->init(_path_to_config);
-        Logger::success(Logger::Severity::MID, "Initialized IO plugin %s!", name.c_str());
+        Logger::info(Logger::Severity::MID, "Initializing IO plugin %s...\n", name.c_str());
+        plugin_ptr->init(_path_to_config, _shmem);
+        Logger::success(Logger::Severity::MID, "Initialized IO plugin %s\n!", name.c_str());
     }
 
     /* Advertise switch/cmd ports for all plugins on all frameworks */
@@ -294,10 +294,6 @@ void XBot::CommunicationHandler::th_init(void*)
     Eigen::VectorXd q0;
     _robot->getMotorPosition(q0);
     _robot->setPositionReference(q0);
-    
-    
-    
-    
 
 }
 
