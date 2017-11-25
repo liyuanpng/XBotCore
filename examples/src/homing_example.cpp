@@ -102,6 +102,13 @@ void HomingExample::on_stop(double time)
 
 void HomingExample::control_loop(double time, double period)
 {
+    geometry_msgs::Point msg;
+    msg.x = period;
+    
+    _pub_rt->pushToQueue(msg);
+    
+    _nrt_ref_sh.get(_pos_ref_map);
+    
     // go to homing
     if( (time - _first_loop_time) <= _homing_time ) {
         _q = _q0 + 0.5*(1-std::cos(3.1415*(time - _first_loop_time)/_homing_time))*(_q_home-_q0);
@@ -112,9 +119,9 @@ void HomingExample::control_loop(double time, double period)
 
     // after we arrive in the homing position read head reference from the NRT
     
-    _nrt_ref_sh.get(_pos_ref_map);
+    
 
-    _robot->chain("head").setPositionReference(_pos_ref_map); 
+//     _robot->chain("head").setPositionReference(_pos_ref_map); 
     _robot->move();
 }
 

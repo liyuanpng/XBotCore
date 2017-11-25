@@ -68,7 +68,7 @@ namespace XBot {
                 }
                 
                 
-                
+                _msg_queue.push_back();
                 ros::SerializedMessage& current_ser_msg = _msg_queue.back();
                 
                 int len = ros::serialization::serializationLength(msg) + 4;
