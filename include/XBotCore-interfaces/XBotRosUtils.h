@@ -27,6 +27,7 @@
 
 #include <XBotInterface/Thread.h>
 #include <XBotInterface/RtLog.hpp>
+#include <XBotInterface/Utils.h>
 
 #include <ros/ros.h>
 #include <ros/topic_manager.h>
@@ -39,79 +40,6 @@ namespace XBot {
     
     namespace RosUtils {
         
-        template <typename T, int N>   
-        class LimitedDeque {
-            
-        public:
-            
-            void push_back(const T& elem);
-            bool pop_back();
-            
-            T& back();
-            const T& back() const;
-            
-            int size() const;
-            
-            bool is_full() const;
-            
-        private:
-            
-            int _oldest = -1;
-            int _newest =  0;
-            
-            T _buffer[N];
-        
-        };
-        
-        const T& LimitedDeque::back() const
-        {
-
-        }
-
-        bool LimitedDeque::pop_back()
-        {
-
-        }
-
-        void LimitedDeque::push_back(const T& elem)
-        {
-            if(is_full()){
-                
-                int dbg_old_size = size();
-                
-                _buffer[_oldest] = elem;
-                
-                _newest = _oldest;
-                
-                _oldest = ( _oldest - 1 ) % N;
-                
-                if(_oldest < 0){
-                    _oldest += N;
-                }
-                
-                assert(size()==dbg_old_size && "size()==dbg_old_size");
-                
-            }
-            else{
-                
-               _buffer[_newest] = elem; 
-               
-               _newest = ( _newest + 1 ) % N;
-               
-            }
-        }
-
-        int LimitedDeque::size() const
-        {
-            return (_oldest - _newest) % N + 1;
-        }
-        
-        bool LimitedDeque::is_full() const
-        {
-            return size() == N;
-        }
-
-
         
         class RosHandle;
 
@@ -139,19 +67,14 @@ namespace XBot {
                     return;
                 }
                 
-                _tail++;
                 
-                if(_msg_queue.size() <= _tail){
-                    Logger::info("Expanding queue to %d", _msg_queue.size()+1);
-                    _msg_queue.emplace_back();
-                }
                 
-                ros::SerializedMessage& current_ser_msg = _msg_queue.at(_tail);
+                ros::SerializedMessage& current_ser_msg = _msg_queue.back();
                 
                 int len = ros::serialization::serializationLength(msg) + 4;
                 
                 if(len > current_ser_msg.num_bytes){
-                    Logger::info("Malloc because %d > %d\n", len, current_ser_msg.num_bytes);
+                    Logger::info("RosUtils::PublisherWrapper resetting buffer: %d > %d\n", len, current_ser_msg.num_bytes);
                     current_ser_msg.buf.reset(new uint8_t[len]);
                     current_ser_msg.num_bytes = len;
                     current_ser_msg.message_start = current_ser_msg.buf.get();
@@ -171,14 +94,14 @@ namespace XBot {
             {
                 std::lock_guard<Mutex> guard(*_mutex);
                 
-                while(_tail > -1){
+                while(_msg_queue.size() > 0){
                     
                     ros::TopicManager::instance()->publish(_pub.getTopic(), 
                                                        boost::bind(&PublisherWrapper::get_tail, this),
                                                            _msg_queue.back()
                                                        );
                     
-                    _tail--;
+                    _msg_queue.pop_back();
                     
                 }
                 
@@ -188,7 +111,7 @@ namespace XBot {
             {
                 std::lock_guard<Mutex> guard(*_mutex);
                 
-                _tail = -1;
+                _msg_queue.reset();
                 
             }
             
@@ -197,21 +120,21 @@ namespace XBot {
             PublisherWrapper(ros::Publisher pub, int queue_size = 1):
                 _pub(pub),
                 QUEUE_SIZE(queue_size),
-                _tail(-1)
+                _tail(-1),
+                _msg_queue(queue_size)
             {
-                _msg_queue.reserve(queue_size);
                 _mutex.reset(new Mutex);
                 
             }
             
             ros::SerializedMessage get_tail()
             {
-                return _msg_queue.at(_tail);
+                return _msg_queue.back();
             }
             
             int QUEUE_SIZE;
             
-            std::vector< ros::SerializedMessage > _msg_queue;
+            XBot::Utils::LimitedDeque<ros::SerializedMessage> _msg_queue;
             std::unique_ptr<Mutex> _mutex;
             int _tail;
             ros::Publisher _pub;
