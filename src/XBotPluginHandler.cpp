@@ -362,6 +362,8 @@ bool XBot::PluginHandler::init_xddp()
 
 void XBot::PluginHandler::run_xddp()
 {
+    double tic = _time_provider->get_time();
+    
     // Motor + Hand
     for( auto& pub_motor : _motor_pub_map ) {
         pub_motor.second.write(_robot_state_map.at(pub_motor.first));
@@ -377,11 +379,16 @@ void XBot::PluginHandler::run_xddp()
         pub_imu.second.write(_imu_state_map.at(pub_imu.first));
     }
 
+    double toc = _time_provider->get_time();
+    _pluginhandler_log->add("run_xddp_exec_time", toc-tic);
 
 }
 
 void XBot::PluginHandler::fill_robot_state()
 {
+    
+    double tic = _time_provider->get_time();
+    
     _esc_utils.setRobotStateFromRobotInterface(_robot_state_map);
     _esc_utils.setRobotFTFromRobotInterface(_ft_state_map);
     _esc_utils.setRobotIMUFromRobotInterface(_imu_state_map);
@@ -401,6 +408,9 @@ void XBot::PluginHandler::fill_robot_state()
         
     }
     
+    double toc = _time_provider->get_time();
+    _pluginhandler_log->add("fill_robot_state_exec_time", toc-tic);
+    
 }
 
 void PluginHandler::replacePlugin(const std::string& name){
@@ -417,9 +427,16 @@ void PluginHandler::replacePlugin(const std::string& name){
 
 void PluginHandler::run()
 {
+     
+    
+    // log plugin handler exec time
+    double plugin_handler_tic = _time_provider->get_time();
 
     // update robot state
+    double sense_tic = _time_provider->get_time();
     _robot->sense();
+    double sense_toc = _time_provider->get_time();
+    _pluginhandler_log->add("robot_sense_exec_time", sense_toc - sense_tic);
 
     // fill robot state
     fill_robot_state();
@@ -457,6 +474,8 @@ void PluginHandler::run()
             if( _plugin_state[i] == "STOPPED" ){
             
                 _plugin_status[i]->write(XBot::Command("STOPPED"+_plugin_custom_status[i]->getStatus()));
+                
+                _pluginhandler_log->add(_rtplugin_names[i] + "_exec_time", 0.0);
 
                 if( _plugin_switch[i]->read(cmd) ){
 
@@ -505,6 +524,10 @@ void PluginHandler::run()
 
     }
     _last_time = _time;
+    
+    double plugin_handler_toc = _time_provider->get_time();
+    _pluginhandler_log->add("plugin_handler_exec_time", plugin_handler_toc - plugin_handler_tic);
+    
 
 }
 
@@ -674,11 +697,16 @@ bool XBot::PluginHandler::getNrtImpedanceReference(JointIdMap& k_id_map,
 
 void XBot::PluginHandler::fill_nrt_reference()
 {
+    double tic = _time_provider->get_time();
+    
     (_ref_map_so.at("pos_ref_map_so")).set(_nrt_pos);
     (_ref_map_so.at("vel_ref_map_so")).set(_nrt_vel);
     (_ref_map_so.at("tor_ref_map_so")).set(_nrt_eff);
     (_ref_map_so.at("k_ref_map_so")).set(_nrt_imp_k);
     (_ref_map_so.at("d_ref_map_so")).set(_nrt_imp_d);
+    
+    double toc = _time_provider->get_time();
+    _pluginhandler_log->add("fill_nrt_reference_exec_time", toc-tic);
 }
 
 void XBot::PluginHandler::init_nrt_reference()
