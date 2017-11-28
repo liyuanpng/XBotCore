@@ -195,28 +195,47 @@ void CommunicationInterfaceWebServer::receiveReference()
     }
     
       //set single joint value      
-      JointIdMap pmap, vmap;
+      JointIdMap pmap, vmap, emap , smap, dmap;
       _robot->getPositionReference(pmap);
       _robot->getVelocityReference(vmap);
-      std::map<int,double> map = sharedData->getJointMap();
-      for( auto& m : map){
-        int id = m.first;
-        double val = m.second;
-	std::string jname =_robot->getJointByID(id)->getJointName();
-	if( _robot->getUrdf().getJoint(jname)->type == urdf::Joint::CONTINUOUS) {
-	  vmap.at(id)= val;
-	  pmap.at(id)= 0.0;
-	}
-	else {
-	  pmap.at(id)= val;
-	  vmap.at(id)= 0.0;
-	}
-	
-      } 
-      if(!map.empty()){
-        _robot->setPositionReference(pmap); 
-        _robot->setVelocityReference(vmap);
-	}
+      WebRobotStateRX rstate = sharedData->getRobotState();
+      
+      int i = 0;
+      for ( auto d : rstate.position_ref){        
+        pmap.at(i)= d;
+        i++;        
+      }
+      
+      i = 0;
+      for ( auto d : rstate.vel_ref){        
+        vmap.at(i)= d;
+        i++;        
+      }
+      
+      i = 0;
+      for ( auto d : rstate.effort_ref){        
+        emap.at(i)= d;
+        i++;        
+      }
+      
+      i = 0;
+      for ( auto d : rstate.stiffness){        
+        smap.at(i)= d;
+        i++;        
+      }
+      
+      i = 0;
+      for ( auto d : rstate.damping){        
+        dmap.at(i)= d;
+        i++;        
+      }
+      
+      _robot->setPositionReference(pmap);
+      _robot->setVelocityReference(vmap);
+      _robot->setEffortReference(emap);
+      _robot->setStiffness(smap);
+      _robot->setDamping(dmap);     
+     
 }
 
 bool CommunicationInterfaceWebServer::advertiseSwitch(const std::string& port_name)

@@ -44,6 +44,8 @@ class SharedData {
     
     void setRobotState(WebRobotStateRX rstate);
     
+    WebRobotStateRX getRobotState();
+    
     double getJoint(int key);
     
     void clearJointMap();

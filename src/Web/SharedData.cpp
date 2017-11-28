@@ -45,6 +45,12 @@ void SharedData::setRobotState(WebRobotStateRX rstate){
     _rstate = rstate;
 }
 
+WebRobotStateRX SharedData::getRobotState(){
+  
+    std::lock_guard<std::mutex> locker(rstate_mutex); 
+    return _rstate;
+}
+
 double SharedData::getJoint(int key){
     std::lock_guard<std::mutex> locker(j_mutex); 
     return _joint_map[key];
