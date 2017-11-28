@@ -19,7 +19,7 @@
 
 #include <HttpHandler.h>
 
-HttpHandler::HttpHandler (std::shared_ptr<SharedData>& sharedData, std::shared_ptr<Buffer<WebRobotState>>& buffer){
+HttpHandler::HttpHandler (std::shared_ptr<SharedData>& sharedData, std::shared_ptr<Buffer<WebRobotStateTX>>& buffer){
       
       this->sharedData = sharedData;
       this->buffer = buffer;
@@ -74,7 +74,7 @@ void HttpHandler::handleGet(std::shared_ptr<ResponseInterface>& response){
       }
       else if(uri.compare("/state")==0){
 	      
-	WebRobotState rstate;
+	WebRobotStateTX rstate;
 	bool resp = buffer->remove(rstate);
 	if(resp){      
 	    rstate.serialize(*jsonresp);
@@ -132,6 +132,8 @@ void HttpHandler::handlePost(std::shared_ptr<RequestObject>& binary_request){
       
       std::vector<double> vec;
       std::map<int, double> map;
+      WebRobotStateRX rstate;
+      
       if(uri.compare("/alljoints")==0){     
         
         if(getter->GetDoubleArray("link_position", vec)){       
@@ -142,12 +144,16 @@ void HttpHandler::handlePost(std::shared_ptr<RequestObject>& binary_request){
         
       }else if(uri.compare("/singlejoint")==0){
         
+        //NEW {"joint":[{"id": 15, "pos": 0, , "vel": 0, "eff": 0, "stiff": 0, "damp": 0},{"id": 16, "pos": 0, , "vel": 0, "eff": 0, "stiff": 0, "damp": 0}]}
         //{"joint":[{"id": 15, "val": 0},{"id": 16, "val": 0}]}
-        if(getter->GetIntDoubleMap("joint", map)){
+       /* if(getter->GetIntDoubleMap("joint", map)){
           for( auto& ref : map){
             sharedData->insertJoint(ref.first,ref.second);
           }
-        }        
+        }*/
+        getter->getRobotState(rstate);
+        sharedData->setRobotState(rstate);
+       
       }else if(uri.compare("/cmd")==0) {
 	  std::string mess = getter->GetDocument().GetObject()["cmd"].GetString();
 	  std::string key = getter->GetDocument().GetObject()["Name"].GetString();

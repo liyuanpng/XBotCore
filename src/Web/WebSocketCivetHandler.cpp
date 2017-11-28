@@ -66,7 +66,7 @@ bool WebSocketHandler::handleData(CivetServer *server,
       }    
         
     //read robot state
-    WebRobotState rstate;
+    WebRobotStateTX rstate;
     bool resp = buffer->remove(rstate);
         
     StringBuffer buffer;

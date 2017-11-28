@@ -27,6 +27,7 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include <Web/WebRobotState.h>
 
 
 class SharedData {
@@ -40,6 +41,8 @@ class SharedData {
     std::map<int, double> getJointMap();
     
     void insertJoint(int key, double val);
+    
+    void setRobotState(WebRobotStateRX rstate);
     
     double getJoint(int key);
     
@@ -90,6 +93,9 @@ class SharedData {
     
     std::map<int,double> _joint_map;
     std::mutex j_mutex;
+    
+    WebRobotStateRX _rstate;
+    std::mutex rstate_mutex;
     
     std::map<std::string, std::vector< std::vector<std::string>> > _chain;
     std::mutex chain_mutex;

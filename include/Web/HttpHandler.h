@@ -33,11 +33,11 @@ class HttpHandler : public HttpInterface{
   private:
     
     std::shared_ptr<SharedData> sharedData; 
-    std::shared_ptr<Buffer<WebRobotState>> buffer;
+    std::shared_ptr<Buffer<WebRobotStateTX>> buffer;
   
   public:
     
-    HttpHandler (std::shared_ptr<SharedData>& sharedData, std::shared_ptr<Buffer<WebRobotState>>& buffer);    
+    HttpHandler (std::shared_ptr<SharedData>& sharedData, std::shared_ptr<Buffer<WebRobotStateTX>>& buffer);    
   
     virtual void handleGet(std::shared_ptr<ResponseInterface>& response);
   

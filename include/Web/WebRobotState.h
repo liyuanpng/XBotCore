@@ -27,7 +27,7 @@
 
 using namespace rapidjson;
 
-class WebRobotState {
+class WebRobotStateTX {
   
   public:
     
@@ -39,11 +39,40 @@ class WebRobotState {
     std::vector<double> motor_vel;
     std::vector<double> temperature;
     std::vector<double> effort;
+    std::vector<double> stiffness;
+    std::vector<double> damping;
     
     //XBot::RobotState::pdo_rx pdo_rx;
+    //hand
     //IMU
     //FT
   
+    void serialize(StringBuffer& buffer);
+    
+  private:
+    
+    //template <typename T>
+    void serializeArray(Writer<StringBuffer>& writer, std::string key, std::vector<double>& array);
+    
+    void serializeArray(Writer<StringBuffer>& writer, std::string key, std::vector<int>& array);
+    
+    void serializeArray(Writer<StringBuffer>& writer, std::string key, std::vector<std::string>& array);
+  
+};
+
+class WebRobotStateRX {
+  
+  public:
+    
+    std::vector<int> joint_id;
+    std::vector<double> position_ref;
+    std::vector<double> vel_ref;
+    std::vector<double> effort_ref;
+    std::vector<double> stiffness;
+    std::vector<double> damping;
+    
+   //hand
+   
     void serialize(StringBuffer& buffer);
     
   private:

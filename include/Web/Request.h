@@ -2,6 +2,8 @@
 #define __REQUEST_INTERFACE_WEBSERVER_H__
 
 #include "rapidjson/document.h"
+#include <Web/WebRobotState.h>
+
 using namespace rapidjson;
 
 class RequestInterface {
@@ -95,6 +97,35 @@ private:
     Document& GetDocument(){
       
       return d;
+    }
+    
+    bool getRobotState(WebRobotStateRX& rstate){      
+      
+       if( d.HasMember("joint")){          
+         // assert(d["joint"].isArray());
+          const Value& array = d["joint"];
+          for (SizeType i = 0; i < array.Size(); i++){
+              const Value& obj = array[i];
+              int id = obj["id"].GetInt();
+              double pos_ref = obj["pos"].GetDouble();
+              double vel_ref = obj["vel"].GetDouble();
+              double eff_ref = obj["eff"].GetDouble();
+              double stiff_ref = obj["stiff"].GetDouble();
+              double damp_ref = obj["damp"].GetDouble();
+              rstate.joint_id.push_back(id);
+              rstate.position_ref.push_back(pos_ref);
+              rstate.vel_ref.push_back(vel_ref);
+              rstate.effort_ref.push_back(eff_ref);
+              rstate.stiffness.push_back(stiff_ref);
+              rstate.damping.push_back(damp_ref);             
+          }
+          
+          return true;
+          
+        }
+        
+       return false;
+      
     }
     
     bool GetDoubleArray(const std::string& name,std::vector<double>& vec){

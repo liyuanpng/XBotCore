@@ -19,7 +19,7 @@
 
 #include <WebRobotState.h>
 
-void WebRobotState::serialize(StringBuffer& buffer){
+void WebRobotStateTX::serialize(StringBuffer& buffer){
       
         Writer<StringBuffer> writer(buffer);
         writer.StartObject();  
@@ -35,7 +35,7 @@ void WebRobotState::serialize(StringBuffer& buffer){
 }
 
 //template <typename T>
-void WebRobotState::serializeArray(Writer<StringBuffer>& writer, std::string key, std::vector<double>& array){
+void WebRobotStateTX::serializeArray(Writer<StringBuffer>& writer, std::string key, std::vector<double>& array){
   
     // writer.StartObject();              
     writer.Key(key.c_str());   
@@ -47,7 +47,7 @@ void WebRobotState::serializeArray(Writer<StringBuffer>& writer, std::string key
     // writer.EndObject();  
 }
 
-void WebRobotState::serializeArray(Writer<StringBuffer>& writer, std::string key, std::vector<int>& array){
+void WebRobotStateTX::serializeArray(Writer<StringBuffer>& writer, std::string key, std::vector<int>& array){
   
     // writer.StartObject();              
     writer.Key(key.c_str());   
@@ -59,7 +59,7 @@ void WebRobotState::serializeArray(Writer<StringBuffer>& writer, std::string key
     // writer.EndObject();  
 }
 
-void WebRobotState::serializeArray(Writer<StringBuffer>& writer, std::string key, std::vector<std::string>& array){
+void WebRobotStateTX::serializeArray(Writer<StringBuffer>& writer, std::string key, std::vector<std::string>& array){
   
     // writer.StartObject();              
     writer.Key(key.c_str());   

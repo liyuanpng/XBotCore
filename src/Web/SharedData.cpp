@@ -39,6 +39,12 @@ void SharedData::insertJoint(int key, double val){
     _joint_map[key] = val;
 }
 
+void SharedData::setRobotState(WebRobotStateRX rstate){
+  
+    std::lock_guard<std::mutex> locker(rstate_mutex); 
+    _rstate = rstate;
+}
+
 double SharedData::getJoint(int key){
     std::lock_guard<std::mutex> locker(j_mutex); 
     return _joint_map[key];

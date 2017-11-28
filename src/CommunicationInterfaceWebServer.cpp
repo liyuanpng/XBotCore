@@ -69,7 +69,7 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
     }      
     
     numjoint = _robot->getJointNum();
-    buffer = std::make_shared<Buffer<WebRobotState>>(50);    
+    buffer = std::make_shared<Buffer<WebRobotStateTX>>(50);    
     sharedData = std::make_shared<SharedData>();
     try{
       server = std::make_shared<CivetServer>(cpp_options);  
@@ -120,7 +120,7 @@ void CommunicationInterfaceWebServer::sendRobotState()
     //write to a buffer that the callback handleData will use
     JointIdMap _joint_id_map, _motor_id_map,
     _jvel_id_map,_mvel_id_map, _temp_id_map,
-    _effort_id_map;
+    _effort_id_map, _stiffnes_id_map,_damping_id_map;
     
     _robot->getJointPosition(_joint_id_map);
     _robot->getMotorPosition(_motor_id_map);
@@ -128,8 +128,10 @@ void CommunicationInterfaceWebServer::sendRobotState()
     _robot->getMotorVelocity(_mvel_id_map);
     _robot->getTemperature(_temp_id_map);
     _robot->getJointEffort(_effort_id_map);
+    _robot->getStiffness(_stiffnes_id_map);
+    _robot->getDamping(_damping_id_map);
     
-    WebRobotState rstate;  
+    WebRobotStateTX rstate;  
     
     for ( auto s: _robot->getEnabledJointNames()) {      
         rstate.joint_name.push_back(s);      
@@ -142,6 +144,8 @@ void CommunicationInterfaceWebServer::sendRobotState()
         double mvelval= _mvel_id_map.at(id);
         double tempval= _temp_id_map.at(id);
         double effval= _effort_id_map.at(id);
+        double stiffval= _stiffnes_id_map.at(id);
+        double dampval= _damping_id_map.at(id);
                  
         rstate.joint_id.push_back(id);
         rstate.link_position.push_back(jval);
@@ -150,6 +154,8 @@ void CommunicationInterfaceWebServer::sendRobotState()
         rstate.motor_vel.push_back(mvelval); 
         rstate.temperature.push_back(tempval); 
         rstate.effort.push_back(effval);
+        rstate.stiffness.push_back(stiffval);
+        rstate.damping.push_back(dampval);
     }
     
     if(sharedData->getNumClient().load() <= 0) {
