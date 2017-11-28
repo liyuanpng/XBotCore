@@ -31,6 +31,8 @@ void WebRobotStateTX::serialize(StringBuffer& buffer){
         serializeArray(writer,"motor_velocity",motor_vel);
         serializeArray(writer,"temperature",temperature);   
 	serializeArray(writer,"effort",effort); 
+        serializeArray(writer,"stiffness",stiffness);
+        serializeArray(writer,"damping",damping);
         writer.EndObject();  
 }
 
