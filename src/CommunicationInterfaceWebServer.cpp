@@ -198,35 +198,18 @@ void CommunicationInterfaceWebServer::receiveReference()
       JointIdMap pmap, vmap, emap , smap, dmap;
       _robot->getPositionReference(pmap);
       _robot->getVelocityReference(vmap);
+      _robot->getEffortReference(emap);
+      _robot->getStiffness(smap);
+      _robot->getDamping(dmap);
       WebRobotStateRX rstate = sharedData->getRobotState();
       
       int i = 0;
-      for ( auto d : rstate.position_ref){        
-        pmap.at(i)= d;
-        i++;        
-      }
-      
-      i = 0;
-      for ( auto d : rstate.vel_ref){        
-        vmap.at(i)= d;
-        i++;        
-      }
-      
-      i = 0;
-      for ( auto d : rstate.effort_ref){        
-        emap.at(i)= d;
-        i++;        
-      }
-      
-      i = 0;
-      for ( auto d : rstate.stiffness){        
-        smap.at(i)= d;
-        i++;        
-      }
-      
-      i = 0;
-      for ( auto d : rstate.damping){        
-        dmap.at(i)= d;
+      for ( auto id : rstate.joint_id){        
+        pmap.at(id)= rstate.position_ref[i];
+	vmap.at(id)= rstate.vel_ref[i];
+	emap.at(id)= rstate.effort_ref[i];
+	smap.at(id)= rstate.stiffness[i];
+	dmap.at(id)= rstate.damping[i];
         i++;        
       }
       
