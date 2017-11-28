@@ -86,13 +86,17 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
 	}
 	
 	std::vector<std::string> names = chain->getJointNames();
-	std::vector<std::string> jvals;
+	std::vector<std::string> jvals, vref, eref, stiff, damp;
 	//populate jvals
 	
 	std::vector <std::string> lowlimit;
 	std::vector <std::string> uplimit;
 	for( int i=0; i<ids.size();i ++){
 	  jvals.push_back(std::to_string(chain->getJointPosition(i)));
+          vref.push_back(std::to_string(chain->getJointVelocity(i)));
+          eref.push_back(std::to_string(chain->getJointEffort(i)));
+          stiff.push_back(std::to_string(chain->getStiffness(i)));
+          damp.push_back(std::to_string(chain->getDamping(i)));
 	  double llimit, ulimit;
 	  chain->getJointLimits(i,llimit,ulimit);
 	  lowlimit.push_back(std::to_string(llimit));
@@ -104,6 +108,10 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
 	val.push_back(ids);
 	val.push_back(names);
 	val.push_back(jvals);
+        val.push_back(vref);
+        val.push_back(eref);
+        val.push_back(stiff);
+        val.push_back(damp);
 	val.push_back(lowlimit);
 	val.push_back(uplimit);
 	
