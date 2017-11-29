@@ -29,23 +29,17 @@
 #include <XBotCore/XBotCoreThread.h>
 
 
-XBot::XBotCoreThread::XBotCoreThread(const char* config_yaml, 
-                                     XBot::SharedMemory::Ptr shmem,
-                                     const char* param)   
+XBot::XBotCoreThread::XBotCoreThread(std::string config_yaml, 
+                                     XBot::SharedMemory::Ptr shared_memory,  
+                                     Options options)   
 {
-   // _path_to_config = config_yaml;
-  //TODO fix thread stuff
-    // set thread name
-    //const YAML::Node& board_ctrl = root_cfg["x_bot_ecat"]; // TBD check that the Node is defined
-    //set_thread_name(board_ctrl["name"].as<std::string>()); // TBD check that name is defined
     int period = 1;
-    if (param != nullptr){      
-       if(strcmp(param,"dummy") == 0){
-         period = 1000;
-      }      
+    if(options.xbotcore_dummy_mode){      
+         period = options.xbotcore_period_us;
     }
       
     set_thread_name("XBOT");
+    
     // set thread period - not periodic
     task_period_t t;
     memset(&t, 0, sizeof(t));
@@ -55,7 +49,7 @@ XBot::XBotCoreThread::XBotCoreThread(const char* config_yaml,
     // set thread priority
     set_thread_priority();
     
-    controller = std::shared_ptr<ControllerInterface>(new XBot::XBotCore(config_yaml, shmem, param));
+    controller = std::shared_ptr<ControllerInterface>(new XBot::XBotCore(config_yaml, shared_memory, options));
 }
 
 void XBot::XBotCoreThread::set_thread_name(std::string thread_name)

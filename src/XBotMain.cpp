@@ -75,19 +75,22 @@ int main(int argc, char *argv[]) try {
     
     std::string path_to_cfg;
     std::string path_to_ch_cfg;
-    bool use_dummy_hal = false;
-    bool run_ch = true;
     
+    XBot::Options options;
     
     {
         po::options_description desc("XBotCore. Available options");
         desc.add_options()
             ("config,C", po::value<std::string>(),"Path to custom config file. If not set, a default config file must be configured via set_xbot_config.")
             ("ch-config", po::value<std::string>(),"Path to custom config file for the CommunicationHandler. If not set, the same of XBotCore is used.")
-            ("dummy,D", "Use the dummy HAL implementation.")
             ("no-ch", "Do not run the CommunicationHandler")
+            ("dont-catch", "Disable catching exceptions thrown inside rt plugins init()")
+            ("period", po::value<int>(), "XBotCore thread period [us]")
+            ("ch-period", po::value<int>(), "CommunicationHandler thread period [us]")
+            ("dummy,D", "Use the dummy HAL implementation.")
             ("verbose,V", "Verbose mode.")
             ("help", "Shows this help message.")
+            
         ;
 
         
@@ -106,13 +109,14 @@ int main(int argc, char *argv[]) try {
         
         if(vm.count("verbose")){
             Logger::SetVerbosityLevel(Logger::Severity::LOW);
+            Logger::info("Verbose mode ON \n");
         }
         else{
             Logger::SetVerbosityLevel(Logger::Severity::MID);
         }
 
         if(vm.count("no-ch")) {
-            run_ch = false;
+            options.comm_handler_thread_enabled = false;
         }
         
         if(vm.count("config")) {
@@ -133,9 +137,20 @@ int main(int argc, char *argv[]) try {
         }
         
         if(vm.count("dummy")) {
-            use_dummy_hal = true;
+            options.xbotcore_dummy_mode = true;
         }
         
+        if(vm.count("dont-catch")){
+            options.xbotcore_pluginhandler_catch_exceptions = false;
+        }
+        
+        if(vm.count("period")){
+            options.xbotcore_period_us = vm.at("period").as<int>();
+        }
+        
+        if(vm.count("ch-period")){
+            options.comm_handler_period_us = vm.at("ch-period").as<int>();
+        }
         
     }
 
@@ -146,13 +161,13 @@ int main(int argc, char *argv[]) try {
 
     auto shared_memory = std::make_shared<XBot::SharedMemory>();
 
-    XBot::CommunicationHandler ch( path_to_ch_cfg.c_str(), shared_memory );
-    XBot::XBotCoreThread xbc( path_to_cfg.c_str(), shared_memory, use_dummy_hal ? "dummy" : nullptr );
+    XBot::CommunicationHandler ch( path_to_ch_cfg.c_str(), shared_memory, options );
+    XBot::XBotCoreThread xbc( path_to_cfg.c_str(), shared_memory, options );
     
     
     xbc.create(true, 2);
     
-    if(run_ch){
+    if(options.comm_handler_thread_enabled){
         ch.create(false, 3);
     }
   
@@ -166,7 +181,7 @@ int main(int argc, char *argv[]) try {
     xbc.stop();
     xbc.join();
     
-    if(run_ch){
+    if(options.comm_handler_thread_enabled){
         ch.stop();
         ch.join();
     }
