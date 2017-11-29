@@ -41,16 +41,17 @@ namespace XBot {
 PluginHandler::PluginHandler( RobotInterface::Ptr robot, 
                        TimeProvider::Ptr time_provider,
                        XBot::SharedMemory::Ptr shared_memory,
-                       const std::string& plugins_set_name ) :
+                       Options options ) :
     _robot(robot),
     _time_provider(time_provider),
-    _plugins_set_name(plugins_set_name),
+    _plugins_set_name(options.xbotcore_pluginhandler_plugin_set_name),
     _esc_utils(robot),
     _close_was_called(false),
-    _shared_memory(shared_memory)
+    _shared_memory(shared_memory),
+    _options(options)
 {
     // plugin set mode 
-    update_plugins_set_name(_plugins_set_name);
+    update_plugins_set_name(_options.xbotcore_pluginhandler_plugin_set_name);
     
     // Path
     _path_to_cfg = _robot->getPathToConfig();
@@ -207,44 +208,49 @@ bool PluginHandler::initPlugin(  std::shared_ptr<XBot::XBotControlPlugin> plugin
         int i=0;
         i = pluginPos[name];
        
-         _plugin_state[i] == "RESTARTING";
-//         try{
-            /* Try to init the current plugin */
-            plugin_init_success = ( plugin_ptr)->init(  (XBot::Handle::Ptr) this,
-                                                        name,
-                                                        _plugin_custom_status[i],
-                                                        _joint,
-                                                        _model,
-                                                        _ft,
-                                                        _imu,
-                                                        _hand );
+        _plugin_state[i] == "RESTARTING";
 
-            /* Handle return value if init() was performed cleanly */
-            if(!plugin_init_success){
-                Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. Plugin init() returned false!" << Logger::endl();           
-            }
-            else{
-                Logger::success(Logger::Severity::HIGH) << "Plugin " << (plugin_ptr)->name << " initialized successfully!" << Logger::endl();
-            }
-//         }
+        /* Try to init the current plugin */
+        plugin_init_success = ( plugin_ptr)->init(  (XBot::Handle::Ptr) this,
+                                                    name,
+                                                    _plugin_custom_status[i],
+                                                    _joint,
+                                                    _model,
+                                                    _ft,
+                                                    _imu,
+                                                    _hand );
+
+        /* Handle return value if init() was performed cleanly */
+        if(!plugin_init_success){
+            Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. Plugin init() returned false!" << Logger::endl();           
+        }
+        else{
+            Logger::success(Logger::Severity::HIGH) << "Plugin " << (plugin_ptr)->name << " initialized successfully!" << Logger::endl();
+        }
+    
 
         /* Handle exceptions inheriting from std::exception */
-//         catch(std::exception& e){
-//             Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. \n An exception was thrown: " << e.what() << Logger::endl();            
-//             plugin_init_success = false;
-//         }
-// 
-//         /* Handle all other exceptions */
-//         catch(...){
-//             Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. \n An exception was thrown: " << Logger::endl();
-//             plugin_init_success = false;
-//         }
-        
         _plugin_state[i] == "STOPPED";
         
         return plugin_init_success;
   
 }
+
+void XBot::PluginHandler::init_plugin_impl()
+{
+
+}
+
+void XBot::PluginHandler::init_plugin_handle_except()
+{
+
+}
+
+void XBot::PluginHandler::init_plugin_handle_stdexcept()
+{
+
+}
+
 
 bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
                                  std::shared_ptr< IXBotFT > ft,
@@ -299,7 +305,25 @@ bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
         bool plugin_init_success = false;
         _plugin_custom_status[i] = std::make_shared<PluginStatus>();
         
-        plugin_init_success = initPlugin(_rtplugin_vector[i], _rtplugin_names[i]);
+        if(_options.xbotcore_pluginhandler_catch_exceptions){
+            try{
+                plugin_init_success = initPlugin(_rtplugin_vector[i], _rtplugin_names[i]);
+            }
+            catch(std::exception& e){
+                Logger::error() << "plugin " << _rtplugin_names[i] << "::init() failed. \n An exception was thrown: " << e.what() << Logger::endl();            
+                plugin_init_success = false;
+            }
+
+            /* Handle all other exceptions */
+            catch(...){
+                Logger::error() << "plugin " << _rtplugin_names[i] << "::init() failed. \n An exception was thrown: " << Logger::endl();
+                plugin_init_success = false;
+            }
+        }
+        else
+        {
+            plugin_init_success = initPlugin(_rtplugin_vector[i], _rtplugin_names[i]);
+        }
         
         // allocate concrete pub/sub classes
         if( _is_RT_plugin_handler ) {

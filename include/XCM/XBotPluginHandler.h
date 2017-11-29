@@ -32,6 +32,7 @@
 #include <XCM/XBotPluginStatus.h>
 
 #include <XBotCore-interfaces/XBotHandle.h>
+#include <XBotCore-interfaces/XBotOptions.h>
 
 namespace XBot {
 
@@ -45,7 +46,7 @@ namespace XBot {
         PluginHandler( RobotInterface::Ptr robot, 
                        TimeProvider::Ptr time_provider,
                        XBot::SharedMemory::Ptr shared_memory,
-                       const std::string& plugins_set_name );
+                       Options options);
         
         void update_plugins_set_name(const std::string& plugins_set_name);
 
@@ -86,6 +87,10 @@ namespace XBot {
     protected:
 
     private:
+        
+        void init_plugin_impl();
+        void init_plugin_handle_stdexcept();
+        void init_plugin_handle_except();
 
         bool init_xddp();
         
@@ -104,6 +109,8 @@ namespace XBot {
         static bool computeAbsolutePath ( const std::string& input_path,
                                           const std::string& midlle_path,
                                           std::string& absolute_path ); // TBD do it with UTILS
+        
+        const Options _options;
 
         XBot::TimeProvider::Ptr _time_provider;
 
