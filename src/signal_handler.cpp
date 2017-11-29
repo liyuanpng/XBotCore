@@ -18,17 +18,26 @@
 
 #define MEM_LOCKED (500*1024*1024) // 500MB
 
+#include <XBotInterface/RtLog.hpp>
+using XBot::Logger;
+
 
 static void warn_upon_switch ( int sig __attribute__ ( ( unused ) ) ) {
+    
+    Logger::warning("Real-time thread switched to secondary mode! \n");
+    
     // handle rt to nrt contex switch
-    void *bt[25];
+    void *bt[32];
     int nentries;
 
     /* Dump a backtrace of the frame which caused the switch to
        secondary mode: */
     nentries = backtrace ( bt,sizeof ( bt ) /sizeof ( bt[0] ) );
-    // dump backtrace
-    backtrace_symbols_fd ( bt,nentries,fileno ( stdout ) );
+    
+    if( Logger::GetVerbosityLevel() <= Logger::Severity::LOW ){
+        // dump backtrace
+        backtrace_symbols_fd ( bt,nentries,fileno ( stdout ) );
+    }
 }
 
 
@@ -119,11 +128,11 @@ void main_common ( __sighandler_t sig_handler ) {
 
     /* Prevent any memory-swapping for this program */
     //ret = mlockall(MCL_CURRENT | MCL_FUTURE);
-    ret = lock_mem ( MEM_LOCKED );
-    if ( ret < 0 ) {
-        printf ( "mlockall failed (ret=%d) %s\n", ret, strerror ( ret ) );
-        exit ( 0 );
-    }
+//     ret = lock_mem ( MEM_LOCKED );
+//     if ( ret < 0 ) {
+//         printf ( "mlockall failed (ret=%d) %s\n", ret, strerror ( ret ) );
+//         exit ( 0 );
+//     }
 #endif
 
 #ifdef __XENO__
