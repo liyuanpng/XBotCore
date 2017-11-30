@@ -712,11 +712,11 @@ void XBot::PluginHandler::fill_nrt_reference()
 {
     double tic = _time_provider->get_time();
     
-    (_ref_map_so.at("pos_ref_map_so")).set(_nrt_pos);
-    (_ref_map_so.at("vel_ref_map_so")).set(_nrt_vel);
-    (_ref_map_so.at("tor_ref_map_so")).set(_nrt_eff);
-    (_ref_map_so.at("k_ref_map_so")).set(_nrt_imp_k);
-    (_ref_map_so.at("d_ref_map_so")).set(_nrt_imp_d);
+    (_ref_map_so.at("pos_ref_map_so")).get(_nrt_pos);
+    (_ref_map_so.at("vel_ref_map_so")).get(_nrt_vel);
+    (_ref_map_so.at("tor_ref_map_so")).get(_nrt_eff);
+    (_ref_map_so.at("k_ref_map_so")).get(_nrt_imp_k);
+    (_ref_map_so.at("d_ref_map_so")).get(_nrt_imp_d);
     
     double toc = _time_provider->get_time();
     _pluginhandler_log->add("fill_nrt_reference_exec_time", toc-tic);
