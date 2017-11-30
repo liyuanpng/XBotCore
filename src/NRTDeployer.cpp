@@ -62,7 +62,10 @@ void XBot::NRTDeployer::th_init(void*)
     // shared memory
     XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
     
-    _plugin_handler = std::make_shared<PluginHandler>(_robot, time_provider, shared_memory, "NRTPlugins");
+    Options opt;
+    opt.xbotcore_pluginhandler_plugin_set_name = "NRTPlugins";
+    
+    _plugin_handler = std::make_shared<PluginHandler>(_robot, time_provider, shared_memory, opt);
 
     
     

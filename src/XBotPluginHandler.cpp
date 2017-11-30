@@ -41,16 +41,17 @@ namespace XBot {
 PluginHandler::PluginHandler( RobotInterface::Ptr robot, 
                        TimeProvider::Ptr time_provider,
                        XBot::SharedMemory::Ptr shared_memory,
-                       const std::string& plugins_set_name ) :
+                       Options options ) :
     _robot(robot),
     _time_provider(time_provider),
-    _plugins_set_name(plugins_set_name),
+    _plugins_set_name(options.xbotcore_pluginhandler_plugin_set_name),
     _esc_utils(robot),
     _close_was_called(false),
-    _shared_memory(shared_memory)
+    _shared_memory(shared_memory),
+    _options(options)
 {
     // plugin set mode 
-    update_plugins_set_name(_plugins_set_name);
+    update_plugins_set_name(_options.xbotcore_pluginhandler_plugin_set_name);
     
     // Path
     _path_to_cfg = _robot->getPathToConfig();
@@ -207,50 +208,49 @@ bool PluginHandler::initPlugin(  std::shared_ptr<XBot::XBotControlPlugin> plugin
         int i=0;
         i = pluginPos[name];
        
-         _plugin_state[i] == "RESTARTING";
-//         try{
-            /* Try to init the current plugin */
-            plugin_init_success = ( plugin_ptr)->init(  (XBot::Handle::Ptr) this,
-                                                        name,
-                                                        _plugin_custom_status[i],
-                                                        _joint,
-                                                        _model,
-                                                        _ft,
-                                                        _imu,
-                                                        _hand );
+        _plugin_state[i] == "RESTARTING";
 
-            /* Handle return value if init() was performed cleanly */
-            if(!plugin_init_success){
-                Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. Plugin init() returned false!" << Logger::endl();           
-            }
-            else{
-                Logger::success(Logger::Severity::HIGH) << "Plugin " << (plugin_ptr)->name << " initialized successfully!" << Logger::endl();
-            }
-//         }
+        /* Try to init the current plugin */
+        plugin_init_success = ( plugin_ptr)->init(  (XBot::Handle::Ptr) this,
+                                                    name,
+                                                    _plugin_custom_status[i],
+                                                    _halInterface,
+                                                    _model);
+
+        /* Handle return value if init() was performed cleanly */
+        if(!plugin_init_success){
+            Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. Plugin init() returned false!" << Logger::endl();           
+        }
+        else{
+            Logger::success(Logger::Severity::HIGH) << "Plugin " << (plugin_ptr)->name << " initialized successfully!" << Logger::endl();
+        }
+    
 
         /* Handle exceptions inheriting from std::exception */
-//         catch(std::exception& e){
-//             Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. \n An exception was thrown: " << e.what() << Logger::endl();            
-//             plugin_init_success = false;
-//         }
-// 
-//         /* Handle all other exceptions */
-//         catch(...){
-//             Logger::error() << "plugin " << (plugin_ptr)->name << "::init() failed. \n An exception was thrown: " << Logger::endl();
-//             plugin_init_success = false;
-//         }
-        
         _plugin_state[i] == "STOPPED";
         
         return plugin_init_success;
   
 }
 
-bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
-                                 std::shared_ptr< IXBotFT > ft,
-                                 std::shared_ptr< IXBotIMU > imu,
-                                 std::shared_ptr< IXBotHand > hand,
-                                 std::shared_ptr< IXBotModel > model )
+void XBot::PluginHandler::init_plugin_impl()
+{
+
+}
+
+void XBot::PluginHandler::init_plugin_handle_except()
+{
+
+}
+
+void XBot::PluginHandler::init_plugin_handle_stdexcept()
+{
+
+}
+
+
+bool PluginHandler::init_plugins(std::shared_ptr<HALInterface> halInterface,
+                                 std::shared_ptr< IXBotModel > model)
 {
 
     if(_is_RT_plugin_handler){
@@ -265,15 +265,10 @@ bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
        _roshandle.reset( new XBot::RosUtils::RosHandle );  
     }
     
-    _joint = joint;
-    _ft = ft;
-    _imu = imu;
-    _hand = hand;
+    _halInterface = halInterface;
+    _joint = std::shared_ptr< IXBotJoint> (halInterface);    
     _model = model;
   
-    // Save xbot_joint
-    _xbot_joint = joint;
-    
     _plugin_init_success.resize(_rtplugin_vector.size(), false);
     _plugin_switch.resize(_rtplugin_vector.size());
     _plugin_status.resize(_rtplugin_vector.size());
@@ -299,7 +294,25 @@ bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
         bool plugin_init_success = false;
         _plugin_custom_status[i] = std::make_shared<PluginStatus>();
         
-        plugin_init_success = initPlugin(_rtplugin_vector[i], _rtplugin_names[i]);
+        if(_options.xbotcore_pluginhandler_catch_exceptions){
+            try{
+                plugin_init_success = initPlugin(_rtplugin_vector[i], _rtplugin_names[i]);
+            }
+            catch(std::exception& e){
+                Logger::error() << "plugin " << _rtplugin_names[i] << "::init() failed. \n An exception was thrown: " << e.what() << Logger::endl();            
+                plugin_init_success = false;
+            }
+
+            /* Handle all other exceptions */
+            catch(...){
+                Logger::error() << "plugin " << _rtplugin_names[i] << "::init() failed. \n An exception was thrown: " << Logger::endl();
+                plugin_init_success = false;
+            }
+        }
+        else
+        {
+            plugin_init_success = initPlugin(_rtplugin_vector[i], _rtplugin_names[i]);
+        }
         
         // allocate concrete pub/sub classes
         if( _is_RT_plugin_handler ) {
@@ -362,6 +375,8 @@ bool XBot::PluginHandler::init_xddp()
 
 void XBot::PluginHandler::run_xddp()
 {
+    double tic = _time_provider->get_time();
+    
     // Motor + Hand
     for( auto& pub_motor : _motor_pub_map ) {
         pub_motor.second.write(_robot_state_map.at(pub_motor.first));
@@ -377,11 +392,16 @@ void XBot::PluginHandler::run_xddp()
         pub_imu.second.write(_imu_state_map.at(pub_imu.first));
     }
 
+    double toc = _time_provider->get_time();
+    _pluginhandler_log->add("run_xddp_exec_time", toc-tic);
 
 }
 
 void XBot::PluginHandler::fill_robot_state()
 {
+    
+    double tic = _time_provider->get_time();
+    
     _esc_utils.setRobotStateFromRobotInterface(_robot_state_map);
     _esc_utils.setRobotFTFromRobotInterface(_ft_state_map);
     _esc_utils.setRobotIMUFromRobotInterface(_imu_state_map);
@@ -391,15 +411,18 @@ void XBot::PluginHandler::fill_robot_state()
         double fault_value = 0;
         double temperature = 0;
         
-        if(!_xbot_joint) continue;
+        if(!_joint) continue;
         
-        _xbot_joint->get_fault(id, fault_value);
-        _xbot_joint->get_temperature(id, temperature);
+        _joint->get_fault(id, fault_value);
+        _joint->get_temperature(id, temperature);
          
         _robot_state_map.at(id).RobotStateRX.fault = fault_value;
         _robot_state_map.at(id).RobotStateRX.temperature = temperature;
         
     }
+    
+    double toc = _time_provider->get_time();
+    _pluginhandler_log->add("fill_robot_state_exec_time", toc-tic);
     
 }
 
@@ -417,9 +440,16 @@ void PluginHandler::replacePlugin(const std::string& name){
 
 void PluginHandler::run()
 {
+     
+    
+    // log plugin handler exec time
+    double plugin_handler_tic = _time_provider->get_time();
 
     // update robot state
+    double sense_tic = _time_provider->get_time();
     _robot->sense();
+    double sense_toc = _time_provider->get_time();
+    _pluginhandler_log->add("robot_sense_exec_time", sense_toc - sense_tic);
 
     // fill robot state
     fill_robot_state();
@@ -457,6 +487,8 @@ void PluginHandler::run()
             if( _plugin_state[i] == "STOPPED" ){
             
                 _plugin_status[i]->write(XBot::Command("STOPPED"+_plugin_custom_status[i]->getStatus()));
+                
+                _pluginhandler_log->add(_rtplugin_names[i] + "_exec_time", 0.0);
 
                 if( _plugin_switch[i]->read(cmd) ){
 
@@ -505,6 +537,10 @@ void PluginHandler::run()
 
     }
     _last_time = _time;
+    
+    double plugin_handler_toc = _time_provider->get_time();
+    _pluginhandler_log->add("plugin_handler_exec_time", plugin_handler_toc - plugin_handler_tic);
+    
 
 }
 
@@ -674,11 +710,16 @@ bool XBot::PluginHandler::getNrtImpedanceReference(JointIdMap& k_id_map,
 
 void XBot::PluginHandler::fill_nrt_reference()
 {
+    double tic = _time_provider->get_time();
+    
     (_ref_map_so.at("pos_ref_map_so")).set(_nrt_pos);
     (_ref_map_so.at("vel_ref_map_so")).set(_nrt_vel);
     (_ref_map_so.at("tor_ref_map_so")).set(_nrt_eff);
     (_ref_map_so.at("k_ref_map_so")).set(_nrt_imp_k);
     (_ref_map_so.at("d_ref_map_so")).set(_nrt_imp_d);
+    
+    double toc = _time_provider->get_time();
+    _pluginhandler_log->add("fill_nrt_reference_exec_time", toc-tic);
 }
 
 void XBot::PluginHandler::init_nrt_reference()

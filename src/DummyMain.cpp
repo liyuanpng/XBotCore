@@ -96,7 +96,9 @@ int main(int argc, char **argv){
     XBot::SharedMemory::Ptr shared_memory = std::make_shared<XBot::SharedMemory>();
 
     auto time_provider = std::make_shared<SimpleTimeProvider>();
-    PluginHandler plugin_handler(robot, time_provider, shared_memory, "XBotRTPlugins");
+    XBot::Options options;
+    
+    PluginHandler plugin_handler(robot, time_provider, shared_memory, options);
 
     
 

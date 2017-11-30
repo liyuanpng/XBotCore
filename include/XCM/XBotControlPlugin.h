@@ -64,11 +64,8 @@ public:
     virtual bool init(XBot::Handle::Ptr handle,
                       std::string name,
                       std::shared_ptr< PluginStatus > cstatus,                      
-                      std::shared_ptr< XBot::IXBotJoint > joint,
-                      std::shared_ptr< XBot::IXBotModel > model,
-                      std::shared_ptr< XBot::IXBotFT > ft,
-                      std::shared_ptr< XBot::IXBotIMU > imu,
-                      std::shared_ptr< XBot::IXBotHand > hand ) final;
+                      std::shared_ptr<HALInterface> halInterface,
+                      std::shared_ptr< XBot::IXBotModel > model) final;
 
     virtual bool init_control_plugin(XBot::Handle::Ptr handle) = 0;
 
@@ -87,11 +84,10 @@ protected:
 
     virtual void control_loop(double time, double period) = 0;
 
-    //XBot::SubscriberRT<XBot::Command> command;
     XBot::Command current_command;
     
     std::shared_ptr<PluginStatus> _custom_status;
-
+    
 private:
 
 

@@ -29,11 +29,14 @@ using XBot::Logger;
 
 
 XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config, 
-                                                 XBot::SharedMemory::Ptr shmem) :
+                                                 SharedMemory::Ptr shmem, 
+                                                 Options opt
+                                                 ) :
     _path_to_config(path_to_config),
     _master_communication_ifc(nullptr),
     loadWebServer(true),
-    _shmem(shmem)
+    _shmem(shmem),
+    _options(opt)
 {
     // set thread name
     name = "XBOT_COMMHANDLER"; //TBD understand why pthread_setname_np return code error 3
@@ -41,7 +44,7 @@ XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config,
     // Set thread period
     task_period_t t;
     memset(&t, 0, sizeof(t));
-    t.period = {0,5000};
+    t.period = {0, _options.comm_handler_period_us};
     period.task_time = t.task_time;
     period.period = t.period;
     
@@ -69,7 +72,7 @@ XBot::CommunicationHandler::CommunicationHandler(std::string path_to_config,
 
 void XBot::CommunicationHandler::th_init(void*)
 {
-    //
+    
     const char* env_user = std::getenv("USER");
     Logger::info() << "USER is: " << env_user << Logger::endl();
     std::string folder = std::string("/tmp/")+env_user;
@@ -379,7 +382,7 @@ void XBot::CommunicationHandler::th_loop(void*)
         }
     }
 
-    /* Update XDDP */
+    /* Update XDDP (receive from RT) */
      _xddp_handler->updateRX();
 
     /* Read robot state from RT layer and update robot */
@@ -402,8 +405,10 @@ void XBot::CommunicationHandler::th_loop(void*)
     /* Send received commands to the RT layer */
     _robot->move();
     
+    /* Update XDDP (send to RT) */
     _xddp_handler->updateTX();
     
+    /* Publish all pending ROS messages */
     _roshandle->publishAll();
 }
 

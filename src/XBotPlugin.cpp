@@ -31,6 +31,11 @@ XBotPlugin::~XBotPlugin()
 
 }
 
+std::shared_ptr< HALInterface > XBotPlugin::get_xbotcore_halInterface()
+{
+    return _halInterface;
+}
+
 std::shared_ptr< XBot::IXBotJoint > XBotPlugin::get_xbotcore_joint()
 {
     return _joint;
@@ -56,6 +61,10 @@ std::shared_ptr< XBot::IXBotHand > XBot::XBotPlugin::get_xbotcore_hand()
     return _hand;
 }
 
+void XBotPlugin::set_xbotcore_halInterface(std::shared_ptr< HALInterface > halInterface)
+{
+    _halInterface = halInterface;
+}
 
 void XBotPlugin::set_xbotcore_joint(std::shared_ptr< XBot::IXBotJoint > joint)
 {

@@ -29,6 +29,7 @@
 #include <XBotCore-interfaces/XDomainCommunication.h>
 #include <XBotCore-interfaces/XBotSharedMemory.h>
 #include <XBotCore-interfaces/XBotRosUtils.h>
+#include <XBotCore-interfaces/XBotOptions.h>
 
 
 #ifdef USE_ROS_COMMUNICATION_INTERFACE
@@ -50,7 +51,9 @@ public:
     CommunicationHandler() = default;
 
     CommunicationHandler(std::string path_to_config, 
-                         SharedMemory::Ptr shmem);
+                         SharedMemory::Ptr shmem, 
+                         Options opt
+                        );
 
     virtual void th_init(void*);
     virtual void th_loop(void*);
@@ -60,6 +63,8 @@ public:
 protected:
 
 private:
+    
+    const Options _options;
     
     std::vector<std::string> _io_plugin_names;
     std::vector<std::shared_ptr<IOPlugin>> _io_plugin_ptr;
