@@ -33,6 +33,7 @@
 
 #include <XBotCore-interfaces/XBotHandle.h>
 #include <XBotCore-interfaces/XBotOptions.h>
+#include <XBotCore/HALInterface.h>
 
 namespace XBot {
 
@@ -52,10 +53,7 @@ namespace XBot {
 
         bool load_plugins();
 
-        bool init_plugins(std::shared_ptr< IXBotJoint> joint    = nullptr,
-                          std::shared_ptr< IXBotFT > ft         = nullptr,
-                          std::shared_ptr< IXBotIMU > imu       = nullptr,
-                          std::shared_ptr< IXBotHand > hand     = nullptr ,
+        bool init_plugins(std::shared_ptr<HALInterface> halInterface   = nullptr,
                           std::shared_ptr< IXBotModel > model   = nullptr );
 
         void run();
@@ -151,6 +149,7 @@ namespace XBot {
         std::map< std::string, std::shared_ptr<XBot::XBotControlPlugin> > pluginMap;
         std::map < std::string , int > pluginPos;
         
+        std::shared_ptr<HALInterface> _halInterface;
 
         int _communication_plugin_idx;
         int _logging_plugin_idx;

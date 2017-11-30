@@ -45,19 +45,17 @@ void XBotControlPlugin::setCmd( XBot::Command& cmd){
 bool XBotControlPlugin::init(   XBot::Handle::Ptr handle,
                                 std::string name,
                                 std::shared_ptr< PluginStatus > cstatus,                      
-                                std::shared_ptr< XBot::IXBotJoint > joint,
-                                std::shared_ptr< XBot::IXBotModel > model,
-                                std::shared_ptr< XBot::IXBotFT > ft,
-                                std::shared_ptr< XBot::IXBotIMU > imu,
-                                std::shared_ptr< XBot::IXBotHand > hand  )
+                                std::shared_ptr<HALInterface> halInterface,
+                                std::shared_ptr< XBot::IXBotModel > model )
 {
     // initialize name and interfaces
+    set_xbotcore_halInterface(halInterface);
     this->name = name;
-    this->set_xbotcore_joint(joint);
-    this->set_xbotcore_model(model);
-    this->set_xbotcore_ft(ft);
-    this->set_xbotcore_imu(imu);
-    this->set_xbotcore_hand(hand);
+    set_xbotcore_joint(std::shared_ptr<XBot::IXBotJoint>(halInterface));
+    set_xbotcore_model(model);
+    set_xbotcore_ft(std::shared_ptr<XBot::IXBotFT>(halInterface));
+    set_xbotcore_imu(std::shared_ptr<XBot::IXBotIMU>(halInterface));
+    set_xbotcore_hand(std::shared_ptr<XBot::IXBotHand>(halInterface));
 
     // initialize the command port
     _custom_status = cstatus;

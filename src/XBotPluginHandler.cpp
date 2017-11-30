@@ -214,11 +214,8 @@ bool PluginHandler::initPlugin(  std::shared_ptr<XBot::XBotControlPlugin> plugin
         plugin_init_success = ( plugin_ptr)->init(  (XBot::Handle::Ptr) this,
                                                     name,
                                                     _plugin_custom_status[i],
-                                                    _joint,
-                                                    _model,
-                                                    _ft,
-                                                    _imu,
-                                                    _hand );
+                                                    _halInterface,
+                                                    _model);
 
         /* Handle return value if init() was performed cleanly */
         if(!plugin_init_success){
@@ -252,11 +249,8 @@ void XBot::PluginHandler::init_plugin_handle_stdexcept()
 }
 
 
-bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
-                                 std::shared_ptr< IXBotFT > ft,
-                                 std::shared_ptr< IXBotIMU > imu,
-                                 std::shared_ptr< IXBotHand > hand,
-                                 std::shared_ptr< IXBotModel > model )
+bool PluginHandler::init_plugins(std::shared_ptr<HALInterface> halInterface,
+                                 std::shared_ptr< IXBotModel > model)
 {
 
     if(_is_RT_plugin_handler){
@@ -271,15 +265,10 @@ bool PluginHandler::init_plugins(std::shared_ptr< IXBotJoint> joint,
        _roshandle.reset( new XBot::RosUtils::RosHandle );  
     }
     
-    _joint = joint;
-    _ft = ft;
-    _imu = imu;
-    _hand = hand;
+    _halInterface = halInterface;
+    _joint = std::shared_ptr< IXBotJoint> (halInterface);    
     _model = model;
   
-    // Save xbot_joint
-    _xbot_joint = joint;
-    
     _plugin_init_success.resize(_rtplugin_vector.size(), false);
     _plugin_switch.resize(_rtplugin_vector.size());
     _plugin_status.resize(_rtplugin_vector.size());
@@ -422,10 +411,10 @@ void XBot::PluginHandler::fill_robot_state()
         double fault_value = 0;
         double temperature = 0;
         
-        if(!_xbot_joint) continue;
+        if(!_joint) continue;
         
-        _xbot_joint->get_fault(id, fault_value);
-        _xbot_joint->get_temperature(id, temperature);
+        _joint->get_fault(id, fault_value);
+        _joint->get_temperature(id, temperature);
          
         _robot_state_map.at(id).RobotStateRX.fault = fault_value;
         _robot_state_map.at(id).RobotStateRX.temperature = temperature;
