@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2016 IIT-ADVR
- * Author: Arturo Laurenzi, Luca Muratore
- * email:  arturo.laurenzi@iit.it, luca.muratore@iit.it
+ * Author: Arturo Laurenzi, Luca Muratore, Giuseppe Rigano
+ * email:  arturo.laurenzi@iit.it, luca.muratore@iit.it, giuseppe.rigano@iit.it
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -33,6 +33,7 @@ namespace XBot
     class Transmission
     {
 
+    public:
         typedef std::shared_ptr<XBot::Transmission> Ptr;
         
         /**
@@ -73,7 +74,7 @@ namespace XBot
         * 
         * @return bool
         */                           
-        virtual bool close( const std::string &path_to_cfg ) { return true; };                                    
+        virtual bool close() { return true; };                                    
 
     };
 
