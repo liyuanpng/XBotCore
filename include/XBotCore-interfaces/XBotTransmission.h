@@ -17,8 +17,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#ifndef __I_XBOT_TRANSMISSION_H__
-#define __I_XBOT_TRANSMISSION_H__
+#ifndef __XBOT_TRANSMISSION_H__
+#define __XBOT_TRANSMISSION_H__
 
 #include <XBotInterface/XBotInterface.h>
 #include <XBotCore-interfaces/All.h>
@@ -30,10 +30,17 @@ namespace XBot
      * @brief Interface for XBot Transmission
      * 
      */
-    class IXBotTransmission
+    class Transmission
     {
 
-        typedef std::shared_ptr<IXBotTransmission> Ptr;
+        typedef std::shared_ptr<XBot::Transmission> Ptr;
+        
+        /**
+        * @brief 
+        * 
+        * @return bool
+        */
+        virtual bool init( const std::string &path_to_cfg ) = 0;
         
         /**
         * @brief 
@@ -61,8 +68,14 @@ namespace XBot
                                     const XBot::JointIdMap& stiffness,
                                     const XBot::JointIdMap& damping,
                                     std::shared_ptr<XBot::IXBotJoint> motor ) = 0;
+        /**
+        * @brief 
+        * 
+        * @return bool
+        */                           
+        virtual bool close( const std::string &path_to_cfg ) { return true; };                                    
 
     };
 
 }
-#endif //__I_XBOT_TRANSMISSION_H__
+#endif //__XBOT_TRANSMISSION_H__
