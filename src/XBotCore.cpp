@@ -152,7 +152,7 @@ void XBot::XBotCore::init_internal()
 
     _pluginHandler->load_plugins();
     
-    _pluginHandler->init_plugins(xbot_joint, xbot_ft, xbot_imu);
+    _pluginHandler->init_plugins(halInterface);
     
     loaderptr = std::make_shared<Loader>(_pluginHandler);
     loaderth = new XBot::XBotLoaderThread();
