@@ -31,6 +31,7 @@
 #include <XBotCore-interfaces/XDomainCommunication.h>
 #include <XBotCore-interfaces/XBotPipes.h>
 #include <XBotCore-interfaces/XBotESC.h>
+#include <XBotCore-interfaces/XBotTransmission.h>
 
 #if defined( __XENO__ ) || defined( __COBALT__ )
 #include <XBotCore-interfaces/XBotRT_ipc.h>
