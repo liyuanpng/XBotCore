@@ -131,10 +131,14 @@ void XBot::XBotCore::init_internal()
     std::shared_ptr<XBot::IXBotIMU> xbot_imu(halInterface);
     std::shared_ptr<XBot::IXBotHand> xbot_hand(halInterface);
     
+    // TODO initilize it somewhere else
+    bool xbot_enable_transmission = true;
+    
     (*anymap)["XBotJoint"] = boost::any(xbot_joint);
     (*anymap)["XBotFT"] = boost::any(xbot_ft);
     (*anymap)["XBotIMU"] = boost::any(xbot_imu);
     (*anymap)["XBotHand"] = boost::any(xbot_hand);
+    (*anymap)["EnableTransmissionPlugins"] = boost::any(xbot_enable_transmission);
     
     //TODO use isRT from RobotControlInterface robotInterface.IsRt()
     _robot = XBot::RobotInterface::getRobot(_path_to_config, "", anymap, "XBotRT");
