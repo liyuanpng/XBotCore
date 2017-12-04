@@ -31,6 +31,16 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(XBot::Handle::Ptr handle
     // get the robot
     _robot = handle->getRobotInterface();
 
+    // create a SubscriberRT for each enabled joint in the robot
+    for( int id : _robot->getEnabledJointId() ) {
+        _sub_map[id] = XBot::SubscriberRT<XBot::RobotState::pdo_tx>(std::string("rt_in_Motor_id_") + std::to_string(id));
+    }
+    // and for hands
+    for( const auto& h : _robot->getHand() ) {
+        int id = h.second->getHandId();
+        _sub_map[id] = XBot::SubscriberRT<XBot::RobotState::pdo_tx>(std::string("rt_in_Motor_id_") + std::to_string(id));
+    }
+
     // initialize filter
     int cutoff_freq = 1.0;
     _filter_q = XBot::Utils::SecondOrderFilter<Eigen::VectorXd>(2*3.1415*cutoff_freq, 1.0, 0.001, Eigen::VectorXd::Zero(_robot->getJointNum()));
@@ -48,13 +58,15 @@ bool XBot::XBotCommunicationPlugin::init_control_plugin(XBot::Handle::Ptr handle
  
     Logger::warning() << "Filter ON by default, cutoff frequency is " << cutoff_freq << " Hz" << Logger::endl();
 
-     // intiliaze shared memory
-    _pos_ref_map = handle->getSharedMemory()->getSharedObject<XBot::JointIdMap>("pos_ref_map_so");
-    _vel_ref_map = handle->getSharedMemory()->getSharedObject<XBot::JointIdMap>("vel_ref_map_so");
-    _tor_ref_map = handle->getSharedMemory()->getSharedObject<XBot::JointIdMap>("tor_ref_map_so");
-    _k_ref_map = handle->getSharedMemory()->getSharedObject<XBot::JointIdMap>("k_ref_map_so");
-    _d_ref_map = handle->getSharedMemory()->getSharedObject<XBot::JointIdMap>("d_ref_map_so");
+    for (auto& p: _robot->getHand())
+    {
+        XBot::Hand::Ptr hand = p.second;
+        _hand_map[hand->getHandId()] =  hand;
+    }
     
+    // NOTE initialize the *0 variables
+    on_start(0.0);    
+
     return true;
 }
 
@@ -71,6 +83,10 @@ void XBot::XBotCommunicationPlugin::on_start(double time)
     _filter_d.reset(_d0);
     _filter_qdot.reset(_qdot0 * 0.0);
 
+    _robot->getJointPosition(_pos_ref_map);
+    _robot->getStiffness(_k_ref_map);
+    _robot->getDamping(_d_ref_map);
+    _robot->getJointVelocity(_vel_ref_map);
 }
 
 void XBot::XBotCommunicationPlugin::on_stop(double time)
@@ -97,13 +113,30 @@ void XBot::XBotCommunicationPlugin::control_loop(double time, double period)
         }
     //}
     
-    // read from shared memory the ref maps and set them
+   
+     
+    for( auto& p: _sub_map) {
+        if( p.second.read(_pdo_tx) ) {
+          
+            if( _hand_map[p.first] != nullptr){                
+                //  HACK scaling back based on 9.0 max range
+                _hand_map[p.first]->grasp(_pdo_tx.pos_ref / 9.0);
+            }          
+            
+            _pos_ref_map[p.first] = _pdo_tx.pos_ref;
+            _vel_ref_map[p.first] = _pdo_tx.vel_ref;
+            _tor_ref_map[p.first] = _pdo_tx.tor_ref;
+            _k_ref_map[p.first] = _pdo_tx.gain_0;
+            _d_ref_map[p.first] = _pdo_tx.gain_1;
+        }
+    }
 
-    _robot->setPositionReference(_pos_ref_map.get());
-    _robot->setVelocityReference(_vel_ref_map.get());
-    _robot->setEffortReference(_tor_ref_map.get());
-    _robot->setStiffness(_k_ref_map.get());
-    _robot->setDamping(_d_ref_map.get());
+    _robot->setPositionReference(_pos_ref_map);
+
+    _robot->setVelocityReference(_vel_ref_map);
+    _robot->setEffortReference(_tor_ref_map);
+    _robot->setStiffness(_k_ref_map);
+    _robot->setDamping(_d_ref_map);
 
     double alpha = (time - _start_time) / 5.0;
 
@@ -153,5 +186,6 @@ XBot::XBotCommunicationPlugin::~XBotCommunicationPlugin()
 {
     Logger::info() << "~XBotCommunicationPlugin()" << Logger::endl();
 }
+
 
 

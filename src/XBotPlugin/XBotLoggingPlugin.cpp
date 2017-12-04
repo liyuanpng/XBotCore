@@ -31,14 +31,18 @@ bool XBot::XBotLoggingPlugin::init_control_plugin( XBot::Handle::Ptr handle )
 {
     // get the robot
     _robot = handle->getRobotInterface();
-    
+
     // initialize logger
     _logger = XBot::MatLogger::getLogger("/tmp/XBotCore_log");
     _robot->initLog(_logger, 100000);
-    
+
     // add the faults
     _faults.resize(_robot->getJointNum(), 0.0);
     _logger->createVectorVariable("fault", _faults.size(), 1, 100000);
+
+    // add the aux
+    _aux.resize(_robot->getJointNum(), 0.0);
+    _logger->createVectorVariable("current", _aux.size(), 1, 100000);
 
     return true;
 }
@@ -58,18 +62,28 @@ void XBot::XBotLoggingPlugin::control_loop(double time, double period)
 {
     // log all robot state
     _robot->log(_logger, time);
-    
+
     // log fault
     int i = 0;
     for(int id : _robot->getEnabledJointId()) {
-	if(get_xbotcore_joint()) {
-	    get_xbotcore_joint()->get_fault(id, _faults[i]);
-	}
-        i++;
+        if(get_xbotcore_joint()) {
+            get_xbotcore_joint()->get_fault(id, _faults[i]);
+        }
+            i++;
     }
-    _logger->log("fault", _faults);
-    
-    
+    _logger->add("fault", _faults);
+
+    // log aux
+    i = 0;
+    for(int id : _robot->getEnabledJointId()) {
+        if(get_xbotcore_joint()) {
+            get_xbotcore_joint()->get_aux(id, _aux[i]);
+        }
+            i++;
+    }
+    _logger->add("current", _aux);
+
+
 }
 
 bool XBot::XBotLoggingPlugin::close(void)

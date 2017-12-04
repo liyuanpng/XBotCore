@@ -69,7 +69,7 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
     }      
     
     numjoint = _robot->getJointNum();
-    buffer = std::make_shared<Buffer<WebRobotState>>(50);    
+    buffer = std::make_shared<Buffer<WebRobotStateTX>>(50);    
     sharedData = std::make_shared<SharedData>();
     try{
       server = std::make_shared<CivetServer>(cpp_options);  
@@ -86,13 +86,17 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
 	}
 	
 	std::vector<std::string> names = chain->getJointNames();
-	std::vector<std::string> jvals;
+	std::vector<std::string> jvals, vref, eref, stiff, damp;
 	//populate jvals
 	
 	std::vector <std::string> lowlimit;
 	std::vector <std::string> uplimit;
 	for( int i=0; i<ids.size();i ++){
 	  jvals.push_back(std::to_string(chain->getJointPosition(i)));
+          vref.push_back(std::to_string(chain->getJointVelocity(i)));
+          eref.push_back(std::to_string(chain->getJointEffort(i)));
+          stiff.push_back(std::to_string(chain->getStiffness(i)));
+          damp.push_back(std::to_string(chain->getDamping(i)));
 	  double llimit, ulimit;
 	  chain->getJointLimits(i,llimit,ulimit);
 	  lowlimit.push_back(std::to_string(llimit));
@@ -104,6 +108,10 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
 	val.push_back(ids);
 	val.push_back(names);
 	val.push_back(jvals);
+        val.push_back(vref);
+        val.push_back(eref);
+        val.push_back(stiff);
+        val.push_back(damp);
 	val.push_back(lowlimit);
 	val.push_back(uplimit);
 	
@@ -120,7 +128,7 @@ void CommunicationInterfaceWebServer::sendRobotState()
     //write to a buffer that the callback handleData will use
     JointIdMap _joint_id_map, _motor_id_map,
     _jvel_id_map,_mvel_id_map, _temp_id_map,
-    _effort_id_map;
+    _effort_id_map, _stiffnes_id_map,_damping_id_map;
     
     _robot->getJointPosition(_joint_id_map);
     _robot->getMotorPosition(_motor_id_map);
@@ -128,8 +136,10 @@ void CommunicationInterfaceWebServer::sendRobotState()
     _robot->getMotorVelocity(_mvel_id_map);
     _robot->getTemperature(_temp_id_map);
     _robot->getJointEffort(_effort_id_map);
+    _robot->getStiffness(_stiffnes_id_map);
+    _robot->getDamping(_damping_id_map);
     
-    WebRobotState rstate;  
+    WebRobotStateTX rstate;  
     
     for ( auto s: _robot->getEnabledJointNames()) {      
         rstate.joint_name.push_back(s);      
@@ -142,6 +152,8 @@ void CommunicationInterfaceWebServer::sendRobotState()
         double mvelval= _mvel_id_map.at(id);
         double tempval= _temp_id_map.at(id);
         double effval= _effort_id_map.at(id);
+        double stiffval= _stiffnes_id_map.at(id);
+        double dampval= _damping_id_map.at(id);
                  
         rstate.joint_id.push_back(id);
         rstate.link_position.push_back(jval);
@@ -150,6 +162,8 @@ void CommunicationInterfaceWebServer::sendRobotState()
         rstate.motor_vel.push_back(mvelval); 
         rstate.temperature.push_back(tempval); 
         rstate.effort.push_back(effval);
+        rstate.stiffness.push_back(stiffval);
+        rstate.damping.push_back(dampval);
     }
     
     if(sharedData->getNumClient().load() <= 0) {
@@ -181,28 +195,30 @@ void CommunicationInterfaceWebServer::receiveReference()
     }
     
       //set single joint value      
-      JointIdMap pmap, vmap;
+      JointIdMap pmap, vmap, emap , smap, dmap;
       _robot->getPositionReference(pmap);
       _robot->getVelocityReference(vmap);
-      std::map<int,double> map = sharedData->getJointMap();
-      for( auto& m : map){
-        int id = m.first;
-        double val = m.second;
-	std::string jname =_robot->getJointByID(id)->getJointName();
-	if( _robot->getUrdf().getJoint(jname)->type == urdf::Joint::CONTINUOUS) {
-	  vmap.at(id)= val;
-	  pmap.at(id)= 0.0;
-	}
-	else {
-	  pmap.at(id)= val;
-	  vmap.at(id)= 0.0;
-	}
-	
-      } 
-      if(!map.empty()){
-        _robot->setPositionReference(pmap); 
-        _robot->setVelocityReference(vmap);
-	}
+      _robot->getEffortReference(emap);
+      _robot->getStiffness(smap);
+      _robot->getDamping(dmap);
+      WebRobotStateRX rstate = sharedData->getRobotState();
+      
+      int i = 0;
+      for ( auto id : rstate.joint_id){        
+        pmap.at(id)= rstate.position_ref[i];
+	vmap.at(id)= rstate.vel_ref[i];
+	emap.at(id)= rstate.effort_ref[i];
+	smap.at(id)= rstate.stiffness[i];
+	dmap.at(id)= rstate.damping[i];
+        i++;        
+      }
+      
+      _robot->setPositionReference(pmap);
+      _robot->setVelocityReference(vmap);
+      _robot->setEffortReference(emap);
+      _robot->setStiffness(smap);
+      _robot->setDamping(dmap);     
+     
 }
 
 bool CommunicationInterfaceWebServer::advertiseSwitch(const std::string& port_name)

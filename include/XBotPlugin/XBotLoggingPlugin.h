@@ -53,15 +53,16 @@ protected:
     virtual void control_loop(double time, double period);
 
 private:
-    
+
     bool init_xddp();
-    
+
     void run_xddp();
-    
+
     RobotInterface::Ptr _robot;
-    
+
     std::vector<double> _faults;
-    
+    std::vector<double> _aux;
+
     XBot::MatLogger::Ptr _logger;
 
 };

@@ -27,14 +27,14 @@
 #include <WebRobotState.h>
 #include <Request.h>
 
-class WebRobotState;
+class WebRobotStateTX;
 class SharedData;
 
 class WebSocketHandler : public CivetWebSocketHandler {
 
   public:
     
-    WebSocketHandler(std::shared_ptr<Buffer<WebRobotState>> buffer, std::shared_ptr<SharedData> sharedData){
+    WebSocketHandler(std::shared_ptr<Buffer<WebRobotStateTX>> buffer, std::shared_ptr<SharedData> sharedData){
       
       this->buffer = buffer;
       this->sharedData = sharedData;      
@@ -53,7 +53,7 @@ class WebSocketHandler : public CivetWebSocketHandler {
     virtual void handleClose(CivetServer *server, const struct mg_connection *conn);
 
   private:
-    std::shared_ptr<Buffer<WebRobotState>> buffer;
+    std::shared_ptr<Buffer<WebRobotStateTX>> buffer;
     std::shared_ptr<SharedData> sharedData;
 };
 

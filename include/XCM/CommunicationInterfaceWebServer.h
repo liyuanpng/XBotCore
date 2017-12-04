@@ -88,7 +88,7 @@ class CommunicationInterfaceWebServer : public CommunicationInterface {
       std::string _tf_prefix, _urdf_param_name;   
       std::map<int, double> _hand_value_map;
       
-      std::shared_ptr<Buffer<WebRobotState>> buffer;
+      std::shared_ptr<Buffer<WebRobotStateTX>> buffer;
       std::shared_ptr<SharedData> sharedData;
       std::string address;
       std::string port; 

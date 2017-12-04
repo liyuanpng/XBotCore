@@ -26,7 +26,7 @@
 #include <XBotInterface/RtLog.hpp>
 
 #include <cstdio>
-#include <sys/stat.h> 
+#include <sys/stat.h>
 #include <fcntl.h>
 
 
@@ -92,7 +92,7 @@ bool XBot::CommunicationInterfaceROS::callback_master_communication_iface(XCM::c
 
 bool XBot::CommunicationInterfaceROS::callback_hand(const std_msgs::Float64::ConstPtr& msg, int hand_id)
 {
-  
+
     _hand_value_map[hand_id] = msg->data;
     return true;
 }
@@ -110,16 +110,13 @@ CommunicationInterfaceROS::CommunicationInterfaceROS():
     }
 
     _nh = std::make_shared<ros::NodeHandle>();
-    
+
     // by default I publish the tf
     _publish_tf = true;
 }
 
-CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot, 
-                                                     XBot::XBotXDDP::Ptr xddp_handler, 
-                                                     XBot::IXBotJoint::Ptr xbot_joint
-                                                    ):
-    CommunicationInterface(robot, xddp_handler, xbot_joint),
+CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot, XBot::XBotXDDP::Ptr xddp_handler):
+    CommunicationInterface(robot, xddp_handler),
     _path_to_cfg(robot->getPathToConfig())
 {
     int argc = 1;
@@ -150,7 +147,7 @@ CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot,
         ft_topic_name = "/xbotcore/" + robot->getUrdf().name_ + "/ft/" + ftptr->getSensorName();
         _ft_pub_map[ftptr->getSensorId()] = _nh->advertise<geometry_msgs::WrenchStamped>(ft_topic_name, 1);
     }
-    
+
     for(const auto& pair : robot->getHand()){
         XBot::Hand::Ptr hptr = pair.second;
         std::string h_topic_name;
@@ -164,12 +161,12 @@ CommunicationInterfaceROS::CommunicationInterfaceROS(XBotInterface::Ptr robot,
 void CommunicationInterfaceROS::load_robot_state_publisher()
 {
     KDL::Tree kdl_tree;
-    
+
     int fd = suppress_stdout();
     kdl_parser::treeFromUrdfModel(_robot->getUrdf(), kdl_tree);
     resume_stdout(fd);
 
-     _robot_state_pub = std::make_shared<robot_state_publisher::RobotStatePublisher>(kdl_tree);
+    _robot_state_pub = std::make_shared<robot_state_publisher::RobotStatePublisher>(kdl_tree);
 
     _urdf_param_name = "/xbotcore/" + _robot->getUrdf().getName() + "/robot_description";
     _tf_prefix = "/xbotcore/" + _robot->getUrdf().getName();
@@ -186,7 +183,7 @@ void CommunicationInterfaceROS::load_ros_message_interfaces() {
                         "/",
                         core_absolute_path);
     YAML::Node core_cfg = YAML::LoadFile(core_absolute_path);
-    
+
     // TBD check if they exist
     const YAML::Node &ros_interface_root = core_cfg["RobotInterfaceROS"];
     _control_message_type = ros_interface_root["control_message_type"].as<std::string>();
@@ -255,7 +252,7 @@ void CommunicationInterfaceROS::load_ros_message_interfaces() {
         _jointid_to_jointstate_msg_idx[id] = _jointstate_message->getIndex(joint_name);
         _jointid_to_command_msg_idx[id] = _control_message->getIndex(joint_name);;
     }
-    
+
     /* check if I have to send /tf */
     if(ros_interface_root["publish_tf"]) {
         _publish_tf = ros_interface_root["publish_tf"].as<bool>();
@@ -270,16 +267,15 @@ void CommunicationInterfaceROS::sendRobotState()
     _robot->getJointPosition(_joint_name_map);
     std::map<std::string, double> _joint_name_std_map(_joint_name_map.begin(), _joint_name_map.end());
 
-    if(_robot_state_pub && _publish_tf){
+    if(_publish_tf) {
         _robot_state_pub->publishTransforms(_joint_name_std_map, ros::Time::now(), "");
         _robot_state_pub->publishFixedTransforms("");
     }
 
-
     /* Joint states */
 
     if( !_send_robot_state_ok ) return;
-    
+
     for( int id : _robot->getEnabledJointId() ){
         int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
         double fault_value;
@@ -330,7 +326,7 @@ void CommunicationInterfaceROS::sendRobotState()
     }
 
      _robot->getPositionReference(_joint_id_map);
-     
+
      for( int id : _robot->getEnabledJointId() ){
         int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
         _jointstate_message->position_reference(joint_state_msg_idx) = _joint_id_map.at(id);
@@ -342,7 +338,7 @@ void CommunicationInterfaceROS::sendRobotState()
         int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
         _jointstate_message->velocity_reference(joint_state_msg_idx) = _joint_id_map.at(id);
     }
-    
+
     for( int id : _robot->getEnabledJointId() ){
         int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
         _jointstate_message->stiffness(joint_state_msg_idx) = _joint_id_map.at(id);
@@ -354,7 +350,7 @@ void CommunicationInterfaceROS::sendRobotState()
         int joint_state_msg_idx = _jointid_to_jointstate_msg_idx.at(id);
         _jointstate_message->effort_reference(joint_state_msg_idx) = _joint_id_map.at(id);
     }
-    
+
     _robot->getStiffness(_joint_id_map);
 
     for( int id : _robot->getEnabledJointId() ){
@@ -429,8 +425,8 @@ void CommunicationInterfaceROS::sendRobotState()
         _ft_pub_map.at(ftptr->getSensorId()).publish(msg);
 
     }
-    
-    
+
+
      /* HAND */
 
     for(const auto& pair : _robot->getHand()){
@@ -451,98 +447,91 @@ void CommunicationInterfaceROS::sendRobotState()
 void CommunicationInterfaceROS::resetReference()
 {
     _robot->getPositionReference(_joint_id_map);
-    
+
     for( const auto& pair : _jointid_to_command_msg_idx ){
          _control_message->position(pair.second) = _joint_id_map[pair.first];
     }
 
-    
+
     _robot->getVelocityReference(_joint_id_map);
 
     for( const auto& pair : _jointid_to_command_msg_idx ){
         _control_message->velocity(pair.second) = _joint_id_map[pair.first];
     }
 
-    
+
     _robot->getEffortReference(_joint_id_map);
 
     for( const auto& pair : _jointid_to_command_msg_idx ){
         _control_message->effort(pair.second) = _joint_id_map[pair.first];
     }
 
-    
+
     _robot->getStiffness(_joint_id_map);
 
     for( const auto& pair : _jointid_to_command_msg_idx ){
         _control_message->stiffness(pair.second) = _joint_id_map[pair.first];
     }
 
-    
+
     _robot->getDamping(_joint_id_map);
 
     for( const auto& pair : _jointid_to_command_msg_idx ){
         _control_message->damping(pair.second) = _joint_id_map[pair.first];
     }
 
-    
+
 }
 
 
 void CommunicationInterfaceROS::receiveReference()
 {
-if( !_receive_commands_ok ) return;
+    if( !_receive_commands_ok ) return;
 
     ros::spinOnce();
-    
-    if (current_seq_id < _control_message->seq_id()) {
-        
-        current_seq_id = _control_message->seq_id();
-
-        for( const auto& pair : _jointid_to_command_msg_idx ){
-            _joint_id_map[pair.first] = _control_message->position(pair.second);
-        }
-
-        _robot->setPositionReference(_joint_id_map);
 
 
-        for( const auto& pair : _jointid_to_command_msg_idx ){
-            _joint_id_map[pair.first] = _control_message->velocity(pair.second);
-        }
-
-        _robot->setVelocityReference(_joint_id_map);
-
-
-        for( const auto& pair : _jointid_to_command_msg_idx ){
-            _joint_id_map[pair.first] = _control_message->effort(pair.second);
-        }
-
-        _robot->setEffortReference(_joint_id_map);
-
-
-        for( const auto& pair : _jointid_to_command_msg_idx ){
-            _joint_id_map[pair.first] = _control_message->stiffness(pair.second);
-        }
-
-        _robot->setStiffness(_joint_id_map);
-
-
-        for( const auto& pair : _jointid_to_command_msg_idx ){
-            _joint_id_map[pair.first] = _control_message->damping(pair.second);
-        }
-
-        _robot->setDamping(_joint_id_map);
+    for( const auto& pair : _jointid_to_command_msg_idx ){
+        _joint_id_map[pair.first] = _control_message->position(pair.second);
     }
-    else {
-        resetReference();
+
+    _robot->setPositionReference(_joint_id_map);
+
+
+    for( const auto& pair : _jointid_to_command_msg_idx ){
+        _joint_id_map[pair.first] = _control_message->velocity(pair.second);
     }
-//     
-    
+
+    _robot->setVelocityReference(_joint_id_map);
+
+
+    for( const auto& pair : _jointid_to_command_msg_idx ){
+        _joint_id_map[pair.first] = _control_message->effort(pair.second);
+    }
+
+    _robot->setEffortReference(_joint_id_map);
+
+
+    for( const auto& pair : _jointid_to_command_msg_idx ){
+        _joint_id_map[pair.first] = _control_message->stiffness(pair.second);
+    }
+
+    _robot->setStiffness(_joint_id_map);
+
+
+    for( const auto& pair : _jointid_to_command_msg_idx ){
+        _joint_id_map[pair.first] = _control_message->damping(pair.second);
+    }
+
+    _robot->setDamping(_joint_id_map);
+
+
     /* HAND */
 
     for(const auto& pair : _robot->getHand()){
 
         XBot::Hand::Ptr hptr = pair.second;
-        
+
         double grasp = _hand_value_map[hptr->getHandId()];
 
         hptr->grasp(grasp);
@@ -550,6 +539,7 @@ if( !_receive_commands_ok ) return;
 
 
 }
+
 bool CommunicationInterfaceROS::advertiseSwitch(const std::string& port_name)
 {
     if( _services.count(port_name) > 0 ){
