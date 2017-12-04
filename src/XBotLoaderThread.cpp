@@ -24,7 +24,7 @@
 XBot::XBotLoaderThread::XBotLoaderThread() 
 {
   
-    int period = 500000;
+    int period = 40000;
       
     set_thread_name("Loader");
     // set thread period - not periodic
