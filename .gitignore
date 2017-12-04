@@ -30,6 +30,9 @@
 #kdevelop
 *.kdev4
 
+# merge
+*.orig
+
 # build folders
 build/
 build_rt/
