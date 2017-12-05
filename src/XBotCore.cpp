@@ -126,6 +126,7 @@ void XBot::XBotCore::init_internal()
 {
     // create robot from config file and any map
     XBot::AnyMapPtr anymap = std::make_shared<XBot::AnyMap>();
+    std::shared_ptr<HALInterface> hal(halInterface);
     std::shared_ptr<XBot::IXBotJoint> xbot_joint(halInterface);
     std::shared_ptr<XBot::IXBotFT> xbot_ft(halInterface);
     std::shared_ptr<XBot::IXBotIMU> xbot_imu(halInterface);
@@ -156,7 +157,7 @@ void XBot::XBotCore::init_internal()
 
     _pluginHandler->load_plugins();
     
-    _pluginHandler->init_plugins(halInterface);
+    _pluginHandler->init_plugins(hal);
     
     loaderptr = std::make_shared<Loader>(_pluginHandler);
     loaderth = new XBot::XBotLoaderThread();
