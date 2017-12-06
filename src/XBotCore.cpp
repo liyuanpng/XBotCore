@@ -126,15 +126,20 @@ void XBot::XBotCore::init_internal()
 {
     // create robot from config file and any map
     XBot::AnyMapPtr anymap = std::make_shared<XBot::AnyMap>();
+    std::shared_ptr<HALInterface> hal(halInterface);
     std::shared_ptr<XBot::IXBotJoint> xbot_joint(halInterface);
     std::shared_ptr<XBot::IXBotFT> xbot_ft(halInterface);
     std::shared_ptr<XBot::IXBotIMU> xbot_imu(halInterface);
     std::shared_ptr<XBot::IXBotHand> xbot_hand(halInterface);
     
+    // TODO initilize it somewhere else
+    bool xbot_enable_transmission = true;
+    
     (*anymap)["XBotJoint"] = boost::any(xbot_joint);
     (*anymap)["XBotFT"] = boost::any(xbot_ft);
     (*anymap)["XBotIMU"] = boost::any(xbot_imu);
     (*anymap)["XBotHand"] = boost::any(xbot_hand);
+    (*anymap)["EnableTransmissionPlugins"] = boost::any(xbot_enable_transmission);
     
     //TODO use isRT from RobotControlInterface robotInterface.IsRt()
     _robot = XBot::RobotInterface::getRobot(_path_to_config, "", anymap, "XBotRT");
@@ -152,7 +157,7 @@ void XBot::XBotCore::init_internal()
 
     _pluginHandler->load_plugins();
     
-    _pluginHandler->init_plugins(halInterface);
+    _pluginHandler->init_plugins(hal);
     
     loaderptr = std::make_shared<Loader>(_pluginHandler);
     loaderth = new XBot::XBotLoaderThread();
