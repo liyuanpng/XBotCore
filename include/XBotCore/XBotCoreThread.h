@@ -50,9 +50,15 @@ class XBot::XBotCoreThread : public XBot::Thread_hook
 {
 public:
     
+    XBotCoreThread() = default;
+    
     XBotCoreThread(std::string config_yaml, 
                    XBot::SharedMemory::Ptr shared_memory,  
-                   Options options);
+                   Options options, 
+                   HALInterface::Ptr hal = nullptr,
+                   std::shared_ptr<XBot::TimeProviderFunction<boost::function<double()>>> time_provider = nullptr
+                   
+                  );
     
     virtual ~XBotCoreThread();    
     

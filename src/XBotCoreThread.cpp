@@ -30,8 +30,10 @@
 
 
 XBot::XBotCoreThread::XBotCoreThread(std::string config_yaml, 
-                                     XBot::SharedMemory::Ptr shared_memory,  
-                                     Options options)   
+                   XBot::SharedMemory::Ptr shared_memory,  
+                   XBot::Options options, 
+                   HALInterface::Ptr hal,
+                   std::shared_ptr<XBot::TimeProviderFunction<boost::function<double()>>> time_provider)   
 {
     int period = 1;
     if(options.xbotcore_dummy_mode){      
@@ -49,7 +51,12 @@ XBot::XBotCoreThread::XBotCoreThread(std::string config_yaml,
     // set thread priority
     set_thread_priority();
     
-    controller = std::shared_ptr<ControllerInterface>(new XBot::XBotCore(config_yaml, shared_memory, options));
+    controller = std::shared_ptr<ControllerInterface>(new XBot::XBotCore(config_yaml, 
+                                                                         hal, 
+                                                                         shared_memory, 
+                                                                         options, 
+                                                                         time_provider)
+                                                     );
 }
 
 void XBot::XBotCoreThread::set_thread_name(std::string thread_name)
