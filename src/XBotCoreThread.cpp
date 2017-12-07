@@ -27,7 +27,7 @@
 */
 
 #include <XBotCore/XBotCoreThread.h>
-
+#include <XBotCore/HALInterfaceFactory.h>
 
 XBot::XBotCoreThread::XBotCoreThread(std::string config_yaml, 
                    XBot::SharedMemory::Ptr shared_memory,  
@@ -51,8 +51,65 @@ XBot::XBotCoreThread::XBotCoreThread(std::string config_yaml,
     // set thread priority
     set_thread_priority();
     
+    // obtain hal
+    YAML::Node root_cfg = YAML::LoadFile(config_yaml);
+    
+    YAML::Node x_bot_core, root;
+    
+    std::string abs_low_level_config = "";
+    
+    // check gains in XBotCore node specifing config path YAML
+    if(root_cfg["XBotCore"]) {
+        x_bot_core = root_cfg["XBotCore"];
+            
+        if(x_bot_core["config_path"]) {
+            
+            abs_low_level_config = XBot::Utils::computeAbsolutePath(x_bot_core["config_path"].as<std::string>());
+            
+            Logger::info() << "Path to low level config is " << x_bot_core["config_path"].as<std::string>() << Logger::endl();
+            
+            Logger::info() << "Abs path to low level config is " << abs_low_level_config << Logger::endl();
+            
+            root = YAML::LoadFile(abs_low_level_config);
+        }
+    }
+
+    
+    const YAML::Node &hal_lib = root["HALInterface"];
+    std::string lib_file = "";
+    std::string lib_name="";
+    
+    HALInterface::Ptr __hal;
+    
+    if(options.xbotcore_dummy_mode){ // dummy mode
+    
+        lib_file = "libXBotDummy";
+        lib_name = "DUMMY";
+        
+        // NOTE dummy needs high level config
+        abs_low_level_config = std::string(config_yaml);
+        
+        __hal = HALInterfaceFactory::getFactory(lib_file, lib_name, abs_low_level_config.c_str());
+        
+    }
+    else if(hal) // hal provided by constructor
+    {
+        __hal = hal;
+    }
+    else if(!hal && hal_lib) // hal is not provided by the constructor
+    {
+        lib_file = hal_lib["lib_file"].as<std::string>();
+        lib_name = hal_lib["lib_name"].as<std::string>();
+        
+        __hal = HALInterfaceFactory::getFactory(lib_file, lib_name, abs_low_level_config.c_str());
+    }
+    else{
+        throw std::runtime_error("Unable to load HAL");
+    }
+    
+
     controller = std::shared_ptr<ControllerInterface>(new XBot::XBotCore(config_yaml, 
-                                                                         hal, 
+                                                                         __hal, 
                                                                          shared_memory, 
                                                                          options, 
                                                                          time_provider)
