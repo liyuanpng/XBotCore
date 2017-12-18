@@ -77,45 +77,45 @@ CommunicationInterfaceWebServer::CommunicationInterfaceWebServer(XBotInterface::
     ws_civet_handler = std::make_shared<WebSocketHandler>(buffer, sharedData);   
     server->addWebSocketHandler("/websocket", *ws_civet_handler);  
     for ( auto &chainmap : _robot->getChainMap()){
-	std::string key =chainmap.first;
-	XBot::KinematicChain::Ptr chain = chainmap.second;
-	std::vector<std::string> ids;
-	//populate ids
-	for( int i=0; i<chain->getJointIds().size();i ++){
-	  ids.push_back(std::to_string(chain->getJointIds()[i]));
-	}
-	
-	std::vector<std::string> names = chain->getJointNames();
-	std::vector<std::string> jvals, vref, eref, stiff, damp;
-	//populate jvals
-	
-	std::vector <std::string> lowlimit;
-	std::vector <std::string> uplimit;
-	for( int i=0; i<ids.size();i ++){
-	  jvals.push_back(std::to_string(chain->getJointPosition(i)));
+        std::string key =chainmap.first;
+        XBot::KinematicChain::Ptr chain = chainmap.second;
+        std::vector<std::string> ids;
+        //populate ids
+        for( int i=0; i<chain->getJointIds().size();i ++){
+          ids.push_back(std::to_string(chain->getJointIds()[i]));
+        }
+        
+        std::vector<std::string> names = chain->getJointNames();
+        std::vector<std::string> jvals, vref, eref, stiff, damp;
+        //populate jvals
+        
+        std::vector <std::string> lowlimit;
+        std::vector <std::string> uplimit;
+        for( int i=0; i<ids.size();i ++){
+          jvals.push_back(std::to_string(chain->getJointPosition(i)));
           vref.push_back(std::to_string(chain->getJointVelocity(i)));
           eref.push_back(std::to_string(chain->getJointEffort(i)));
           stiff.push_back(std::to_string(chain->getStiffness(i)));
           damp.push_back(std::to_string(chain->getDamping(i)));
-	  double llimit, ulimit;
-	  chain->getJointLimits(i,llimit,ulimit);
-	  lowlimit.push_back(std::to_string(llimit));
-	  uplimit.push_back(std::to_string(ulimit));
-	}
-	
-	std::vector < std::vector<std::string> > val;
-	//populate val
-	val.push_back(ids);
-	val.push_back(names);
-	val.push_back(jvals);
+          double llimit, ulimit;
+          chain->getJointLimits(i,llimit,ulimit);
+          lowlimit.push_back(std::to_string(llimit));
+          uplimit.push_back(std::to_string(ulimit));
+        }
+        
+        std::vector < std::vector<std::string> > val;
+        //populate val
+        val.push_back(ids);
+        val.push_back(names);
+        val.push_back(jvals);
         val.push_back(vref);
         val.push_back(eref);
         val.push_back(stiff);
         val.push_back(damp);
-	val.push_back(lowlimit);
-	val.push_back(uplimit);
-	
-	sharedData->insertChain(key,val);
+        val.push_back(lowlimit);
+        val.push_back(uplimit);
+        
+        sharedData->insertChain(key,val);
     }
     
     Logger::info(Logger::Severity::MID) << "XBotCore server running at http://" << aport << Logger::endl();
@@ -167,11 +167,11 @@ void CommunicationInterfaceWebServer::sendRobotState()
     }
     
     if(sharedData->getNumClient().load() <= 0) {
-	buffer->clear();
-	buffer->add(rstate); 
+        buffer->clear();
+        buffer->add(rstate); 
     }
     else{
-	buffer->add(rstate);   
+        buffer->add(rstate);   
     }
     
 }
@@ -206,10 +206,10 @@ void CommunicationInterfaceWebServer::receiveReference()
       int i = 0;
       for ( auto id : rstate.joint_id){        
         pmap.at(id)= rstate.position_ref[i];
-	vmap.at(id)= rstate.vel_ref[i];
-	emap.at(id)= rstate.effort_ref[i];
-	smap.at(id)= rstate.stiffness[i];
-	dmap.at(id)= rstate.damping[i];
+        vmap.at(id)= rstate.vel_ref[i];
+        emap.at(id)= rstate.effort_ref[i];
+        smap.at(id)= rstate.stiffness[i];
+        dmap.at(id)= rstate.damping[i];
         i++;        
       }
       
@@ -219,6 +219,29 @@ void CommunicationInterfaceWebServer::receiveReference()
       _robot->setStiffness(smap);
       _robot->setDamping(dmap);     
      
+}
+
+void CommunicationInterfaceWebServer::resetReference()
+{
+      JointIdMap pmap, vmap, emap , smap, dmap;
+      _robot->getPositionReference(pmap);
+      _robot->getVelocityReference(vmap);
+      _robot->getEffortReference(emap);
+      _robot->getStiffness(smap);
+      _robot->getDamping(dmap);
+      WebRobotStateRX rstate;
+
+      int i = 0;
+      for ( auto id : rstate.joint_id){        
+        rstate.position_ref[i] = pmap.at(id);
+        rstate.vel_ref[i] = vmap.at(id);
+        rstate.effort_ref[i] = emap.at(id);
+        rstate.stiffness[i] = smap.at(id);
+        rstate.damping[i] = dmap.at(id);
+        i++;        
+      }
+      
+      sharedData->setRobotState(rstate);  
 }
 
 bool CommunicationInterfaceWebServer::advertiseSwitch(const std::string& port_name)
@@ -248,6 +271,11 @@ bool XBot::CommunicationInterfaceWebServer::setPluginStatus(const std::string& p
 {
     sharedData->insertStatus(plugin_name, status);
     return true;
+}
+
+std::string CommunicationInterfaceWebServer::getPluginStatus(const std::string& plugin_name)
+{
+    return sharedData->getStatus(plugin_name);
 }
 
 bool XBot::CommunicationInterfaceWebServer::advertiseCmd(const std::string& port_name)
