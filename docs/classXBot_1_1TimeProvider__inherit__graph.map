@@ -1,0 +1,4 @@
+<map id="XBot::TimeProvider" name="XBot::TimeProvider">
+<area shape="rect" id="node2" href="$classXBot_1_1SimpleTimeProvider.html" title="{XBot::SimpleTimeProvider\n||+ set_time()\l+ get_time()\l}" alt="" coords="5,138,181,230"/>
+<area shape="rect" id="node3" href="$classXBot_1_1TimeProviderFunction.html" title="{XBot::TimeProviderFunction\l\&lt; Callable \&gt;\n||+ TimeProviderFunction()\l+ get_time()\l}" alt="" coords="205,131,392,237"/>
+</map>

@@ -1,0 +1,32 @@
+<map id="/home/lucamuratore/advr&#45;superbuild/external/XCM/include/XCM/XBotUtils.h" name="/home/lucamuratore/advr&#45;superbuild/external/XCM/include/XCM/XBotUtils.h">
+<area shape="rect" id="node2" href="$XBotPipes_8h.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/include/XBotCore&#45;interfaces\l/XBotPipes.h" alt="" coords="596,109,819,180"/>
+<area shape="rect" id="node6" href="$NRTDeployer_8cpp.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/src/NRTDeployer.cpp" alt="" coords="1806,695,1993,751"/>
+<area shape="rect" id="node18" href="$XBotLoggingPlugin_8cpp.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/src/XBotPlugin/XBotLogging\lPlugin.cpp" alt="" coords="1320,569,1545,640"/>
+<area shape="rect" id="node25" href="$XBotThread_8h.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/include/XCM/XBotThread.h" alt="" coords="1801,347,2019,403"/>
+<area shape="rect" id="node28" href="$CommunicationInterfaceROS_8cpp.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/src/CommunicationInterface\lROS.cpp" alt="" coords="2431,109,2655,180"/>
+<area shape="rect" id="node29" href="$XBotESCUtils_8cpp.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/src/XBotESCUtils.cpp" alt="" coords="2680,117,2871,173"/>
+<area shape="rect" id="node30" href="$XBotFT_8cpp.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/src/XBotYARP/XBotFT\l/XBotFT.cpp" alt="" coords="2895,109,3093,180"/>
+<area shape="rect" id="node31" href="$XBotMotionControl_8cpp.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/src/XBotYARP/XBotMotionControl\l/XBotMotionControl.cpp" alt="" coords="3117,109,3380,180"/>
+<area shape="rect" id="node3" href="$All_8h.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/include/XBotCore&#45;interfaces/All.h" alt="" coords="154,347,407,403"/>
+<area shape="rect" id="node9" href="$XBotPluginHandler_8cpp.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/src/XBotPluginHandler.cpp" alt="" coords="5,577,223,633"/>
+<area shape="rect" id="node10" href="$XDomainCommunication_8h.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/include/XBotCore&#45;interfaces\l/XDomainCommunication.h" alt="" coords="787,228,1009,299"/>
+<area shape="rect" id="node4" href="$XBotPluginHandler_8h.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/include/XCM/XBotPluginHandler.h" alt="" coords="151,458,411,514"/>
+<area shape="rect" id="node5" href="$NRTDeployer_8h.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/include/XCM/NRTDeployer.h" alt="" coords="1065,577,1296,633"/>
+<area shape="rect" id="node8" href="$DummyMain_8cpp.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/src/DummyMain.cpp" alt="" coords="247,577,429,633"/>
+<area shape="rect" id="node7" href="$NRTDeployerMain_8cpp.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/src/NRTDeployerMain.cpp" alt="" coords="1073,695,1288,751"/>
+<area shape="rect" id="node11" href="$XBotCommunicationPlugin_8h.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/include/XBotPlugin\l/XBotCommunicationPlugin.h" alt="" coords="733,569,927,640"/>
+<area shape="rect" id="node13" href="$XBotCommunicationHandler_8h.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/include/XCM/XBotCommunication\lHandler.h" alt="" coords="1493,451,1751,521"/>
+<area shape="rect" id="node16" href="$XBotControlPlugin_8h.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/include/XCM/XBotControlPlugin.h" alt="" coords="483,347,740,403"/>
+<area shape="rect" id="node20" href="$XBotModuleHandler_8h.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/include/XCM/XBotModuleHandler.h" alt="" coords="765,347,1031,403"/>
+<area shape="rect" id="node22" href="$XBotXDDP_8h.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/include/XCM/XBotXDDP.h" alt="" coords="1384,347,1601,403"/>
+<area shape="rect" id="node24" href="$XDomainCommunication_8cpp.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/src/XDomainCommunication.cpp" alt="" coords="1056,347,1308,403"/>
+<area shape="rect" id="node12" href="$XBotCommunicationPlugin_8cpp.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/src/XBotPlugin/XBotCommunication\lPlugin.cpp" alt="" coords="695,688,965,759"/>
+<area shape="rect" id="node14" href="$XBotCommunicationHandler_8cpp.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/src/XBotCommunicationHandler.cpp" alt="" coords="1849,577,2121,633"/>
+<area shape="rect" id="node15" href="$XBotCommunicationMain_8cpp.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/src/XBotCommunicationMain.cpp" alt="" coords="1569,577,1824,633"/>
+<area shape="rect" id="node17" href="$XBotLoggingPlugin_8h.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/include/XBotPlugin\l/XBotLoggingPlugin.h" alt="" coords="785,451,955,521"/>
+<area shape="rect" id="node19" href="$XBotControlPlugin_8cpp.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/src/XBotControlPlugin.cpp" alt="" coords="495,458,709,514"/>
+<area shape="rect" id="node21" href="$XBotModuleHandler_8cpp.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/src/XBotModuleHandler.cpp" alt="" coords="980,458,1203,514"/>
+<area shape="rect" id="node23" href="$XBotXDDP_8cpp.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/src/XBotXDDP.cpp" alt="" coords="1293,458,1468,514"/>
+<area shape="rect" id="node26" href="$XBotNRT__thread_8cpp.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/src/XBotNRT_thread.cpp" alt="" coords="1877,458,2084,514"/>
+<area shape="rect" id="node27" href="$XBotRT__thread_8cpp.html" title="/home/lucamuratore\l/advr&#45;superbuild/external\l/XCM/src/XBotRT_thread.cpp" alt="" coords="2109,458,2306,514"/>
+</map>

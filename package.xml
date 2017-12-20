@@ -1,0 +1,12 @@
+<package format="2">
+  <name>XCM</name>
+  <version>1.0.0</version>
+  <description>
+  This package provides XCM capability.
+  </description>
+  <maintainer email="giuseppe.rigano@iit.it">IIT</maintainer>
+  <license>GNU</license>
+  
+  <build_depend>message_generation</build_depend>
+  
+</package>

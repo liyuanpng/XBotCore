@@ -19,3 +19,38 @@ The bibtex code for including this citation is provided:
   year={2017}
 }
 ~~~
+
+Online documentation: https://advrhumanoids.github.io/XCM/
+
+How to generate and execute a XBot RT Plugin?
+==============================================
+
+XCM provides a script that generate for you a skeleton of a XBot RT plugin: the script will be installed in the CMAKE_INSTALL_PREFIX when installing XCM.
+
+Once execute it 
+
+```
+generate_XBot_Plugin.sh PLUGIN_NAME
+```
+it will create a folder containing a ready to use empty skeleton for a XBot plugin.
+
+FSM Plugin
+
+```
+generate_XBot_PluginFSM.sh PLUGIN_NAME state1 state2 staten
+```
+in addition to the previous command, it will provide a basic implementation of the FSM API.
+
+You can find explanation on the following slide [FSM-Slide](https://github.com/ADVRHumanoids/Documentation/blob/master/slides/fsm/FSM%20API.pdf)
+
+Just compile it and install it using the [advr-superbuild](https://github.com/ADVRHumanoids/advr-superbuild) (check the [advr-superbuild wiki](https://github.com/ADVRHumanoids/advr-superbuild/wiki#creating-a-new-project-in-github-and-adding-it-to-the-superbuild) to understand how).
+
+In order to run it in your gazebo model / real robot remember to add the RT_PLUGIN_NAME in the list of the XBotRTPlugins in your YAML config file:
+
+```
+XBotRTPlugins:
+  plugins: ["HomingExample", "PLUGIN_NAME"]
+  io_plugins: []
+```
+
+Please check this [video](https://www.youtube.com/watch?v=wJXCLhtS7T0) to better understand how to generate and execute a XBot RT plugin.

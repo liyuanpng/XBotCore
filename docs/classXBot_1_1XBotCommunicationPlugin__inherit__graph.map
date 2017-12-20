@@ -1,0 +1,4 @@
+<map id="XBot::XBotCommunicationPlugin" name="XBot::XBotCommunicationPlugin">
+<area shape="rect" id="node2" href="$classXBot_1_1XBotControlPlugin.html" title="{XBot::XBotControlPlugin\n|# command\l# current_command\l|+ XBotControlPlugin()\l+ ~XBotControlPlugin()\l+ init()\l+ init_control_plugin()\l+ on_start()\l+ on_stop()\l+ run()\l# control_loop()\l}" alt="" coords="29,307,196,501"/>
+<area shape="rect" id="node3" href="$classXBot_1_1XBotPlugin.html" title="XBotCore Plugin Interface. " alt="" coords="33,5,192,259"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="XBot::IXBotInit" name="XBot::IXBotInit">
+<area shape="rect" id="node2" href="$classXBot_1_1dev_1_1XBotFT.html" title="YARP F&#45;T for XBot : a DeviceDriver representing a kinematic chain of the robot. " alt="" coords="5,131,144,369"/>
+<area shape="rect" id="node3" href="$classXBot_1_1dev_1_1XBotMotionControl.html" title="YARP Motion Control for XBOt : a DeviceDriver representing a kinematic chain of the robot..." alt="" coords="169,138,367,362"/>
+</map>
