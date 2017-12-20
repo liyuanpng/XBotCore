@@ -11,6 +11,8 @@ class HALInterface :  public XBot::IXBotJoint,
                       public XBot::IXBotIMU,
                       public XBot::IXBotHand {
 public:
+    
+    typedef std::shared_ptr<HALInterface> Ptr;
   
     virtual void init() = 0;
     virtual int recv_from_slave() = 0;
