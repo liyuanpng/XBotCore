@@ -63,7 +63,6 @@ set(COMMON_LIBS
 # include 
 include_directories(include ${XBotCoreModel_INCLUDE_DIRS} 
                             ${kdl_parser_INCLUDE_DIRS}                            
-                            ${sharedlibpp_INCLUDE_DIRS}
                             ${XCM_INCLUDE_DIRS}
                             include/XBotCore/ )
                             
@@ -99,7 +98,6 @@ target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS}
                                       
 target_link_libraries(XBotCoreThread    ${COMMON_LIBS}
                                         ${XBotCoreModel_LIBRARIES}                                        
-                                        ${sharedlibpp_LIBRARIES}
                                         ${XCM_LIBRARIES}
                                         )                                      
 
