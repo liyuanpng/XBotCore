@@ -35,6 +35,8 @@
 #include <XBotCore-interfaces/XBotOptions.h>
 #include <XBotCore/HALInterface.h>
 
+#include <atomic>
+
 namespace XBot {
 
     class PluginHandler : public Handle
