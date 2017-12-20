@@ -91,18 +91,14 @@ private:
     std::map<std::string, ros::ServiceServer> _status_services;
     std::map<std::string, std::string> _plugin_status_map;
 
-    shlibpp::SharedLibraryClass<GenericJointStateMessage> _jointstatemsg_instance;
-    shlibpp::SharedLibraryClassFactory<GenericJointStateMessage> _jointstatemsg_factory;
-    GenericJointStateMessage::Ptr _jointstate_message;
+    std::shared_ptr<GenericJointStateMessage> _jointstate_message;
 
     std::string _jointstate_message_type,
                 _jointstate_message_factory_name,
                 _jointstate_message_class_name,
                 _jointstate_message_path_to_so;
 
-    shlibpp::SharedLibraryClass<GenericControlMessage> _controlmsg_instance;
-    shlibpp::SharedLibraryClassFactory<GenericControlMessage> _controlmsg_factory;
-    GenericControlMessage::Ptr _control_message;
+    std::shared_ptr<GenericControlMessage> _control_message;
 
     std::string _control_message_type,
                 _control_message_factory_name,

@@ -20,8 +20,11 @@
 #include <XCM/MessageInterfaces/AdvrCommandMessage.h>
 #include <XBotInterface/RtLog.hpp>
 #include <ros/transport_hints.h> 
+#include <XBotInterface/SoLib.h>
 
-SHLIBPP_DEFINE_SHARED_SUBCLASS(advrcommandmessage_control_message, XBot::CommandAdvr, XBot::GenericControlMessage);
+using XBot::Logger;
+
+REGISTER_SO_LIB_(XBot::CommandAdvr, XBot::GenericControlMessage);
 
 using XBot::Logger;
 

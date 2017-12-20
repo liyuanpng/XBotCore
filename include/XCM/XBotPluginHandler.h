@@ -23,6 +23,8 @@
 
 #include <XBotCore-interfaces/All.h>
 
+#include <atomic>
+
 #include <XCM/XBotControlPlugin.h>
 #include <XCM/TimeProvider.h>
 #include <XCM/XBotESCUtils.h>
@@ -34,8 +36,6 @@
 #include <XBotCore-interfaces/XBotHandle.h>
 #include <XBotCore-interfaces/XBotOptions.h>
 #include <XBotCore/HALInterface.h>
-
-#include <atomic>
 
 namespace XBot {
 
@@ -119,7 +119,6 @@ namespace XBot {
         bool _close_was_called;
 
         // Dynamic loading related variables
-        //std::vector<std::shared_ptr<shlibpp::SharedLibraryClassFactory<XBot::XBotControlPlugin>>> _rtplugin_factory;
         std::vector<std::string> _rtplugin_names;
         std::vector<std::shared_ptr<XBot::XBotControlPlugin>> _rtplugin_vector;
         std::vector<bool> _plugin_init_success;

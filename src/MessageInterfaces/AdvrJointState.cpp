@@ -22,9 +22,11 @@
 #include <XBotInterface/Utils.h>
 
 #include <XBotInterface/RtLog.hpp>
+#include <XBotInterface/SoLib.h>
+
 using XBot::Logger;
 
-SHLIBPP_DEFINE_SHARED_SUBCLASS(advrjointstate_jointstate_message, XBot::AdvrJointState, XBot::GenericJointStateMessage);
+REGISTER_SO_LIB_(XBot::AdvrJointState, XBot::GenericJointStateMessage);
 
 
 XBot::AdvrJointState::AdvrJointState():

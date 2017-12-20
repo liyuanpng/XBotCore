@@ -29,6 +29,8 @@
 #include <sys/stat.h> 
 #include <fcntl.h>
 
+#include <XBotInterface/SoLib.h>
+
 
 
 
@@ -201,24 +203,17 @@ void CommunicationInterfaceROS::load_ros_message_interfaces() {
                         LIB_MIDDLE_PATH,
                         _control_message_path_to_so
                        );
+    
+    _control_message = SoLib::getFactory<GenericControlMessage>(_control_message_path_to_so, _control_message_class_name);
 
-    // Loading the requested control message
-    _controlmsg_factory.open( _control_message_path_to_so.c_str(),
-                              _control_message_factory_name.c_str());
-    if (!_controlmsg_factory.isValid()) {
-        // NOTE print to celebrate the wizard
-        printf("error (%s) : %s\n", shlibpp::Vocab::decode(_controlmsg_factory.getStatus()).c_str(),
-               _controlmsg_factory.getLastNativeError().c_str());
-    }
-    // open and init control message
-    _controlmsg_instance.open(_controlmsg_factory);
-    _receive_commands_ok = _controlmsg_instance->init(_path_to_cfg, GenericControlMessage::Type::Rx);
+    
+    _receive_commands_ok = _control_message->init(_path_to_cfg, GenericControlMessage::Type::Rx);
+    
     if(_receive_commands_ok){
        Logger::success() << "Receive commands from ROS ok!" << Logger::endl();
         _receive_commands_ok = true;
     }
-    // save pointer to the control message
-    _control_message = &_controlmsg_instance.getContent();
+    
 
     const YAML::Node &jointstate_msg_root = core_cfg[_jointstate_message_type];
     _jointstate_message_factory_name = jointstate_msg_root["subclass_factory_name"].as<std::string>();
@@ -231,22 +226,15 @@ void CommunicationInterfaceROS::load_ros_message_interfaces() {
                        );
 
     // Loading the requested jointstate message
-    _jointstatemsg_factory.open( _jointstate_message_path_to_so.c_str(),
-                              _jointstate_message_factory_name.c_str());
-    if (!_jointstatemsg_factory.isValid()) {
-        // NOTE print to celebrate the wizard
-        printf("error (%s) : %s\n", shlibpp::Vocab::decode(_jointstatemsg_factory.getStatus()).c_str(),
-               _jointstatemsg_factory.getLastNativeError().c_str());
-    }
-    // open and init jointstate message
-    _jointstatemsg_instance.open(_jointstatemsg_factory);
-    _send_robot_state_ok = _jointstatemsg_instance->init(_path_to_cfg, GenericJointStateMessage::Type::Tx);
+    _jointstate_message = SoLib::getFactory<GenericJointStateMessage>(_jointstate_message_path_to_so, _jointstate_message_type);
+    
+    _send_robot_state_ok = _jointstate_message->init(_path_to_cfg, GenericJointStateMessage::Type::Tx);
+    
     if(_send_robot_state_ok){
         Logger::success() << "Send robot state over ROS ok!" << Logger::endl();
         _send_robot_state_ok = true;
     }
-    // save pointer to the jointstate message
-    _jointstate_message = &_jointstatemsg_instance.getContent();
+
 
     /* Fill maps joint_id -> message indices */
 
